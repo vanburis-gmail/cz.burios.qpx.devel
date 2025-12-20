@@ -1,0 +1,416 @@
+@charset "UTF-8";
+/* ============================
+   RESET + NORMALIZACE
+   ============================ */
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p,
+	blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn,
+	em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var,
+	b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend,
+	table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas,
+	details, embed, figure, figcaption, footer, header, hgroup, menu, nav,
+	output, ruby, section, summary, time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
+body {
+	line-height: 1.5;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	background-color: #fff;
+	color: #333;
+}
+
+/* Typografie */
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 600;
+	line-height: 1.2;
+	margin-bottom: 0.5em;
+}
+
+p {
+	margin-bottom: 1em;
+}
+
+a {
+	color: #007bff;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+/* Seznamy */
+ul, ol {
+	margin-left: 1.5em;
+	margin-bottom: 1em;
+}
+
+/* Tabulky */
+table {
+	border-collapse: collapse;
+	width: 100%;
+}
+
+th, td {
+	border: 1px solid #ddd;
+	padding: 8px;
+}
+
+th {
+	background-color: #f2f2f2;
+	text-align: left;
+}
+
+/* Formuláře */
+input, select, textarea, button {
+	font: inherit;
+	padding: 0.5em;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+button {
+	cursor: pointer;
+	background-color: #007bff;
+	color: #fff;
+	border: none;
+}
+
+button:hover {
+	background-color: #0056b3;
+}
+
+/* Obrázky */
+img {
+	max-width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* ============================
+   QPX GRID SYSTEM
+   ============================ */
+.container {
+	width: 100%;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 15px;
+}
+
+.row {
+	display: flex;
+	flex-wrap: wrap;
+	margin: -10px;
+}
+
+.col {
+	flex: 1;
+	padding: 10px;
+}
+
+/* Grid velikosti */
+.col-1 {
+	flex: 0 0 8.33%;
+}
+
+.col-2 {
+	flex: 0 0 16.66%;
+}
+
+.col-3 {
+	flex: 0 0 25%;
+}
+
+.col-4 {
+	flex: 0 0 33.33%;
+}
+
+.col-6 {
+	flex: 0 0 50%;
+}
+
+.col-9 {
+	flex: 0 0 75%;
+}
+
+.col-12 {
+	flex: 0 0 100%;
+}
+
+/* Breakpointy */
+@media ( max-width : 992px) {
+	.col-md-6 {
+		flex: 0 0 50%;
+	}
+	.col-md-12 {
+		flex: 0 0 100%;
+	}
+}
+
+@media ( max-width : 768px) {
+	.col-sm-12 {
+		flex: 0 0 100%;
+	}
+}
+
+/* ============================
+   DOPLŇKOVÉ STYLY
+   ============================ */
+.header, .footer {
+	background: #333;
+	color: #fff;
+	padding: 20px;
+}
+
+.nav {
+	background: #555;
+	color: #fff;
+	padding: 10px;
+}
+
+.card {
+	background: #f9f9f9;
+	border: 1px solid #ddd;
+	padding: 15px;
+	border-radius: 5px;
+}
+
+/*  -----  ----- */
+.qp-datagrid-row {
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+	position: relative;
+	border-left: 1px solid #dadada;
+}
+
+.qp-datagrid-cell, .qp-datagrid-cell-filler {
+	padding: 6px 10px;
+	border-right: 1px solid #dadada;
+	border-bottom: 1px solid #dadada;
+	box-sizing: border-box;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: flex;
+	align-items: center;
+}
+
+.qp-datagrid-cell-filler {
+	flex: 1 1 auto;
+}
+
+.qp-datagrid-popup-btn {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 16px;
+	height: 100%;
+	background: transparent;
+	border: none;
+	border-left: 1px solid #dadada;
+	border-radius: 0 !important;
+	cursor: pointer;
+	color: #333;
+}
+
+.qp-datagrid-popup-btn:hover {
+	background-color: #c4c4c4 !important;
+	border-radius: 0 !important;
+}
+
+.qp-datagrid-popup {
+	background: #fff;
+	border: 1px solid #dadada;
+	border-top: none;
+	display: none;
+	flex-direction: column;
+	z-index: 1000;
+	min-height: var(--row-height, 40px);
+	padding: 0 8px;
+}
+/* položky v popupu */
+.qp-datagrid-popup-item {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	width: 100%;
+	padding: 4px 0;
+	border: none; /* žádné border */
+}
+
+.qp-datagrid-popup-label {
+	flex: 0 0 120px;
+	font-weight: 600;
+	margin-right: 8px;
+	text-align: left;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.qp-datagrid-popup-value {
+	flex: 1 1 auto;
+	text-align: left;
+	white-space: nowrap; /* nezalamovat */
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/*  -----  ----- */
+
+/*  -----  ----- */
+.qp-toolbar {
+	display: flex;
+	width: 100%;
+	align-items: center;
+	position: relative;
+}
+
+.qp-toolbar-item {
+	padding: 4px 6px;
+	white-space: nowrap;
+}
+
+.qp-toolbar-popup-btn {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 16px;
+	height: 100%;
+	background: transparent;
+	border: none;
+	border-left: 1px solid #dadada;
+	cursor: pointer;
+}
+
+.qp-toolbar-popup {
+	position: absolute;
+	background: #fff;
+	border: 1px solid #dadada;
+	display: none;
+	flex-direction: column;
+	z-index: 2000;
+	padding: 4px 8px;
+}
+
+.qp-toolbar-popup .qp-toolbar-item {
+	width: 100%;
+	justify-content: flex-start;
+	border: none;
+}
+
+/* -----  ----- */
+.qp-datagrid {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid #dadada;
+	width: 100%;
+	overflow: hidden;
+}
+.qp-datagrid-header-wrapper {
+	overflow: hidden; /* zabrání dvojitému scrollu */
+}
+.qp-datagrid-header {
+	display: flex;
+	position: sticky;
+	top: 0;
+	background: #f5f5f5;
+	z-index: 10;
+	height: 3em;
+}
+.qp-datagrid-header-label {
+	flex: 1 1 auto;
+	padding: 0 8px;
+}
+.qp-datagrid-header-sort-icon {
+	font-size: 14px;
+	color: #666;
+	padding: 4px;
+	flex: 0 0 12px;
+	cursor: pointer;
+	padding: 8px;
+	
+}
+.qp-datagrid-header-sort-icon:hover {
+	color: #000;
+}
+.qp-datagrid-header-cell {
+	height: 100%;
+	display: flex;
+	align-items: center;
+}
+.qp-datagrid-body {
+	flex: 1 1 auto;
+	overflow-y: auto;
+}
+
+.qp-datagrid-body.scroll-x {
+	overflow-x: auto;
+}
+
+.qp-datagrid-overlay {
+	display: flex;
+	font-weight: bold;
+	font-size: 16px;
+	color: #000;
+}
+
+/* -----  ----- */
+.qp-tabs {
+	border: 1px solid #ccc;
+	display: flex;
+	flex-direction: column;
+}
+
+.qp-tabs-header {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	background: #eee;
+}
+
+.qp-tabs-header .qp-tab {
+	position: relative;
+	padding: 10px 20px;
+	cursor: pointer;
+}
+
+.qp-tabs-header .qp-tab.active {
+	background: #fff;
+	border-bottom: 2px solid #007acc;
+}
+
+.qp-tab-close {
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	cursor: pointer;
+	color: #888;
+}
+
+.qp-tab-close:hover {
+	color: #d00;
+}
+
+.qp-tabs-content {
+	flex: 1;
+	padding: 10px;
+	overflow: auto;
+}
+
+.qp-tab-body {
+	display: none;
+}
+/* rozšířit qpWidget o možnost0 */
+/* -----  ----- */
