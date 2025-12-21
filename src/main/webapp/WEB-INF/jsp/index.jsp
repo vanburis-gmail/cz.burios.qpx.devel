@@ -8,8 +8,8 @@
 	
 		<title>Buriosca.cz - Darwin QPX</title>
 
-		<link rel="icon" href="/darwin/favicon.png">
-		<link rel="stylesheet" href="/darwin/libs/qpx/qpx-default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="icon" href="/devel/favicon.png">
+		<link rel="stylesheet" href="/devel/libs/qpx/qpx-default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 
 		<style type="text/css">
 		html, body {
@@ -18,143 +18,107 @@
 		}
 		</style>
 
-		<script type="text/javascript" src="/darwin/libs/jquery/jquery-3.7.1.js"></script>
+		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
 		<%-- 
-		<script type="text/javascript" src="/darwin/libs/qpx/jquery.qpx.js"></script>
 		--%>
-		<script type="text/javascript" src="/darwin/libs/qpx/qpToolBar.js?build=${ timeNo }"></script>
-		
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.core.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/src/qpTabs.js?build=${ timeNo }"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/src/qpToolBar.js?build=${ timeNo }"></script>
+
 		<script></script>
 	</head>
 	<body style="height: 100vh;overflow: hidden;">
-
-		<%-- 
-		<div id="toolbar" data-role="qpToolBar"></div>
+		<div id="mainToolbar"></div>
 		<script>
-		$("#toolbar").qpToolbar({
-			responsive: true,
-			items: [
-				{ html: "<button>Nový</button>" },
-				{ html: "<span style='width:200px;'>Buriosca.cz - Darwin QPX</span>" },
-				{ html: "<button>Uložit</button>" },
-				{ html: "<button>Smazat</button>" },
-				{ html: "<button>Detail xxxxxxxxxxxxx</button>" }
+		$("#mainToolbar").qpToolBar({
+			responsive: true,   // overflow → popup
+			data: [
+				{ id: "new", text: "Nový", icon: "fa fa-file" },
+				{ id: "open", text: "Otevřít", icon: "fa fa-folder-open" },
+				{ id: "save", text: "Uložit", icon: "fa fa-save" },
+				
+				{ type: "separator" },
+				
+				{ id: "bold", text: "Tučné", icon: "fa fa-bold", toggle: true },
+				{ id: "italic", text: "Kurzíva", icon: "fa fa-italic", toggle: true },
+				
+				{ type: "separator" },
+				{
+					id: "export",
+					text: "Export",
+					icon: "fa fa-download",
+					menu: [
+						{ id: "export_pdf", text: "PDF" },
+						{ id: "export_xls", text: "Excel" },
+						{ id: "export_png", text: "PNG" }
+					]
+				}
+			],
+			onClick: function(id, $btn) {
+				console.log("Klik:", id);
+			},
+			onToggle: function(id, state) {
+				console.log("Toggle:", id, "→", state);
+			}
+		});
+		</script>
+		<div id="myTabs"></div>
+		<script>
+		$("#myTabs").qpTabs({
+			closable: true,
+			responsive: false,
+			data: [
+				{ title: "Dashboard", content: "<p>Obsah dashboardu</p>" },
+				{ title: "Položka 2", content: "<p>Obsah tiem 2</p>" },
+				{ title: "Položka 3", content: "<p>Obsah tiem 3</p>" },
+				{ title: "Položka 4", content: "<p>Obsah tiem 4</p>" },
+				{ title: "Položka 5", content: "<p>Obsah tiem 5</p>" },
+				{ title: "Položka 6", content: "<p>Obsah tiem 6</p>" },
+				{ title: "Položka 7", content: "<p>Obsah tiem 7</p>" },
+				{ title: "Nastavení", content: "<p>Konfigurace systému</p>" }
 			]
 		});
+
 		/*
-		*/
-		</script>		
-		--%>
-		<%--
-		<div id="row1" data-role="qpDataGridRow"></div>		
-		<script>
-		$("#row1").qpDataGridRow({
-		    responsive: true,
-		    columns: [
-		        { field: "id", width: "50px", label: "ID" },
-		        { field: "name", width: "200px", label: "Jméno" },
-		        { field: "age", width: "100px", label: "Věk" },
-		        { field: "email", width: "30%", label: "Email" },
-		        { field: "phone", width: "150px", label: "Telefon" }
-		    ],
-		    data: {
-		        id: 1,
-		        name: "Jan Novák s velmi dlouhým jménem",
-		        age: 30,
-		        email: "jan.novak@example.com",
-		        phone: "+420 777 123 456"
+		data: [
+			{ title: "Home", icon: "fa fa-home", content: "<p>Domů</p>" },
+			{ title: "Uživatelé", icon: "fa fa-users", content: "<p>Seznam uživatelů</p>" }
+		]
+
+		data: [
+			{ title: "Report", ajaxUrl: "/report.html" },
+			{ title: "Statistiky", ajaxUrl: "/stats.html" }
+		]
+
+		data: [{
+			title: "Graf",
+			lazyLoader: function(index, done) {
+				setTimeout(function() {
+					done("<canvas id='chart'></canvas>");
+				}, 500);
+			}}
+		]
+		
+		
+		$("#myTabs").qpTabs({
+		    active: 0,
+		    closable: true,
+		    onAdd: function(index, $tab, $content) {
+		        console.log("Tab přidán:", index);
+		    },
+		    onRemove: function(index) {
+		        console.log("Tab odebrán:", index);
+		    },
+		    onActivate: function(index) {
+		        console.log("Aktivní tab:", index);
 		    }
 		});
-		</script>
-		<h4>Buriosca.cz - Darwin QPX</h4>
-		 --%>
-		<div id="grid"></div>
-		<script>
-		$("#grid").qpDataGrid({
-			height: "33%",
-			responsive: true,
-			columns: [
-				{ field: "id", label: "ID", width: "50px" },
-				{ field: "name", label: "Jméno", width: "200px" },
-				{ field: "age", label: "Věk", width: "100px" },
-				{ field: "email", label: "Email", width: "30%" },
-				{ field: "phone", label: "Telefon", width: "150px" }
-			],
-			dataSource: {
-				data: [
-					{ id: 1, name: "Jan Novák", age: 30, email: "jan.novak@example.com", phone: "+420 777 123 456" },
-					{ id: 2, name: "Petr Svoboda", age: 25, email: "petr.svoboda@example.com", phone: "+420 603 854 221" },
-					{ id: 3, name: "Pavel Dvořák", age: 25, email: "pavel.dvorak@example.com", phone: "+420 606 654 731" },
-					{ id: 4, name: "Jiří Chalupa", age: 25, email: "jiri.chalupa@example.com", phone: "+420 732 654 121" },
-					{ id: 6, name: "Miroslav Jeřábek", age: 25, email: "miroslav.jerabek@example.com", phone: "+420 721 654 561" },
-					{ id: 7, name: "Milena Svobodová", age: 25, email: "milena.svobodovaá@example.com", phone: "+420 604 644 831" },
-					{ id: 5, name: "Eva Malá", age: 28, email: "eva.mala@example.com", phone: "+420 777 111 222" }
-				]
-			}
-			/*
-			dataSource: {
-				fetch: function(page, pageSize){
-					return $.ajax({
-						url: "/api/data",
-						method: "GET",
-						data: { page: page, size: pageSize }
-					});
-				}
-			}			
-			 */
-		});
+		var tabs = $("#myTabs").data("qpTabs"); 
+		tabs.add("Nový tab", "<p>Obsah nového tabu</p>");
+		*/
 		</script>
 		<%-- 
 		--%>
-		<%-- 
-		<div id="tabs"></div>
-		<script>
-		$('#tabs').qpTabs({
-			height: "100%",
-			items: [
-		        { 
-					label: "Grid záložka", 
-					closable: false,
-					content: {
-						type: "widget",
-						id: "grid1",
-						role: "qpDataGrid",
-						options: {
-							height: "33%",
-							responsive: true,
-						    columns: [
-						        { field: "id", label: "ID", width: "50px" },
-						        { field: "name", label: "Jméno", width: "200px" },
-						        { field: "age", label: "Věk", width: "100px" },
-						        { field: "email", label: "Email", width: "30%" },
-						        { field: "phone", label: "Telefon", width: "150px" }
-						    ],
-						    data: [
-						        { id: 1, name: "Jan Novák", age: 30, email: "jan.novak@example.com", phone: "+420 777 123 456" },
-						        { id: 2, name: "Petr Svoboda", age: 25, email: "petr.svoboda@example.com", phone: "+420 603 854 221" },
-						        { id: 3, name: "Pavel Dvořák", age: 25, email: "pavel.dvorak@example.com", phone: "+420 606 654 731" },
-						        { id: 4, name: "Jiří Chalupa", age: 25, email: "jiri.chalupa@example.com", phone: "+420 732 654 121" },
-						        { id: 6, name: "Miroslav Jeřábek", age: 25, email: "miroslav.jerabek@example.com", phone: "+420 721 654 561" },
-						        { id: 7, name: "Milena Svobodová", age: 25, email: "milena.svobodovaá@example.com", phone: "+420 604 644 831" },
-						        { id: 5, name: "Eva Malá", age: 28, email: "eva.mala@example.com", phone: "+420 777 111 222" }
-						    ]
-						}
-					}
-				},
-				{ 
-					label: "Info", 
-					closable: true,
-					content: {
-						type: "html",
-						id: "info1",
-						role: null,
-						html: "<p>Statický HTML obsah</p>"
-					}
-				}
-			]
-		});
-		</script>
-		--%>
-
+		
 	</body>
 </html>

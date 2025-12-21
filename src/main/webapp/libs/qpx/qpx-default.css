@@ -266,49 +266,6 @@ img {
 	text-overflow: ellipsis;
 }
 
-/*  -----  ----- */
-
-/*  -----  ----- */
-.qp-toolbar {
-	display: flex;
-	width: 100%;
-	align-items: center;
-	position: relative;
-}
-
-.qp-toolbar-item {
-	padding: 4px 6px;
-	white-space: nowrap;
-}
-
-.qp-toolbar-popup-btn {
-	position: absolute;
-	right: 0;
-	bottom: 0;
-	width: 16px;
-	height: 100%;
-	background: transparent;
-	border: none;
-	border-left: 1px solid #dadada;
-	cursor: pointer;
-}
-
-.qp-toolbar-popup {
-	position: absolute;
-	background: #fff;
-	border: 1px solid #dadada;
-	display: none;
-	flex-direction: column;
-	z-index: 2000;
-	padding: 4px 8px;
-}
-
-.qp-toolbar-popup .qp-toolbar-item {
-	width: 100%;
-	justify-content: flex-start;
-	border: none;
-}
-
 /* -----  ----- */
 .qp-datagrid {
 	display: flex;
@@ -366,51 +323,435 @@ img {
 }
 
 /* -----  ----- */
-.qp-tabs {
-	border: 1px solid #ccc;
-	display: flex;
-	flex-direction: column;
+/* ============================
+   ZÁKLADNÍ LAYOUT
+============================ */
+.qp-tabs-nav-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
 }
 
-.qp-tabs-header {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	background: #eee;
+.qp-tabs-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
 }
 
-.qp-tabs-header .qp-tab {
-	position: relative;
-	padding: 10px 20px;
-	cursor: pointer;
+.qp-tabs-nav::-webkit-scrollbar {
+    display: none; /* Chrome */
 }
 
-.qp-tabs-header .qp-tab.active {
-	background: #fff;
-	border-bottom: 2px solid #007acc;
+/* ============================
+   TABY
+============================ */
+.qp-tabs-nav li {
+    padding: 8px 14px;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    border-right: 1px solid #ddd;
+    background: #eee;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
+.qp-tabs-nav li:hover {
+    background: #e4e4e4;
+}
+
+.qp-tabs-nav li.active {
+    background: #fff;
+    border-bottom: 2px solid #0078d4;
+    font-weight: bold;
+}
+
+/* ============================
+   IKONY
+============================ */
+.qp-tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qp-tab-icon img {
+    width: 14px;
+    height: 14px;
+}
+
+/* ============================
+   CLOSE BUTTON
+============================ */
 .qp-tab-close {
-	position: absolute;
-	right: 5px;
-	top: 5px;
-	cursor: pointer;
-	color: #888;
+    margin-left: 6px;
+    color: #666;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
 }
 
 .qp-tab-close:hover {
-	color: #d00;
+    color: #c00;
 }
 
+/* ============================
+   OBSAH TABŮ
+============================ */
 .qp-tabs-content {
-	flex: 1;
-	padding: 10px;
-	overflow: auto;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
 }
 
-.qp-tab-body {
-	display: none;
+.qp-tab-panel {
+    display: none;
 }
-/* rozšířit qpWidget o možnost0 */
-/* -----  ----- */
+
+.qp-tab-panel.active {
+    display: block;
+}
+
+/* ============================
+   LOADING
+============================ */
+.qp-tabs-loading {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+/* ============================
+   DRAG & DROP
+============================ */
+.qp-tabs-nav li.dragging {
+    opacity: 0.5;
+}
+
+.qp-tabs-nav li.drag-over {
+    background: #d0e7ff;
+}
+
+/* ============================
+   KONTEXTOVÉ MENU
+============================ */
+.qp-tabs-context {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #aaa;
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+    z-index: 9999;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.qp-tabs-context li {
+    padding: 6px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.qp-tabs-context li:hover {
+    background: #0078d4;
+    color: #fff;
+}
+
+/* ============================
+   RESPONSIVE: MORE BUTTON
+============================ */
+.qp-tabs-more {
+    margin-left: auto;        /* posune tlačítko doprava */
+    padding: 6px 10px;
+    background: #eee;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qp-tabs-more:hover {
+    background: #ddd;
+}
+
+.qp-tabs-more-menu {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #aaa;
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+    z-index: 9999;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.qp-tabs-more-menu li {
+    padding: 6px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.qp-tabs-more-menu li:hover {
+    background: #0078d4;
+    color: #fff;
+}
+
+/* ============================
+   NON-RESPONSIVE: SCROLL BUTTONS
+============================ */
+.qp-tabs-scroll-left,
+.qp-tabs-scroll-right {
+    width: 24px;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    background: #eee;
+    border: 1px solid #ccc;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.qp-tabs-scroll-left:hover,
+.qp-tabs-scroll-right:hover {
+    background: #ddd;
+}
+
+/* ============================
+   NESTED TABS
+============================ */
+.qp-tabs-content .qp-tabs-nav-wrapper {
+    margin-top: 10px;
+    border-top: 1px solid #ddd;
+}
+
+/*  -----  ----- */
+/* ============================
+   WRAPPER
+============================ */
+.qp-toolbar-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    background: #f7f7f7;
+    border-bottom: 1px solid #ccc;
+    padding: 4px;
+}
+
+/* ============================
+   TOOLBAR (obsah tlačítek)
+============================ */
+.qp-toolbar {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+}
+
+.qp-toolbar::-webkit-scrollbar {
+    display: none; /* Chrome */
+}
+
+/* ============================
+   BUTTONY
+============================ */
+.qp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #eee;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+    user-select: none;
+    margin-right: 4px;
+    transition: background 0.2s;
+}
+
+.qp-btn:hover {
+    background: #e4e4e4;
+}
+
+.qp-btn:active {
+    background: #dcdcdc;
+}
+
+/* ============================
+   TOGGLE BUTTON
+============================ */
+.qp-btn-toggle.active {
+    background: #d0e7ff;
+    border-color: #7bb4f6;
+}
+
+/* ============================
+   IKONY
+============================ */
+.qp-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qp-btn-icon img {
+    width: 16px;
+    height: 16px;
+}
+
+/* ============================
+   TEXT
+============================ */
+.qp-btn-text {
+    display: inline-block;
+}
+
+/* ============================
+   DROPDOWN BUTTON
+============================ */
+.qp-btn-dropdown {
+    position: relative;
+    padding-right: 18px;
+}
+
+.qp-btn-arrow {
+    font-size: 10px;
+    margin-left: 4px;
+}
+
+/* ============================
+   DROPDOWN MENU
+============================ */
+.qp-toolbar-dropdown {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #aaa;
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+    z-index: 9999;
+    min-width: 120px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.qp-toolbar-dropdown li {
+    padding: 6px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.qp-toolbar-dropdown li:hover {
+    background: #0078d4;
+    color: #fff;
+}
+
+/* ============================
+   SEPARATOR
+============================ */
+.qp-separator {
+    width: 1px;
+    height: 20px;
+    background: #ccc;
+    margin: 0 6px;
+}
+
+/* ============================
+   RESPONSIVE: MORE BUTTON
+============================ */
+.qp-toolbar-more {
+    margin-left: auto;
+    padding: 6px 10px;
+    background: #eee;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qp-toolbar-more:hover {
+    background: #ddd;
+}
+
+/* ============================
+   MORE POPUP MENU
+============================ */
+.qp-toolbar-more-menu {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #aaa;
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+    z-index: 9999;
+    max-height: 300px;
+    overflow-y: auto;
+    min-width: 120px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.qp-toolbar-more-menu li {
+    padding: 6px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.qp-toolbar-more-menu li:hover {
+    background: #0078d4;
+    color: #fff;
+}
+
+/* ============================
+   NON-RESPONSIVE: SCROLL BUTTONS
+============================ */
+.qp-toolbar-scroll-left,
+.qp-toolbar-scroll-right {
+    width: 24px;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    background: #eee;
+    border: 1px solid #ccc;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.qp-toolbar-scroll-left:hover,
+.qp-toolbar-scroll-right:hover {
+    background: #ddd;
+}
+
+/* ============================
+   DROPDOWN Z-INDEX FIX
+============================ */
+.qp-toolbar-wrapper,
+.qp-toolbar,
+.qp-btn {
+    position: relative;
+}
+
+/*  -----  ----- */
