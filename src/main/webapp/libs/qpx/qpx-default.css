@@ -322,15 +322,89 @@ img {
 	color: #000;
 }
 
-/* -----  ----- */
+/* ----- qpOverflowWidget ----- */
+
+.qp-overflow-more {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	
+	width: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	
+	background: #eee;
+	border-left: 1px solid #ccc;
+	cursor: pointer;
+	user-select: none;
+	z-index: 10;
+
+    font-size: 16px;
+    line-height: 1;
+}
+.qp-overflow-more::before { 
+	content: "\22EE"; /* ⋮ */ 
+	font-size: 1.25em; 
+	line-height: 1; 
+	color: #333; 
+}
+.qp-overflow-more:hover {
+    background: #ddd;
+}
+
+.qp-overflow-popup {
+	position: absolute;
+	background: #fff;
+	border: 1px solid #aaa;
+	list-style: none;
+	padding: 4px 0;
+	margin: 0;
+	z-index: 9999;
+    min-width: 150px;
+	max-height: 300px;
+	overflow-y: auto;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.qp-overflow-popup li {
+    padding: 6px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.qp-overflow-popup li:hover {
+    background: #0078d4;
+    color: #fff;
+}
+
+/* ----- qpTabs ----- */
+
 /* ============================
    ZÁKLADNÍ LAYOUT
 ============================ */
-.qp-tabs-nav-wrapper {
+/*
+.qp-tabs-nav-wrapper,
+.qp-toolbar-wrapper {
     display: flex;
     align-items: center;
     position: relative;
     overflow: hidden;
+}
+*/
+.qp-tabs-nav-wrapper,
+.qp-toolbar-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: #f7f7f7;
+    border-bottom: 1px solid #ccc;
+    padding-right: 32px; /* rezerva pro More */
+}
+
+.qp-tabs-nav-wrapper, 
+.qp-toolbar-wrapper { 
+	padding-right: 32px; /* prostor pro More */ 
 }
 
 .qp-tabs-nav {
@@ -547,10 +621,12 @@ img {
    WRAPPER
 ============================ */
 .qp-toolbar-wrapper {
+	/*
     display: flex;
     align-items: center;
     position: relative;
     overflow: hidden;
+	*/
     background: #f7f7f7;
     border-bottom: 1px solid #ccc;
     padding: 4px;
@@ -754,4 +830,209 @@ img {
     position: relative;
 }
 
-/*  -----  ----- */
+/* ----- qpDataGrid ----- */
+
+/* ============================================
+   GRID WRAPPER
+============================================ */
+.qp-dg {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #cccccc;
+    font-family: sans-serif;
+    color: #222222;
+}
+
+/* ============================================
+   HEADER
+============================================ */
+.qp-dg-header {
+    display: flex;
+    background: #f7f7f7;
+    border-bottom: 1px solid #cccccc;
+    user-select: none;
+    font-weight: 600;
+}
+
+.qp-dg-header-cell {
+    padding: 8px 12px;
+    border-right: 1px solid #cccccc;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.qp-dg-header-cell:last-child {
+    border-right: none;
+}
+
+/* Fill sloupec v headeru */
+.qp-dg-fill {
+    flex: 1 1 auto;
+    min-width: 0;
+    border-right: none !important;
+}
+
+/* ============================================
+   BODY
+============================================ */
+.qp-dg-body {
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #ffffff;
+}
+
+/* ============================================
+   ROW
+============================================ */
+.qp-dg-row {
+    display: flex;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    min-height: 32px;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: default;
+    transition: background 0.15s;
+    overflow: visible !important; /* kritické pro more-button */
+}
+
+.qp-dg-row:hover {
+    background: #f0f0f0;
+}
+
+.qp-dg-row.selected {
+    background: #d0e7ff;
+    border-color: #7bb4f6;
+}
+
+/* ============================================
+   CELLS
+============================================ */
+.qp-dg-cell {
+    padding: 6px 12px;
+    border-right: 1px solid #e0e0e0;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.qp-dg-cell:last-child {
+    border-right: none;
+}
+
+/* ============================================
+   MORE BUTTON
+============================================ */
+.qp-dg-more {
+    flex: 0 0 32px !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    border-left: 1px solid #e0e0e0;
+    cursor: pointer;
+    user-select: none;
+    z-index: 10;
+    margin-left: auto !important; /* <<< TADY JE MAGIE */
+}
+
+.qp-dg-more::before {
+    content: "\22EE"; /* ⋮ */
+    font-size: 16px;
+    line-height: 1;
+    color: #444;
+}
+
+.qp-dg-more:hover {
+    background: #e0e0e0;
+}
+
+/* ============================================
+   INLINE POPUP POD ŘÁDKEM
+============================================ */
+.qp-dg-row-popup {
+    width: 100%;
+    background: #fafafa;
+    border: 1px solid #cccccc;
+    border-top: none;
+    padding: 8px 12px;
+    box-sizing: border-box;
+}
+
+.qp-dg-row-popup-item {
+    padding: 4px 0;
+    display: flex;
+    gap: 8px;
+}
+
+.qp-dg-row-popup-title {
+    font-weight: bold;
+}
+
+.qp-dg-row-popup-value {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================
+   INLINE EDIT (optional)
+============================================ */
+.qp-dg-cell input[type="text"],
+.qp-dg-cell input[type="number"],
+.qp-dg-cell select {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid #cccccc;
+    background: #ffffff;
+    color: #222222;
+    border-radius: 3px;
+    box-sizing: border-box;
+}
+
+/* ============================================
+   SCROLLBAR (optional)
+============================================ */
+.qp-dg-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.qp-dg-body::-webkit-scrollbar-track {
+    background: #f7f7f7;
+}
+
+.qp-dg-body::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 4px;
+}
+
+.qp-dg-resize {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 20;
+}
+.qp-dg-header-cell {
+    position: relative;
+}
+.qp-dg-header-cell {
+    position: relative;
+}
+
+.qp-dg-header-cell.drag-over {
+    outline: 2px dashed #4a90e2;
+    outline-offset: -4px;
+}
+
+.qp-dg-header-cell.drag-source {
+    opacity: 0.4;
+}

@@ -1,0 +1,27 @@
+// LIGHT THEME
+.theme-light {
+	--bg: #{$light-bg};
+	--bg-panel: #{$light-bg-panel};
+	--border: #{$light-border};
+	--text: #{$light-text};
+	--hover: #{$light-hover};
+	--active: #{$light-active};
+	--active-border: #{$light-active-border};
+	--popup-bg: #{$light-popup-bg};
+	--popup-hover: #{$light-popup-hover};
+	--popup-text: #{$light-popup-text};
+}
+
+// DARK THEME
+.theme-dark {
+	--bg: #{$dark-bg};
+	--bg-panel: #{$dark-bg-panel};
+	--border: #{$dark-border};
+	--text: #{$dark-text};
+	--hover: #{$dark-hover};
+	--active: #{$dark-active};
+	--active-border: #{$dark-active-border};
+	--popup-bg: #{$dark-popup-bg};
+	--popup-hover: #{$dark-popup-hover};
+	--popup-text: #{$dark-popup-text};
+}

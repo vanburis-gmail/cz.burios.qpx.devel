@@ -22,8 +22,11 @@
 		<%-- 
 		--%>
 		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.core.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/src/qpOverflowWidget.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpTabs.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpToolBar.js?build=${ timeNo }"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGrid.js?build=${ timeNo }"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGridRow.js?build=${ timeNo }"></script>
 
 		<script></script>
 	</head>
@@ -62,11 +65,11 @@
 			}
 		});
 		</script>
-		<div id="myTabs"></div>
+		<div id="myTabs" style="height: 200px;"></div>
 		<script>
 		$("#myTabs").qpTabs({
 			closable: true,
-			responsive: false,
+			responsive: true,
 			data: [
 				{ title: "Dashboard", content: "<p>Obsah dashboardu</p>" },
 				{ title: "Položka 2", content: "<p>Obsah tiem 2</p>" },
@@ -98,27 +101,48 @@
 				}, 500);
 			}}
 		]
-		
-		
-		$("#myTabs").qpTabs({
-		    active: 0,
-		    closable: true,
-		    onAdd: function(index, $tab, $content) {
-		        console.log("Tab přidán:", index);
-		    },
-		    onRemove: function(index) {
-		        console.log("Tab odebrán:", index);
-		    },
-		    onActivate: function(index) {
-		        console.log("Aktivní tab:", index);
-		    }
-		});
+		*/
+		/*
 		var tabs = $("#myTabs").data("qpTabs"); 
 		tabs.add("Nový tab", "<p>Obsah nového tabu</p>");
 		*/
 		</script>
 		<%-- 
 		--%>
-		
+		<div id="myGrid" style="height: 250px;"></div>
+		<script>
+		$("#myGrid").qpDataGrid({
+			responsive: true,
+			columns: [
+				{ field: "id",    title: "ID", width: 80  },
+				{ field: "name",  title: "Jméno", width: 200  },
+				{ field: "email", title: "E-mail", width: 175  }
+				// , { fill: true }
+			],
+			data: [
+				{ id: 1, name: "Josef Novák", email: "josef@example.com" },
+				{ id: 2, name: "Petr Dvořák", email: "petr@example.com" },
+				{ id: 3, name: "Lucie Malá", email: "lucie@example.com" },
+				{ id: 4, name: "Jaromír Dostál", email: "jaromir@example.com" },
+				{ id: 5, name: "Onřej Veselý", email: "ondrej@example.com" },
+				{ id: 6, name: "Jiří Adam", email: "jiri@example.com" },
+				{ id: 7, name: "Martin Syrový", email: "martin@example.com" },
+				{ id: 8, name: "Vendula Dloudá", email: "vendula@example.com" },
+				{ id: 9, name: "Václav Sykora", email: "vaclav@example.com" },
+				{ id: 10, name: "David Richter", email: "david@example.com" },
+				{ id: 99, name: "Anna Svobodová", email: "anna@example.com" }
+			],
+			selectable: true,
+			onRowClick: function(rowData, rowWidget) {
+				console.log("Klik na řádek:", rowData);
+			},
+			onRowDblClick: function(rowData, rowWidget) {
+				console.log("Dvojklik:", rowData);
+		    },
+			onRowSelect: function(rowData, rowWidget) {
+				console.log("Vybrán řádek:", rowData);
+			}
+		});
+		</script>
 	</body>
 </html>

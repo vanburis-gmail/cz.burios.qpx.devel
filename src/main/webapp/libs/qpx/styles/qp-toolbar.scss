@@ -1,0 +1,55 @@
+.qp-toolbar-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+	background: var(--bg);
+	border-bottom: 1px solid var(--border);
+	padding: 4px 32px 4px 4px;
+}
+
+.qp-toolbar {
+	display: flex;
+	align-items: center;
+	white-space: nowrap;
+	overflow-x: auto;
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+.qp-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 10px;
+	background: var(--hover);
+	border: 1px solid var(--border);
+	border-radius: 3px;
+	cursor: pointer;
+	user-select: none;
+	margin-right: 4px;
+	color: var(--text);
+
+	&:hover {
+		background: var(--hover);
+	}
+
+	&.active {
+		background: var(--active);
+		border-color: var(--active-border);
+	}
+}
+
+.qp-separator {
+	width: 1px;
+	height: 20px;
+	background: var(--border);
+	margin: 0 6px;
+}
+
+.qp-toolbar-dropdown {
+	@extend .qp-overflow-popup;
+}

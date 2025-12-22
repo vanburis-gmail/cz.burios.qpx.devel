@@ -1,0 +1,67 @@
+.qp-tabs-nav-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+	background: var(--bg);
+	border-bottom: 1px solid var(--border);
+	padding-right: 32px;
+}
+
+.qp-tabs-nav {
+	display: flex;
+	white-space: nowrap;
+	overflow-x: auto;
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+
+	li {
+		padding: 8px 14px;
+		cursor: pointer;
+		user-select: none;
+		border-right: 1px solid var(--border);
+		background: var(--hover);
+		color: var(--text);
+		display: flex;
+		align-items: center;
+		gap: 6px;
+
+		&:hover {
+			background: var(--hover);
+		}
+
+		&.active {
+			background: var(--bg-panel);
+			border-bottom: 2px solid var(--active-border);
+			font-weight: bold;
+		}
+
+		.qp-tab-close {
+			margin-left: 6px;
+			cursor: pointer;
+			color: var(--text);
+
+			&:hover {
+				color: red;
+			}
+		}
+	}
+}
+
+.qp-tabs-content {
+	background: var(--bg-panel);
+	border: 1px solid var(--border);
+	border-top: none;
+	padding: 12px;
+
+	.qp-tab-panel {
+		display: none;
+
+		&.active {
+			display: block;
+		}
+	}
+}
