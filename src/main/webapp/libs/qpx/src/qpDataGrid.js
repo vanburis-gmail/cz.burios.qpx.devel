@@ -3,273 +3,275 @@
  */
 var qpDataGrid = qpWidget.extend({
 
-    defaults: {
-        data: [],
-        columns: [],
-        responsive: true,
-        rowHeight: 32,
-        selectable: true,
-        editable: false,
-        template: null,
-        onRowClick: null,
-        onRowDblClick: null,
-        onRowSelect: null,
-        selectionMode: "single"
-    },
+	defaults: {
+		data: [],
+		columns: [],
+		responsive: true,
+		rowHeight: 32,
+		selectable: true,
+		editable: false,
+		template: null,
+		onRowClick: null,
+		onRowDblClick: null,
+		onRowSelect: null,
+		selectionMode: "single", 
+		reorderable: false
+	},
 
-    _create: function () {
-        this.el.addClass("qp-dg");
-        this.el.data("qpDataGrid", this);
+	_create: function() {
+		this.el.addClass("qp-dg");
+		this.el.data("qpDataGrid", this);
 
-        if (!this.options.columns.some(c => c.fill)) {
-            this.options.columns.push({ fill: true });
-        }
+		if (!this.options.columns.some(c => c.fill)) {
+			this.options.columns.push({ fill: true });
+		}
 
-        this.header = $('<div class="qp-dg-header"></div>').appendTo(this.el);
-        this.body = $('<div class="qp-dg-body"></div>').appendTo(this.el);
+		this.header = $('<div class="qp-dg-header"></div>').appendTo(this.el);
+		this.body = $('<div class="qp-dg-body"></div>').appendTo(this.el);
 
-        this._renderHeader();
-        this._renderRows();
-        this._bindKeyboardNavigation();
-    },
+		this._renderHeader();
+		this._renderRows();
+		this._bindKeyboardNavigation();
+	},
 
-    _renderHeader: function () {
-        var self = this;
+	_renderHeader: function() {
+		var self = this;
 
-        var html = this.options.columns.map(function (col, i) {
+		this.header.empty();
+		this.headerCells = [];
 
-            if (col.fill) {
-                return '<div class="qp-dg-header-cell qp-dg-fill"></div>';
-            }
+		this.options.columns.forEach(function(col, i) {
+			var $cell = $('<div></div>').appendTo(self.header);
+			var cell = new qpDataGridHeaderCell($cell, {
+			    index: i,
+			    column: col,
+			    grid: self,
+			    reorderable: self.options.reorderable   // <<< NOVÉ
+			});
 
-            var style = col.width ? 'style="flex:0 0 ' + col.width + 'px"' : "";
+			self.headerCells.push(cell);
+		});
+	},
 
-            return `
-                <div class="qp-dg-header-cell" 
-                     data-col="${i}" 
-                     draggable="true"
-                     ${style}>
-                    ${col.title || ""}
-                    <div class="qp-dg-resize" data-col="${i}"></div>
-                </div>
-            `;
-        }).join("");
+	_renderRows: function() {
+		var self = this;
+		this.body.empty();
+		this.rows = [];
 
-        this.header.html(html);
+		this.options.data.forEach(function(rowData, index) {
+			var $row = $('<div class="qp-dg-row"></div>').appendTo(self.body);
 
-        this._bindResizeHandles();
-        this._bindColumnReorder();
-    },
+			var row = new qpDataGridRow($row, {
+				index: index,
+				data: rowData,
+				columns: self.options.columns,
+				responsive: self.options.responsive,
+				selectable: self.options.selectable,
+				editable: self.options.editable,
+				template: self.options.template,
+				selectionMode: self.options.selectionMode,
 
-    _renderRows: function () {
-        var self = this;
-        this.body.empty();
-        this.rows = [];
+				onClick: function(data, row) {
+					if (self.options.onRowClick) self.options.onRowClick(data, row);
+				},
+				onDblClick: function(data, row) {
+					if (self.options.onRowDblClick) self.options.onRowDblClick(data, row);
+				},
+				onSelect: function(data, row) {
+					if (self.options.onRowSelect) self.options.onRowSelect(data, row);
+				}
+			});
 
-        this.options.data.forEach(function (rowData, index) {
-            var $row = $('<div class="qp-dg-row"></div>').appendTo(self.body);
+			self.rows.push(row);
+		});
+	},
 
-            var row = new qpDataGridRow($row, {
-                index: index,
-                data: rowData,
-                columns: self.options.columns,
-                responsive: self.options.responsive,
-                selectable: self.options.selectable,
-                editable: self.options.editable,
-                template: self.options.template,
-                selectionMode: self.options.selectionMode,
+	// ---------------------------------------------------------
+	// DRAG-RESIZE
+	// ---------------------------------------------------------
+	_onHeaderResizeStart: function(e, index) {
+		var self = this;
+		this._isResizing = true;
 
-                onClick: function (data, row) {
-                    if (self.options.onRowClick) self.options.onRowClick(data, row);
-                },
-                onDblClick: function (data, row) {
-                    if (self.options.onRowDblClick) self.options.onRowDblClick(data, row);
-                },
-                onSelect: function (data, row) {
-                    if (self.options.onRowSelect) self.options.onRowSelect(data, row);
-                }
-            });
+		var startX = e.pageX;
+		var startWidth = this.options.columns[index].width || 100;
+		/*
+		function onMove(e2) {
+			var delta = e2.pageX - startX;
+			var newWidth = Math.max(40, startWidth + delta);
 
-            self.rows.push(row);
-        });
-    },
+			self.options.columns[index].width = newWidth;
 
-    // ---------------------------------------------------------
-    // DRAG-RESIZE
-    // ---------------------------------------------------------
-    _bindResizeHandles: function () {
-        var self = this;
+			self.headerCells[index].setWidth(newWidth);
+			self.rows.forEach(r => r.setColumnWidth(index, newWidth));
+			self.rows.forEach(r => r._reflow());
+		}
+		*/
+		function onMove(e2) {
+			var delta = e2.pageX - startX;
+			var newWidth = Math.max(40, startWidth + delta);
 
-        this.header.find(".qp-dg-resize").each(function () {
-            var handle = $(this);
-            var colIndex = parseInt(handle.data("col"), 10);
+			// 1) nastavíme šířku headeru
+			self.headerCells[index].setWidth(newWidth);
 
-            handle.on("mousedown", function (e) {
-                e.preventDefault();
-                e.stopPropagation();
+			// 2) nastavíme šířku všech řádků v reálném čase
+			self.rows.forEach(r => {
+				r.setColumnWidth(index, newWidth);
+			});
 
-                var startX = e.pageX;
-                var startWidth = self.options.columns[colIndex].width || 100;
+			// 3) uložíme průběžně do definice sloupce
+			self.options.columns[index].width = newWidth;
+		}
+		
+		/*
+		function onUp() {
+		    self._isResizing = false;
 
-                function onMove(e2) {
-                    var delta = e2.pageX - startX;
-                    var newWidth = Math.max(40, startWidth + delta);
+		    // 1) ZÍSKÁME SKUTEČNOU ŠÍŘKU Z DOM
+		    var realWidth = self.headerCells[index].el.outerWidth();
 
-                    self.options.columns[colIndex].width = newWidth;
+		    // 2) ZAPÍŠEME DO DEFINICE SLOUPCE
+		    self.options.columns[index].width = realWidth;
 
-                    self._renderHeader();
+		    // 3) NASTAVÍME ŠÍŘKU HEADERU
+		    self.headerCells[index].setWidth(realWidth);
 
-                    self.rows.forEach(r => r.setColumnWidth(colIndex, newWidth));
-                    self.rows.forEach(r => r._reflow());
-                }
+		    // 4) NASTAVÍME ŠÍŘKU VŠEM ŘÁDKŮM
+		    self.rows.forEach(r => r.setColumnWidth(index, realWidth));
 
-                function onUp() {
-                    $(document).off("mousemove", onMove);
-                    $(document).off("mouseup", onUp);
-                }
+		    // 5) PROVEDEME REFLOW (overflow logika)
+		    self.rows.forEach(r => r._reflow());
 
-                $(document).on("mousemove", onMove);
-                $(document).on("mouseup", onUp);
-            });
-        });
-    },
+		    $(document).off("mousemove", onMove);
+		    $(document).off("mouseup", onUp);
+		}
+		*/
+		function onUp() {
+			self._isResizing = false;
+			$(document).off("mousemove", onMove);
+			$(document).off("mouseup", onUp);
+		}
 
-    // ---------------------------------------------------------
-    // DRAG-REORDER
-    // ---------------------------------------------------------
-    _bindColumnReorder: function () {
-        var self = this;
-        var headerCells = this.header.find(".qp-dg-header-cell");
+		$(document).on("mousemove", onMove);
+		$(document).on("mouseup", onUp);
+	},
 
-        var dragSrcIndex = null;
+	// ---------------------------------------------------------
+	// DRAG-REORDER
+	// ---------------------------------------------------------
 
-        headerCells.on("dragstart", function (e) {
-            dragSrcIndex = parseInt($(this).data("col"), 10);
-            $(this).addClass("drag-source");
-            e.originalEvent.dataTransfer.effectAllowed = "move";
-        });
+	_onHeaderDragStart: function (index) {
+	    if (!this.options.reorderable) return;
+	    if (this._isResizing) return;
+	    this._dragSrcIndex = index;
+	},
 
-        headerCells.on("dragenter", function (e) {
-            e.preventDefault();
-            $(this).addClass("drag-over");
-        });
+	_onHeaderDragEnter: function (index) {
+	    if (!this.options.reorderable) return;
+	    if (this._isResizing) return;
+	    this._dragTargetIndex = index;
+	},
 
-        headerCells.on("dragover", function (e) {
-            e.preventDefault();
-            e.originalEvent.dataTransfer.dropEffect = "move";
-        });
+	_onHeaderDrop: function () {
+	    if (!this.options.reorderable) return;
+	    if (this._isResizing) return;
 
-        headerCells.on("dragleave", function () {
-            $(this).removeClass("drag-over");
-        });
+	    if (this._dragSrcIndex == null || this._dragTargetIndex == null) return;
 
-        headerCells.on("drop", function (e) {
-            e.preventDefault();
-            headerCells.removeClass("drag-over drag-source");
+	    var cols = this.options.columns;
+	    var tmp = cols[this._dragSrcIndex];
+	    cols.splice(this._dragSrcIndex, 1);
+	    cols.splice(this._dragTargetIndex, 0, tmp);
 
-            var targetIndex = parseInt($(this).data("col"), 10);
+	    this._renderHeader();
+	    this._renderRows();
+	    this.rows.forEach(r => r._reflow());
+	},
 
-            if (dragSrcIndex === targetIndex) return;
+	// ---------------------------------------------------------
+	// KEYBOARD NAVIGATION
+	// ---------------------------------------------------------
+	_bindKeyboardNavigation: function() {
+		var self = this;
 
-            var cols = self.options.columns;
-            var tmp = cols[dragSrcIndex];
-            cols.splice(dragSrcIndex, 1);
-            cols.splice(targetIndex, 0, tmp);
+		this.el.attr("tabindex", 0);
 
-            self._renderHeader();
-            self._renderRows();
-            self.rows.forEach(r => r._reflow());
-        });
+		this.el.on("keydown", function(e) {
+			if (!self.options.selectable) return;
 
-        headerCells.on("dragend", function () {
-            headerCells.removeClass("drag-over drag-source");
-        });
-    },
+			var key = e.key;
 
-    // ---------------------------------------------------------
-    // KEYBOARD NAVIGATION (↑ / ↓)
-    // ---------------------------------------------------------
-    _bindKeyboardNavigation: function () {
-        var self = this;
+			if (key !== "ArrowDown" && key !== "ArrowUp") return;
 
-        this.el.attr("tabindex", 0);
+			e.preventDefault();
 
-        this.el.on("keydown", function (e) {
-            if (!self.options.selectable) return;
+			var selectedIndex = self._getSelectedRowIndex();
 
-            var key = e.key;
+			if (selectedIndex === -1) {
+				if (self.rows.length > 0) {
+					self._selectRowByIndex(0);
+				}
+				return;
+			}
 
-            if (key !== "ArrowDown" && key !== "ArrowUp") return;
+			if (key === "ArrowDown" && selectedIndex < self.rows.length - 1) {
+				self._selectRowByIndex(selectedIndex + 1);
+			}
 
-            e.preventDefault();
+			if (key === "ArrowUp" && selectedIndex > 0) {
+				self._selectRowByIndex(selectedIndex - 1);
+			}
+		});
+	},
 
-            var selectedIndex = self._getSelectedRowIndex();
+	_getSelectedRowIndex: function() {
+		for (var i = 0; i < this.rows.length; i++) {
+			if (this.rows[i].el.hasClass("selected")) {
+				return i;
+			}
+		}
+		return -1;
+	},
 
-            if (selectedIndex === -1) {
-                if (self.rows.length > 0) {
-                    self._selectRowByIndex(0);
-                }
-                return;
-            }
+	_selectRowByIndex: function(index) {
+		var row = this.rows[index];
+		if (!row) return;
 
-            if (key === "ArrowDown" && selectedIndex < self.rows.length - 1) {
-                self._selectRowByIndex(selectedIndex + 1);
-            }
+		if (this.options.selectionMode === "single") {
+			this._deselectAllExcept(row);
+		}
 
-            if (key === "ArrowUp" && selectedIndex > 0) {
-                self._selectRowByIndex(selectedIndex - 1);
-            }
-        });
-    },
+		row.select();
 
-    _getSelectedRowIndex: function () {
-        for (var i = 0; i < this.rows.length; i++) {
-            if (this.rows[i].el.hasClass("selected")) {
-                return i;
-            }
-        }
-        return -1;
-    },
+		row.el[0].scrollIntoView({ block: "nearest", behavior: "smooth" });
+	},
 
-    _selectRowByIndex: function (index) {
-        var row = this.rows[index];
-        if (!row) return;
+	_deselectAllExcept: function(row) {
+		this.rows.forEach(r => {
+			if (r !== row) r.deselect();
+		});
+	},
 
-        if (this.options.selectionMode === "single") {
-            this._deselectAllExcept(row);
-        }
+	refresh: function() {
+		this._renderRows();
+	},
 
-        row.select();
+	setData: function(data) {
+		this.options.data = data;
+		this.refresh();
+	},
 
-        row.el[0].scrollIntoView({ block: "nearest", behavior: "smooth" });
-    },
+	getRow: function(index) {
+		return this.rows[index];
+	},
 
-    _deselectAllExcept: function (row) {
-        this.rows.forEach(r => {
-            if (r !== row) r.deselect();
-        });
-    },
-
-    refresh: function () {
-        this._renderRows();
-    },
-
-    setData: function (data) {
-        this.options.data = data;
-        this.refresh();
-    },
-
-    getRow: function (index) {
-        return this.rows[index];
-    },
-
-    destroy: function () {
-        if (this.rows) {
-            this.rows.forEach(r => r.destroy());
-        }
-        this.el.empty();
-        this.el.removeData(this._widgetName);
-    }
+	destroy: function() {
+		if (this.rows) {
+			this.rows.forEach(r => r.destroy());
+		}
+		this.el.empty();
+		this.el.removeData(this._widgetName);
+	}
 });
 
 $.qpDefine("qpDataGrid", qpDataGrid);

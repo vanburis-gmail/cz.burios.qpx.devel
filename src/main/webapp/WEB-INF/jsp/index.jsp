@@ -26,6 +26,7 @@
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpTabs.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpToolBar.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGrid.js?build=${ timeNo }"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGridHeaderCell.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGridRow.js?build=${ timeNo }"></script>
 
 		<script></script>

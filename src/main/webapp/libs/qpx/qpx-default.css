@@ -856,15 +856,37 @@ img {
     font-weight: 600;
 }
 
+/* HEADER CELL – DRAG */
 .qp-dg-header-cell {
     padding: 8px 12px;
     border-right: 1px solid #cccccc;
     flex-shrink: 0;
     white-space: nowrap;
+    position: relative;
+    user-select: none;
+    cursor: grab;
 }
 
 .qp-dg-header-cell:last-child {
     border-right: none;
+}
+
+/* VŠECHNY VNITŘNÍ ELEMENTY NESMÍ BLOKOVAT DRAG */
+.qp-dg-header-cell * {
+    pointer-events: none;
+}
+
+.qp-dg-header-cell:active {
+    cursor: grabbing;
+}
+
+.qp-dg-header-cell.drag-over {
+    outline: 2px dashed #4a90e2;
+    outline-offset: -4px;
+}
+
+.qp-dg-header-cell.drag-source {
+    opacity: 0.4;
 }
 
 /* Fill sloupec v headeru */
@@ -930,7 +952,7 @@ img {
     flex: 0 0 32px !important;
     width: 32px !important;
     min-width: 32px !important;
-    height: 100%;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1012,27 +1034,17 @@ img {
     border-radius: 4px;
 }
 
+/* RESIZE HANDLE MUSÍ POINTER-EVENTS POVOLIT */
 .qp-dg-resize {
     position: absolute;
     top: 0;
     right: 0;
     width: 6px;
     height: 100%;
+    bottom: 0;
     cursor: col-resize;
+    pointer-events: auto;
     z-index: 20;
 }
-.qp-dg-header-cell {
-    position: relative;
-}
-.qp-dg-header-cell {
-    position: relative;
-}
 
-.qp-dg-header-cell.drag-over {
-    outline: 2px dashed #4a90e2;
-    outline-offset: -4px;
-}
-
-.qp-dg-header-cell.drag-source {
-    opacity: 0.4;
-}
+/* -----  ----- */
