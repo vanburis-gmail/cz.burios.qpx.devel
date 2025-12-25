@@ -848,6 +848,7 @@ img {
 /* ============================================
    HEADER
 ============================================ */
+/*
 .qp-dg-header {
     display: flex;
     background: #f7f7f7;
@@ -855,29 +856,59 @@ img {
     user-select: none;
     font-weight: 600;
 }
+*/
 
-/* HEADER CELL – DRAG */
-.qp-dg-header-cell {
-    padding: 8px 12px;
-    border-right: 1px solid #cccccc;
-    flex-shrink: 0;
-    white-space: nowrap;
+/* HEADER */
+.qp-dg-header {
     position: relative;
-    user-select: none;
-    cursor: grab;
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ccc;
+}
+
+/* ITEMS CONTAINER */
+.qp-dg-header-items {
+	/* položky jsou flex, more-button je mimo */
+    display: flex;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+/* HEADER CELL WRAPPER */
+.qp-dg-header-cell-wrapper {
+    display: flex;
+    flex: 0 0 auto;
+	/* wrapper nesmí blokovat klik */
+    pointer-events: none;
+}
+
+/* HEADER CELL */
+.qp-dg-header-cell {
+	display: flex;
+	align-items: center;
+	position: relative;
+	padding: 0 8px;
+	height: 32px;
+	background: #fafafa;
+	border-right: 1px solid #ddd;
+	/*cursor: grab;*/
+	user-select: none;
+	pointer-events: auto;
 }
 
 .qp-dg-header-cell:last-child {
     border-right: none;
 }
 
+.qp-dg-header-cell:active {
+	/*cursor: grabbing;*/
+}
+
 /* VŠECHNY VNITŘNÍ ELEMENTY NESMÍ BLOKOVAT DRAG */
 .qp-dg-header-cell * {
     pointer-events: none;
-}
-
-.qp-dg-header-cell:active {
-    cursor: grabbing;
 }
 
 .qp-dg-header-cell.drag-over {
@@ -889,11 +920,70 @@ img {
     opacity: 0.4;
 }
 
+/* vyplňuje zbytek */ 
+.qp-dg-header-cell.qp-dg-fill { 
+	flex: 1 1 auto !important;
+}
+
+/* TITLE */
+.qp-dg-header-title {
+    pointer-events: none;
+}
+
 /* Fill sloupec v headeru */
 .qp-dg-fill {
-    flex: 1 1 auto;
-    min-width: 0;
+    flex: 1 1 auto !important;
+    width: auto !important;
     border-right: none !important;
+}
+
+/* wrapper fill sloupce */
+.qp-dg-fill-wrapper {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+/* RESIZE HANDLE */
+.qp-dg-resize {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 4px;
+    height: 100%;
+    cursor: col-resize;
+    pointer-events: auto;
+    z-index: 20;
+}
+/* MORE BUTTON */
+/* more-button přilepený vpravo */
+.qp-dg-header-more {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 32px;
+    height: 100%;
+    background: #eaeaea;
+    border-left: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+}
+
+/* POPUP */
+.qp-dg-header-popup {
+    position: absolute;
+	/* popup pod more-buttonem */
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 6px;
+    z-index: 9999;
+    min-width: 120px;
+    display: none;
 }
 
 /* ============================================
@@ -1034,17 +1124,53 @@ img {
     border-radius: 4px;
 }
 
-/* RESIZE HANDLE MUSÍ POINTER-EVENTS POVOLIT */
-.qp-dg-resize {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 6px;
-    height: 100%;
-    bottom: 0;
-    cursor: col-resize;
-    pointer-events: auto;
-    z-index: 20;
+
+.qp-dg-header-popup-item {
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.qp-dg-header-popup-item:hover {
+    background: #eee;
+}
+/* SORT ICONS */
+.qp-dg-sort-icon {
+    width: 12px;
+    height: 12px;
+    margin-left: 4px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.6;
+	pointer-events: none;
+}
+
+.qp-dg-sort-icon.none {
+    opacity: 0.2;
+}
+
+.qp-dg-sort-icon.asc {
+    background-image: url('data:image/svg+xml;utf8,<svg fill="black" width="12" height="12" xmlns="http://www.w3.org/2000/svg"><polygon points="6,2 10,8 2,8"/></svg>');
+}
+
+.qp-dg-sort-icon.desc {
+    background-image: url('data:image/svg+xml;utf8,<svg fill="black" width="12" height="12" xmlns="http://www.w3.org/2000/svg"><polygon points="2,4 10,4 6,10"/></svg>');
+}
+
+/* POPUP SORT ICONS */
+.qp-dg-popup-sort-icon.asc::after {
+    content: "▲";
+    margin-left: 6px;
+}
+
+.qp-dg-popup-sort-icon.desc::after {
+    content: "▼";
+    margin-left: 6px;
 }
 
 /* -----  ----- */
+
+
+
+/* POPUP SORT ICONS */
+
+

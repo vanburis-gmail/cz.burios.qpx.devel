@@ -4,7 +4,7 @@
 		auth="Container"
 		type="javax.sql.DataSource"
 		driverClassName="com.mysql.jdbc.Driver"
-		url="jdbc:mysql://127.0.0.1:3306/darwin?useUnicode=true&amp;characterEncoding=UTF8&amp;useSSL=false"
+		url="jdbc:mysql://127.0.0.1:3306/devel?useUnicode=true&amp;characterEncoding=UTF8&amp;useSSL=false"
 		username="root"
 		password="aCiesCz68"
 		maxActive="20"

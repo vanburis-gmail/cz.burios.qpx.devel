@@ -4,7 +4,18 @@
 var qpDataGrid = qpWidget.extend({
 
 	defaults: {
-		data: [],
+		dataSource: {
+			type: "local",   // "local" | "remote"
+			data: [],        // pokud type = "local"
+			transport: {     // pokud type = "remote"
+				read: {
+					url: null,
+					method: "GET",
+					params: {} // nebo function(state) { return {...}; }
+				}
+			},
+			onLoaded: null
+		},
 		columns: [],
 		responsive: true,
 		rowHeight: 32,
@@ -14,7 +25,7 @@ var qpDataGrid = qpWidget.extend({
 		onRowClick: null,
 		onRowDblClick: null,
 		onRowSelect: null,
-		selectionMode: "single", 
+		selectionMode: "single",
 		reorderable: false
 	},
 
@@ -22,43 +33,120 @@ var qpDataGrid = qpWidget.extend({
 		this.el.addClass("qp-dg");
 		this.el.data("qpDataGrid", this);
 
+		// interní cache dat
+		this._data = [];
+
+		// interní stav gridu (sorting, filtering, paging)
+		this._state = {
+			sort: { field: null, dir: null },
+			filters: [],
+			page: 1,
+			pageSize: 50
+		};
+
+		// zajistíme fill sloupec
 		if (!this.options.columns.some(c => c.fill)) {
 			this.options.columns.push({ fill: true });
 		}
 
-		this.header = $('<div class="qp-dg-header"></div>').appendTo(this.el);
+		// HEADER
+		this.header = new qpDataGridHeader(
+			$('<div class="qp-dg-header"></div>').appendTo(this.el),
+			{
+				columns: this.options.columns,
+				grid: this,
+				reorderable: this.options.reorderable
+			}
+		);
+
+		// BODY
 		this.body = $('<div class="qp-dg-body"></div>').appendTo(this.el);
 
-		this._renderHeader();
-		this._renderRows();
+		// NAČTENÍ DAT
+		this._loadDataSource();
+
+		// klávesová navigace
 		this._bindKeyboardNavigation();
 	},
 
-	_renderHeader: function() {
+	// ---------------------------------------------------------
+	// DATASOURCE LOADING (LOCAL / REMOTE + DYNAMIC PARAMS)
+	// ---------------------------------------------------------
+	_loadDataSource: function() {
+		var ds = this.options.dataSource || {};
 		var self = this;
 
-		this.header.empty();
-		this.headerCells = [];
+		// fallback: pokud někdo předal přímo pole
+		if (Array.isArray(ds)) {
+			this._data = ds;
+			this._renderRows();
+			return;
+		}
 
-		this.options.columns.forEach(function(col, i) {
-			var $cell = $('<div></div>').appendTo(self.header);
-			var cell = new qpDataGridHeaderCell($cell, {
-			    index: i,
-			    column: col,
-			    grid: self,
-			    reorderable: self.options.reorderable   // <<< NOVÉ
+		var type = ds.type || "local";
+
+		// LOCAL DATASOURCE
+		if (type === "local") {
+			this._data = ds.data || [];
+			this._renderRows();
+			if (typeof ds.onLoaded === "function") ds.onLoaded(this._data);
+			return;
+		}
+
+		// REMOTE DATASOURCE
+		if (type === "remote") {
+			var read = ds.transport.read;
+
+			if (!read.url) {
+				console.error("qpDataGrid: dataSource.transport.read.url is required for remote dataSource.");
+				this._data = [];
+				this._renderRows();
+				return;
+			}
+
+			// dynamic params
+			var params = {};
+			if (typeof read.params === "function") {
+				params = read.params(this._state);
+			} else if (typeof read.params === "object") {
+				params = read.params;
+			}
+
+			$.ajax({
+				url: read.url,
+				method: read.method || "GET",
+				data: params,
+				success: function(response) {
+					self._data = response || [];
+					self._renderRows();
+					if (typeof ds.onLoaded === "function") ds.onLoaded(self._data);
+				},
+				error: function(xhr) {
+					console.error("qpDataGrid: remote dataSource load failed.", xhr);
+					self._data = [];
+					self._renderRows();
+				}
 			});
 
-			self.headerCells.push(cell);
-		});
+			return;
+		}
+
+		// fallback
+		this._data = ds.data || [];
+		this._renderRows();
+		if (typeof ds.onLoaded === "function") ds.onLoaded(this._data);
 	},
 
+	// ---------------------------------------------------------
+	// RENDER ROWS
+	// ---------------------------------------------------------
 	_renderRows: function() {
 		var self = this;
+
 		this.body.empty();
 		this.rows = [];
 
-		this.options.data.forEach(function(rowData, index) {
+		(this._data || []).forEach(function(rowData, index) {
 			var $row = $('<div class="qp-dg-row"></div>').appendTo(self.body);
 
 			var row = new qpDataGridRow($row, {
@@ -71,14 +159,14 @@ var qpDataGrid = qpWidget.extend({
 				template: self.options.template,
 				selectionMode: self.options.selectionMode,
 
-				onClick: function(data, row) {
-					if (self.options.onRowClick) self.options.onRowClick(data, row);
+				onClick: function(data, rowInstance) {
+					if (self.options.onRowClick) self.options.onRowClick(data, rowInstance);
 				},
-				onDblClick: function(data, row) {
-					if (self.options.onRowDblClick) self.options.onRowDblClick(data, row);
+				onDblClick: function(data, rowInstance) {
+					if (self.options.onRowDblClick) self.options.onRowDblClick(data, rowInstance);
 				},
-				onSelect: function(data, row) {
-					if (self.options.onRowSelect) self.options.onRowSelect(data, row);
+				onSelect: function(data, rowInstance) {
+					if (self.options.onRowSelect) self.options.onRowSelect(data, rowInstance);
 				}
 			});
 
@@ -87,67 +175,52 @@ var qpDataGrid = qpWidget.extend({
 	},
 
 	// ---------------------------------------------------------
-	// DRAG-RESIZE
+	// SORTING API (voláno z headerCell)
+	// ---------------------------------------------------------
+	_setSort: function(field) {
+		console.log("grid._setSort: ", field);
+		var sort = this._state.sort;
+
+		if (sort.field !== field) {
+			this._state.sort = { field: field, dir: "asc" };
+		} else {
+			this._state.sort.dir = sort.dir === "asc" ? "desc" : "asc";
+		}
+
+		this._loadDataSource();
+	},
+
+	// ---------------------------------------------------------
+	// HEADER DRAG-RESIZE
 	// ---------------------------------------------------------
 	_onHeaderResizeStart: function(e, index) {
 		var self = this;
 		this._isResizing = true;
 
 		var startX = e.pageX;
-		var startWidth = this.options.columns[index].width || 100;
-		/*
+		var col = this.options.columns[index];
+		var startWidth = col.width || self.header.items[index].wrapper.outerWidth() || 100;
+
 		function onMove(e2) {
 			var delta = e2.pageX - startX;
 			var newWidth = Math.max(40, startWidth + delta);
 
-			self.options.columns[index].width = newWidth;
-
-			self.headerCells[index].setWidth(newWidth);
+			self.header.items[index].widget.setWidth(newWidth);
 			self.rows.forEach(r => r.setColumnWidth(index, newWidth));
-			self.rows.forEach(r => r._reflow());
-		}
-		*/
-		function onMove(e2) {
-			var delta = e2.pageX - startX;
-			var newWidth = Math.max(40, startWidth + delta);
 
-			// 1) nastavíme šířku headeru
-			self.headerCells[index].setWidth(newWidth);
-
-			// 2) nastavíme šířku všech řádků v reálném čase
-			self.rows.forEach(r => {
-				r.setColumnWidth(index, newWidth);
-			});
-
-			// 3) uložíme průběžně do definice sloupce
 			self.options.columns[index].width = newWidth;
 		}
-		
-		/*
-		function onUp() {
-		    self._isResizing = false;
 
-		    // 1) ZÍSKÁME SKUTEČNOU ŠÍŘKU Z DOM
-		    var realWidth = self.headerCells[index].el.outerWidth();
-
-		    // 2) ZAPÍŠEME DO DEFINICE SLOUPCE
-		    self.options.columns[index].width = realWidth;
-
-		    // 3) NASTAVÍME ŠÍŘKU HEADERU
-		    self.headerCells[index].setWidth(realWidth);
-
-		    // 4) NASTAVÍME ŠÍŘKU VŠEM ŘÁDKŮM
-		    self.rows.forEach(r => r.setColumnWidth(index, realWidth));
-
-		    // 5) PROVEDEME REFLOW (overflow logika)
-		    self.rows.forEach(r => r._reflow());
-
-		    $(document).off("mousemove", onMove);
-		    $(document).off("mouseup", onUp);
-		}
-		*/
 		function onUp() {
 			self._isResizing = false;
+
+			var realWidth = self.header.items[index].wrapper.outerWidth();
+			self.options.columns[index].width = realWidth;
+
+			self.header.items[index].widget.setWidth(realWidth);
+			self.rows.forEach(r => r.setColumnWidth(index, realWidth));
+			self.rows.forEach(r => r._reflow && r._reflow());
+
 			$(document).off("mousemove", onMove);
 			$(document).off("mouseup", onUp);
 		}
@@ -157,35 +230,41 @@ var qpDataGrid = qpWidget.extend({
 	},
 
 	// ---------------------------------------------------------
-	// DRAG-REORDER
+	// HEADER DRAG-REORDER
 	// ---------------------------------------------------------
-
-	_onHeaderDragStart: function (index) {
-	    if (!this.options.reorderable) return;
-	    if (this._isResizing) return;
-	    this._dragSrcIndex = index;
+	_onHeaderDragStart: function(index) {
+		if (!this.options.reorderable) return;
+		if (this._isResizing) return;
+		this._dragSrcIndex = index;
+		this._dragTargetIndex = null;
 	},
 
-	_onHeaderDragEnter: function (index) {
-	    if (!this.options.reorderable) return;
-	    if (this._isResizing) return;
-	    this._dragTargetIndex = index;
+	_onHeaderDragEnter: function(index) {
+		if (!this.options.reorderable) return;
+		if (this._isResizing) return;
+		this._dragTargetIndex = index;
 	},
 
-	_onHeaderDrop: function () {
-	    if (!this.options.reorderable) return;
-	    if (this._isResizing) return;
+	_onHeaderDrop: function() {
+		if (!this.options.reorderable) return;
+		if (this._isResizing) return;
 
-	    if (this._dragSrcIndex == null || this._dragTargetIndex == null) return;
+		var src = this._dragSrcIndex;
+		var dst = this._dragTargetIndex;
 
-	    var cols = this.options.columns;
-	    var tmp = cols[this._dragSrcIndex];
-	    cols.splice(this._dragSrcIndex, 1);
-	    cols.splice(this._dragTargetIndex, 0, tmp);
+		if (src == null || dst == null || src === dst) return;
 
-	    this._renderHeader();
-	    this._renderRows();
-	    this.rows.forEach(r => r._reflow());
+		var cols = this.options.columns;
+		var moved = cols[src];
+		cols.splice(src, 1);
+		cols.splice(dst, 0, moved);
+
+		this.header.refresh();
+		this._renderRows();
+		this.rows.forEach(r => r._reflow && r._reflow());
+
+		this._dragSrcIndex = null;
+		this._dragTargetIndex = null;
 	},
 
 	// ---------------------------------------------------------
@@ -225,6 +304,7 @@ var qpDataGrid = qpWidget.extend({
 	},
 
 	_getSelectedRowIndex: function() {
+		if (!this.rows) return -1;
 		for (var i = 0; i < this.rows.length; i++) {
 			if (this.rows[i].el.hasClass("selected")) {
 				return i;
@@ -242,8 +322,9 @@ var qpDataGrid = qpWidget.extend({
 		}
 
 		row.select();
-
-		row.el[0].scrollIntoView({ block: "nearest", behavior: "smooth" });
+		if (row.el && row.el[0] && row.el[0].scrollIntoView) {
+			row.el[0].scrollIntoView({ block: "nearest", behavior: "smooth" });
+		}
 	},
 
 	_deselectAllExcept: function(row) {
@@ -252,22 +333,52 @@ var qpDataGrid = qpWidget.extend({
 		});
 	},
 
+	_setSort: function(field) {
+		var sort = this._state.sort;
+
+		if (sort.field !== field) {
+			this._state.sort = { field: field, dir: "asc" };
+		} else {
+			this._state.sort.dir = sort.dir === "asc" ? "desc" : "asc";
+		}
+
+		// aktualizace ikon v headeru
+		this.header.items.forEach(function(item) {
+			item.widget.updateSortIcon();
+		});
+
+		// načtení dat
+		this._loadDataSource();
+	},
+
+	// ---------------------------------------------------------
+	// PUBLIC API
+	// ---------------------------------------------------------
 	refresh: function() {
+		this.header.refresh();
 		this._renderRows();
 	},
 
-	setData: function(data) {
-		this.options.data = data;
-		this.refresh();
+	setDataSource: function(ds) {
+		this.options.dataSource = ds;
+		this._loadDataSource();
 	},
 
-	getRow: function(index) {
-		return this.rows[index];
+	// zpětná kompatibilita
+	setData: function(data) {
+		this.options.dataSource = {
+			type: "local",
+			data: data
+		};
+		this._loadDataSource();
 	},
 
 	destroy: function() {
 		if (this.rows) {
-			this.rows.forEach(r => r.destroy());
+			this.rows.forEach(r => r.destroy && r.destroy());
+		}
+		if (this.header && this.header.destroy) {
+			this.header.destroy();
 		}
 		this.el.empty();
 		this.el.removeData(this._widgetName);

@@ -30,6 +30,9 @@ var qpDataGridHeaderCell = qpWidget.extend({
 			.text(col.title || "")
 			.appendTo(this.el);
 
+		this.sortIcon = $('<div class="qp-dg-sort-icon none"></div>')
+			.appendTo(this.el);
+
 		if (!col.fill) {
 			this.resizeEl = $('<div class="qp-dg-resize"></div>')
 				.appendTo(this.el);
@@ -42,41 +45,81 @@ var qpDataGridHeaderCell = qpWidget.extend({
 
 	_bind: function() {
 		var self = this;
+		var col = this.options.column;
 
-		// DRAG-REORDER
+		// CLICK = SORT (NEJDŘÍV OFF, PAK ON)
+		this.el
+			.off("click.qpDgHeaderCell")
+			.on("click.qpDgHeaderCell", function(e) {
+				// nepokračuj, pokud resize
+				if ($(e.target).hasClass("qp-dg-resize")) return;
+				if (!col.sortable || !col.field) return;
+
+				e.stopPropagation();      // zabrání bublání do parentů
+				e.preventDefault();       // jistota proti double‑fire v některých browserech
+
+				self.options.grid._setSort(col.field);
+			});
+
+		// DRAG-REORDER – jen na wrapperu, ne na buňce
 		if (this.options.reorderable) {
+			var $wrapper = this.el.parent();
 
-			this.el.attr("draggable", true);
-
-			this.el.on("dragstart", function(e) {
-				if (self.options.grid._isResizing) return;
-
-				e.originalEvent.dataTransfer.setData("text/plain", "drag");
-				e.originalEvent.dataTransfer.effectAllowed = "move";
-
-				self.options.grid._onHeaderDragStart(self.options.index);
-			});
-
-			this.el.on("dragenter", function() {
-				if (self.options.grid._isResizing) return;
-				self.options.grid._onHeaderDragEnter(self.options.index);
-			});
-
-			this.el.on("drop", function() {
-				if (self.options.grid._isResizing) return;
-				self.options.grid._onHeaderDrop(self.options.index);
-			});
-		} else {
-			// zakázat drag
+			$wrapper.attr("draggable", true);
 			this.el.attr("draggable", false);
+
+			$wrapper
+				.off("dragstart.qpDgHeaderCell")
+				.on("dragstart.qpDgHeaderCell", function(e) {
+					if (self.options.grid._isResizing) return;
+					e.originalEvent.dataTransfer.setData("text/plain", "drag");
+					self.options.grid._onHeaderDragStart(self.options.index);
+				});
+
+			$wrapper
+				.off("dragenter.qpDgHeaderCell")
+				.on("dragenter.qpDgHeaderCell", function() {
+					if (self.options.grid._isResizing) return;
+					self.options.grid._onHeaderDragEnter(self.options.index);
+				});
+
+			$wrapper
+				.off("drop.qpDgHeaderCell")
+				.on("drop.qpDgHeaderCell", function() {
+					if (self.options.grid._isResizing) return;
+					self.options.grid._onHeaderDrop(self.options.index);
+				});
 		}
 
-		// DRAG-RESIZE (vždy povoleno)
+		// DRAG-RESIZE
 		if (this.resizeEl) {
-			this.resizeEl.on("mousedown", function(e) {
-				e.stopPropagation();
-				self.options.grid._onHeaderResizeStart(e, self.options.index);
-			});
+			this.resizeEl
+				.off("mousedown.qpDgHeaderCell")
+				.on("mousedown.qpDgHeaderCell", function(e) {
+					e.stopPropagation();
+					self.options.grid._onHeaderResizeStart(e, self.options.index);
+				});
+		}
+	},
+
+	updateSortIcon: function() {
+		var sort = this.options.grid._state.sort;
+		var col = this.options.column;
+
+		if (!col.sortable || !col.field) {
+			this.sortIcon.removeClass("asc desc").addClass("none");
+			return;
+		}
+
+		if (sort.field !== col.field || !sort.dir) {
+			this.sortIcon.removeClass("asc desc").addClass("none");
+			return;
+		}
+
+		if (sort.dir === "asc") {
+			this.sortIcon.removeClass("desc none").addClass("asc");
+		} else {
+			this.sortIcon.removeClass("asc none").addClass("desc");
 		}
 	},
 
