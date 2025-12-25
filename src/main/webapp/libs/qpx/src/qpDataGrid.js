@@ -112,6 +112,13 @@ var qpDataGrid = qpWidget.extend({
 				params = read.params;
 			}
 
+			// 🔥 automatické doplnění sort parametrů
+			var sort = this._state.sort;
+			if (sort && sort.field) {
+				params.sortField = sort.field;
+				params.sortDir = sort.dir;
+			}
+			console.log("_loadDataSource.param: ", params);
 			$.ajax({
 				url: read.url,
 				method: read.method || "GET",
@@ -178,7 +185,6 @@ var qpDataGrid = qpWidget.extend({
 	// SORTING API (voláno z headerCell)
 	// ---------------------------------------------------------
 	_setSort: function(field) {
-		console.log("grid._setSort: ", field);
 		var sort = this._state.sort;
 
 		if (sort.field !== field) {
@@ -187,6 +193,12 @@ var qpDataGrid = qpWidget.extend({
 			this._state.sort.dir = sort.dir === "asc" ? "desc" : "asc";
 		}
 
+		// aktualizace ikon v headeru
+		this.header.items.forEach(function(item) {
+			item.widget.updateSortIcon();
+		});
+
+		// načtení dat
 		this._loadDataSource();
 	},
 
@@ -331,24 +343,6 @@ var qpDataGrid = qpWidget.extend({
 		this.rows.forEach(r => {
 			if (r !== row) r.deselect();
 		});
-	},
-
-	_setSort: function(field) {
-		var sort = this._state.sort;
-
-		if (sort.field !== field) {
-			this._state.sort = { field: field, dir: "asc" };
-		} else {
-			this._state.sort.dir = sort.dir === "asc" ? "desc" : "asc";
-		}
-
-		// aktualizace ikon v headeru
-		this.header.items.forEach(function(item) {
-			item.widget.updateSortIcon();
-		});
-
-		// načtení dat
-		this._loadDataSource();
 	},
 
 	// ---------------------------------------------------------

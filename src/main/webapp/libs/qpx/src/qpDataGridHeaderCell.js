@@ -55,8 +55,8 @@ var qpDataGridHeaderCell = qpWidget.extend({
 				if ($(e.target).hasClass("qp-dg-resize")) return;
 				if (!col.sortable || !col.field) return;
 
-				e.stopPropagation();      // zabrání bublání do parentů
-				e.preventDefault();       // jistota proti double‑fire v některých browserech
+				e.stopPropagation();
+				e.preventDefault();
 
 				self.options.grid._setSort(col.field);
 			});

@@ -829,342 +829,201 @@ img {
 .qp-btn {
     position: relative;
 }
-
 /* ----- qpDataGrid ----- */
 
-/* ============================================
+/* ---------------------------------------------------------
    GRID WRAPPER
-============================================ */
+--------------------------------------------------------- */
 .qp-dg {
     display: flex;
     flex-direction: column;
     width: 100%;
-    background: #ffffff;
-    border: 1px solid #cccccc;
+    overflow: hidden;
     font-family: sans-serif;
-    color: #222222;
 }
 
-/* ============================================
+/* ---------------------------------------------------------
    HEADER
-============================================ */
-/*
+--------------------------------------------------------- */
 .qp-dg-header {
     display: flex;
-    background: #f7f7f7;
-    border-bottom: 1px solid #cccccc;
-    user-select: none;
-    font-weight: 600;
-}
-*/
-
-/* HEADER */
-.qp-dg-header {
-    position: relative;
-    display: flex;
+    flex-direction: row;
     align-items: stretch;
-    width: 100%;
-    background: #f5f5f5;
     border-bottom: 1px solid #ccc;
+    background: #f7f7f7;
+    position: relative;
+    user-select: none;
 }
 
-/* ITEMS CONTAINER */
 .qp-dg-header-items {
-	/* položky jsou flex, more-button je mimo */
     display: flex;
+    flex-direction: row;
     flex: 1 1 auto;
     overflow: hidden;
 }
 
-/* HEADER CELL WRAPPER */
 .qp-dg-header-cell-wrapper {
     display: flex;
+    flex-direction: column;
     flex: 0 0 auto;
-	/* wrapper nesmí blokovat klik */
-    pointer-events: none;
 }
 
-/* HEADER CELL */
+/* fill column wrapper */
+.qp-dg-fill-wrapper {
+    flex: 1 1 auto !important;
+}
+
+/* ---------------------------------------------------------
+   HEADER CELL
+--------------------------------------------------------- */
 .qp-dg-header-cell {
-	display: flex;
-	align-items: center;
-	position: relative;
-	padding: 0 8px;
-	height: 32px;
-	background: #fafafa;
-	border-right: 1px solid #ddd;
-	/*cursor: grab;*/
-	user-select: none;
-	pointer-events: auto;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 0 8px;
+    height: 32px;
+    border-right: 1px solid #ddd;
+    background: #fafafa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
 }
 
 .qp-dg-header-cell:last-child {
     border-right: none;
 }
 
-.qp-dg-header-cell:active {
-	/*cursor: grabbing;*/
-}
-
-/* VŠECHNY VNITŘNÍ ELEMENTY NESMÍ BLOKOVAT DRAG */
-.qp-dg-header-cell * {
-    pointer-events: none;
-}
-
-.qp-dg-header-cell.drag-over {
-    outline: 2px dashed #4a90e2;
-    outline-offset: -4px;
-}
-
-.qp-dg-header-cell.drag-source {
-    opacity: 0.4;
-}
-
-/* vyplňuje zbytek */ 
-.qp-dg-header-cell.qp-dg-fill { 
-	flex: 1 1 auto !important;
-}
-
-/* TITLE */
-.qp-dg-header-title {
-    pointer-events: none;
-}
-
-/* Fill sloupec v headeru */
+/* fill column */
 .qp-dg-fill {
     flex: 1 1 auto !important;
-    width: auto !important;
-    border-right: none !important;
 }
 
-/* wrapper fill sloupce */
-.qp-dg-fill-wrapper {
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-}
-
-/* RESIZE HANDLE */
-.qp-dg-resize {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 4px;
-    height: 100%;
-    cursor: col-resize;
-    pointer-events: auto;
-    z-index: 20;
-}
-/* MORE BUTTON */
-/* more-button přilepený vpravo */
-.qp-dg-header-more {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 32px;
-    height: 100%;
-    background: #eaeaea;
-    border-left: 1px solid #ccc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10;
-}
-
-/* POPUP */
-.qp-dg-header-popup {
-    position: absolute;
-	/* popup pod more-buttonem */
-    top: 100%;
-    right: 0;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 6px;
-    z-index: 9999;
-    min-width: 120px;
-    display: none;
-}
-
-/* ============================================
-   BODY
-============================================ */
-.qp-dg-body {
-    display: block;
-    overflow-y: auto;
-    overflow-x: hidden;
-    background: #ffffff;
-}
-
-/* ============================================
-   ROW
-============================================ */
-.qp-dg-row {
-    display: flex;
-    flex-wrap: nowrap !important;
-    align-items: center;
-    min-height: 32px;
-    border-bottom: 1px solid #e0e0e0;
-    cursor: default;
-    transition: background 0.15s;
-    overflow: visible !important; /* kritické pro more-button */
-}
-
-.qp-dg-row:hover {
-    background: #f0f0f0;
-}
-
-.qp-dg-row.selected {
-    background: #d0e7ff;
-    border-color: #7bb4f6;
-}
-
-/* ============================================
-   CELLS
-============================================ */
-.qp-dg-cell {
-    padding: 6px 12px;
-    border-right: 1px solid #e0e0e0;
-    flex-shrink: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.qp-dg-cell:last-child {
-    border-right: none;
-}
-
-/* ============================================
-   MORE BUTTON
-============================================ */
-.qp-dg-more {
-    flex: 0 0 32px !important;
-    width: 32px !important;
-    min-width: 32px !important;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f5f5f5;
-    border-left: 1px solid #e0e0e0;
-    cursor: pointer;
-    user-select: none;
-    z-index: 10;
-    margin-left: auto !important; /* <<< TADY JE MAGIE */
-}
-
-.qp-dg-more::before {
-    content: "\22EE"; /* ⋮ */
-    font-size: 16px;
-    line-height: 1;
-    color: #444;
-}
-
-.qp-dg-more:hover {
-    background: #e0e0e0;
-}
-
-/* ============================================
-   INLINE POPUP POD ŘÁDKEM
-============================================ */
-.qp-dg-row-popup {
-    width: 100%;
-    background: #fafafa;
-    border: 1px solid #cccccc;
-    border-top: none;
-    padding: 8px 12px;
-    box-sizing: border-box;
-}
-
-.qp-dg-row-popup-item {
-    padding: 4px 0;
-    display: flex;
-    gap: 8px;
-}
-
-.qp-dg-row-popup-title {
-    font-weight: bold;
-}
-
-.qp-dg-row-popup-value {
+/* title */
+.qp-dg-header-title {
     flex: 1 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* ============================================
-   INLINE EDIT (optional)
-============================================ */
-.qp-dg-cell input[type="text"],
-.qp-dg-cell input[type="number"],
-.qp-dg-cell select {
-    width: 100%;
-    padding: 4px 6px;
-    border: 1px solid #cccccc;
-    background: #ffffff;
-    color: #222222;
-    border-radius: 3px;
-    box-sizing: border-box;
-}
-
-/* ============================================
-   SCROLLBAR (optional)
-============================================ */
-.qp-dg-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-.qp-dg-body::-webkit-scrollbar-track {
-    background: #f7f7f7;
-}
-
-.qp-dg-body::-webkit-scrollbar-thumb {
-    background: #cccccc;
-    border-radius: 4px;
-}
-
-
-.qp-dg-header-popup-item {
-    padding: 4px 8px;
-    cursor: pointer;
-}
-
-.qp-dg-header-popup-item:hover {
-    background: #eee;
-}
-/* SORT ICONS */
+/* ---------------------------------------------------------
+   SORT ICON
+--------------------------------------------------------- */
 .qp-dg-sort-icon {
     width: 12px;
     height: 12px;
     margin-left: 4px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    opacity: 0.6;
-	pointer-events: none;
+    font-size: 10px;
+    line-height: 12px;
+    text-align: center;
+    visibility: hidden;
+}
+
+.qp-dg-sort-icon.asc::after {
+    content: "▲";
+    visibility: visible;
+}
+
+.qp-dg-sort-icon.desc::after {
+    content: "▼";
+    visibility: visible;
 }
 
 .qp-dg-sort-icon.none {
-    opacity: 0.2;
+    visibility: hidden;
 }
 
-.qp-dg-sort-icon.asc {
-    background-image: url('data:image/svg+xml;utf8,<svg fill="black" width="12" height="12" xmlns="http://www.w3.org/2000/svg"><polygon points="6,2 10,8 2,8"/></svg>');
+/* ---------------------------------------------------------
+   RESIZE HANDLE
+--------------------------------------------------------- */
+.qp-dg-resize {
+    width: 6px;
+    cursor: col-resize;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
 }
 
-.qp-dg-sort-icon.desc {
-    background-image: url('data:image/svg+xml;utf8,<svg fill="black" width="12" height="12" xmlns="http://www.w3.org/2000/svg"><polygon points="2,4 10,4 6,10"/></svg>');
+.qp-dg-resize:hover {
+    background: rgba(0,0,0,0.05);
 }
 
-/* POPUP SORT ICONS */
+/* ---------------------------------------------------------
+   OVERFLOW MORE BUTTON
+--------------------------------------------------------- */
+.qp-dg-header-more {
+    width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-left: 1px solid #ddd;
+    background: #f0f0f0;
+    user-select: none;
+}
+
+.qp-dg-header-more:hover {
+    background: #e5e5e5;
+}
+
+/* ---------------------------------------------------------
+   POPUP
+--------------------------------------------------------- */
+.qp-dg-header-popup {
+    position: absolute;
+    top: 32px;
+    right: 0;
+    min-width: 160px;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    z-index: 9999;
+    padding: 4px 0;
+}
+
+.qp-dg-header-popup-item {
+    padding: 6px 10px;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.qp-dg-header-popup-item:hover {
+    background: #f2f2f2;
+}
+
 .qp-dg-popup-sort-icon.asc::after {
     content: "▲";
-    margin-left: 6px;
 }
 
 .qp-dg-popup-sort-icon.desc::after {
     content: "▼";
-    margin-left: 6px;
+}
+
+/* ---------------------------------------------------------
+   BODY + ROWS
+--------------------------------------------------------- */
+.qp-dg-body {
+    flex: 1 1 auto;
+    overflow: auto;
+}
+
+.qp-dg-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 32px;
+    border-bottom: 1px solid #eee;
+}
+
+.qp-dg-row:hover {
+    background: #f9f9f9;
+}
+
+.qp-dg-row.selected {
+    background: #dce9ff;
 }
 
 /* -----  ----- */
