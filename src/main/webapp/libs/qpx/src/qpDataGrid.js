@@ -3,6 +3,9 @@
  */
 var qpDataGrid = qpWidget.extend({
 
+	_widgetName: "qpDataGrid",
+	
+	version: "1.0.0",
 	defaults: {
 		dataSource: {
 			type: "local",   // "local" | "remote"

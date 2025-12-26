@@ -4,6 +4,8 @@
  */
 var qpTabs = qpOverflowWidget.extend({
 
+	_widgetName: "qpTabs",
+
 	version: "1.0.0",
 
 	defaults: {
@@ -20,12 +22,16 @@ var qpTabs = qpOverflowWidget.extend({
 		data: []
 	},
 
-	// ---------------------------------------
-	// CREATE
-	// ---------------------------------------
+	/* ---------------------------------------
+	 * CREATE
+	 * ---------------------------------------
+	 */
 	_create: function() {
 
-		// wrapper / struktura
+		// root layout class
+		this.el.addClass("qp-tabs-root");
+
+		// NAV + CONTENT
 		this.nav = this.el.find(".qp-tabs-nav");
 		this.content = this.el.find(".qp-tabs-content");
 
@@ -36,53 +42,125 @@ var qpTabs = qpOverflowWidget.extend({
 			this.content = $("<div class='qp-tabs-content'></div>").appendTo(this.el);
 		}
 
+		// wrapper for nav
 		this.nav.wrap("<div class='qp-tabs-nav-wrapper'></div>");
 		this.wrapper = this.nav.parent();
 
-		// zavolat předka (overflow + more + popup + resize observer)
+		// overflow logic (more button, popup, resize observer)
 		qpOverflowWidget.prototype._create.call(this);
 
-		// vykreslit taby
+		// render initial HTML tabs
 		this._renderInitialTabs();
+
+		// render data-driven tabs
 		this._renderDataTabs();
 
-		// drag & drop
-		if (this.options.draggable) {
-			this._enableDrag();
-		}
-
-		// context menu
-		if (this.options.contextMenu) {
-			this._bindContextMenu();
-		}
-
+		// bind events
 		this._bind();
 
+		// activate initial tab
 		this.activate(this.options.active);
+
+		// overflow check
 		this.checkOverflow();
 	},
 
-	// ---------------------------------------
-	// BIND
-	// ---------------------------------------
-	_bind: function() {
-		var self = this;
-		var ns = "." + this._widgetName;
+	/* ---------------------------------------
+	 * TEMPLATE SUPPORT
+	 * ---------------------------------------
+	 */
+	_renderTemplate: function(tpl, data) {
 
-		this.nav.on("click" + ns, "li", function(e) {
-			if ($(e.target).hasClass("qp-tab-close")) return;
-			self.activate($(this).index());
-		});
+		// function template
+		if (typeof tpl === "function") {
+			return tpl(data);
+		}
 
-		this.nav.on("click" + ns, ".qp-tab-close", function(e) {
-			e.stopPropagation();
-			self.remove($(this).closest("li").index());
-		});
+		// template ID
+		if (typeof tpl === "string" && tpl.startsWith("#")) {
+			var html = $(tpl).html();
+			if (!html) {
+				console.warn("qpTabs: template not found:", tpl);
+				return "";
+			}
+			tpl = html;
+		}
+
+		// string template
+		if (typeof tpl === "string") {
+			return tpl.replace(/\{\{(\w+)\}\}/g, function(_, key) {
+				return data && data[key] != null ? data[key] : "";
+			});
+		}
+
+		console.warn("qpTabs: unsupported template:", tpl);
+		return "";
 	},
 
-	// ---------------------------------------
-	// EXISTUJÍCÍ HTML TABY
-	// ---------------------------------------
+	/* ---------------------------------------
+	 * UNIVERSAL CONTENT RENDERER
+	 * ---------------------------------------
+	 */
+	_renderContent: function(content, $container) {
+
+		// 1) TEMPLATE
+		if ($.isPlainObject(content) && (content.template || content.templateId)) {
+			var tpl = content.template || content.templateId;
+			var html = this._renderTemplate(tpl, content.data || {});
+			$container.html(html);
+			return;
+		}
+
+		// 2) lazy function
+		if (typeof content === "function") {
+			content = content.call(this);
+		}
+
+		// 3) array
+		if (Array.isArray(content)) {
+			for (var i = 0; i < content.length; i++) {
+				this._renderContent(content[i], $container);
+			}
+			return;
+		}
+
+		// 4) JSON widget
+		if (this._isWidgetJson(content)) {
+			qpWidgetFactory.create(content, $container);
+			return;
+		}
+
+		// 5) instance of widget
+		if (content instanceof qpWidget) {
+			$container.append(content.el);
+			return;
+		}
+
+		// 6) jQuery element
+		if (content instanceof jQuery) {
+			$container.append(content);
+			return;
+		}
+
+		// 7) HTML / text
+		if (typeof content === "string" || typeof content === "number") {
+			$container.html(content);
+			return;
+		}
+
+		if (content != null) {
+			console.warn("qpTabs: Unsupported content:", content);
+		}
+	},
+
+	_isWidgetJson: function(obj) {
+		return $.isPlainObject(obj) && typeof obj.type === "string";
+	},
+
+	/* ---------------------------------------
+	 * INITIAL HTML TABS
+	 * ---------------------------------------
+	 */
 	_renderInitialTabs: function() {
 		var self = this;
 		this.nav.children().each(function() {
@@ -90,9 +168,10 @@ var qpTabs = qpOverflowWidget.extend({
 		});
 	},
 
-	// ---------------------------------------
-	// DATA → TABY
-	// ---------------------------------------
+	/* ---------------------------------------
+	 * DATA → TABS
+	 * ---------------------------------------
+	 */
 	_renderDataTabs: function() {
 		var self = this;
 
@@ -117,32 +196,32 @@ var qpTabs = qpOverflowWidget.extend({
 		});
 	},
 
-	// ---------------------------------------
-	// DEKORACE TABU
-	// ---------------------------------------
+	/* ---------------------------------------
+	 * DECORATE TAB
+	 * ---------------------------------------
+	 */
 	_decorateTab: function($tab) {
 		if (this.options.closable && !$tab.find(".qp-tab-close").length) {
 			$("<span class='qp-tab-close'>×</span>").appendTo($tab);
 		}
 	},
 
-	// ---------------------------------------
-	// ADD
-	// ---------------------------------------
-	add: function(title, htmlContent, icon) {
+	/* ---------------------------------------
+	 * ADD TAB
+	 * ---------------------------------------
+	 */
+	add: function(title, content, icon) {
 		var index = this.nav.children().length;
 
 		var $tab = $("<li>" + title + "</li>");
 		this._decorateTab($tab);
 		this.nav.append($tab);
 
-		var $content = $("<div class='qp-tab-panel'></div>").html(htmlContent || "");
-		this.content.append($content);
+		var $panel = $("<div class='qp-tab-panel'></div>");
+		this._renderContent(content, $panel);
+		this.content.append($panel);
 
-		// pokud bylo drag & drop zapnuté po vytvoření
-		if (this.options.draggable) {
-			$tab.attr("draggable", true);
-		}
+		if (this.options.draggable) $tab.attr("draggable", true);
 
 		this.activate(index);
 		this.checkOverflow();
@@ -150,23 +229,24 @@ var qpTabs = qpOverflowWidget.extend({
 		return index;
 	},
 
-	// ---------------------------------------
-	// REMOVE
-	// ---------------------------------------
+	/* ---------------------------------------
+	 * REMOVE TAB
+	 * ---------------------------------------
+	 */
 	remove: function(index) {
 		this.nav.children().eq(index).remove();
 		this.content.children().eq(index).remove();
 
 		var newIndex = Math.min(index, this.nav.children().length - 1);
-		if (newIndex >= 0) {
-			this.activate(newIndex);
-		}
+		if (newIndex >= 0) this.activate(newIndex);
+
 		this.checkOverflow();
 	},
 
-	// ---------------------------------------
-	// ACTIVATE
-	// ---------------------------------------
+	/* ---------------------------------------
+	 * ACTIVATE TAB
+	 * ---------------------------------------
+	 */
 	activate: function(index) {
 		var tabs = this.nav.children();
 		var contents = this.content.children();
@@ -181,7 +261,7 @@ var qpTabs = qpOverflowWidget.extend({
 
 		var $panel = contents.eq(index);
 
-		// lazy
+		// lazy loader
 		if (this.options.lazy && !$panel.data("loaded") && typeof this.options.lazyLoader === "function") {
 			$panel.html("<div class='qp-tabs-loading'>Loading...</div>");
 			this.options.lazyLoader.call(this, index, (html) => {
@@ -190,7 +270,7 @@ var qpTabs = qpOverflowWidget.extend({
 			});
 		}
 
-		// ajax
+		// ajax loader
 		if (this.options.ajax && !$panel.data("loaded")) {
 			var url = this.options.ajaxMap[index] || this.options.ajaxUrl;
 			if (url) {
@@ -202,103 +282,46 @@ var qpTabs = qpOverflowWidget.extend({
 			}
 		}
 
-		// nested
+		// nested tabs refresh
 		if (this.options.autoInitNested) {
 			$panel.find("[data-qp='qpTabs']").each(function() {
 				var inst = $(this).data("qpTabs");
-				if (inst && typeof inst.refresh === "function") {
-					inst.refresh();
-				}
+				if (inst && typeof inst.refresh === "function") inst.refresh();
 			});
 		}
 	},
 
-	// ---------------------------------------
-	// DRAG & DROP
-	// ---------------------------------------
-	_enableDrag: function() {
+	/* ---------------------------------------
+	 * BIND EVENTS
+	 * ---------------------------------------
+	 */
+	_bind: function() {
 		var self = this;
 		var ns = "." + this._widgetName;
 
-		// označit existující taby
-		this.nav.children().attr("draggable", true);
-
-		this.nav.on("dragstart" + ns, "li", function(e) {
-			e.originalEvent.dataTransfer.setData("text/plain", $(this).index());
-			$(this).addClass("dragging");
+		// click on tab
+		this.nav.on("click" + ns, "li", function() {
+			self.activate($(this).index());
 		});
 
-		this.nav.on("dragend" + ns, "li", function() {
-			$(this).removeClass("dragging");
-		});
-
-		this.nav.on("dragover" + ns, "li", function(e) {
-			e.preventDefault();
-			$(this).addClass("drag-over");
-		});
-
-		this.nav.on("dragleave" + ns, "li", function() {
-			$(this).removeClass("drag-over");
-		});
-
-		this.nav.on("drop" + ns, "li", function(e) {
-			e.preventDefault();
-			var oldIndex = parseInt(e.originalEvent.dataTransfer.getData("text/plain"), 10);
-			var newIndex = $(this).index();
-			$(this).removeClass("drag-over");
-			self._reorder(oldIndex, newIndex);
+		// close button
+		this.nav.on("click" + ns, ".qp-tab-close", function(e) {
+			e.stopPropagation();
+			var index = $(this).closest("li").index();
+			self.remove(index);
 		});
 	},
 
-	_reorder: function(oldIndex, newIndex) {
-		if (oldIndex === newIndex) return;
-
-		var tabs = this.nav.children();
-		var contents = this.content.children();
-
-		var $tab = tabs.eq(oldIndex);
-		var $content = contents.eq(oldIndex);
-
-		if (newIndex < oldIndex) {
-			$tab.insertBefore(tabs.eq(newIndex));
-			$content.insertBefore(contents.eq(newIndex));
-		} else {
-			$tab.insertAfter(tabs.eq(newIndex));
-			$content.insertAfter(contents.eq(newIndex));
-		}
-
-		this.activate(newIndex);
-		this.checkOverflow();
+	/* ---------------------------------------
+	 * OVERFLOW API (UNIFIED)
+	 * ---------------------------------------
+	 */
+	getOverflowTargetWidth: function() {
+		return this.wrapper.width();
 	},
 
-	// ---------------------------------------
-	// OVERFLOW
-	// ---------------------------------------
-	checkOverflow: function() {
-		console.log("qpTabs.checkOverflow,,,");
-		var wrapperWidth = this.wrapper.width();
-		var navWidth = this.nav[0].scrollWidth;
-
-		if (!this.options.responsive) {
-			// když nechceš responsive popup, můžeš to rozšířit o šipky
-			this.moreBtn.hide();
-			this.popup.hide();
-			return;
-		}
-
-		if (navWidth > wrapperWidth) {
-			this.moreBtn.show();
-			this.fillPopup(this._getHiddenTabs());
-		} else {
-			this.moreBtn.hide();
-			this.popup.hide();
-		}
-	},
-
-	_getHiddenTabs: function() {
+	getOverflowItems: function() {
 		var items = [];
-		if (!this.moreBtn.is(":visible")) return items;
-
 		var wrapperRight = this.wrapper.offset().left + this.wrapper.width();
 		var moreWidth = this.moreBtn.outerWidth();
 
@@ -307,12 +330,8 @@ var qpTabs = qpOverflowWidget.extend({
 			var right = $el.offset().left + $el.outerWidth();
 
 			if (right > wrapperRight - moreWidth) {
-				var clone = $el.clone();
-				clone.find(".qp-tab-close").remove();
-				var text = $.trim(clone.text());
-
 				items.push({
-					text: text,
+					text: $el.text().trim(),
 					action: () => this.activate(i)
 				});
 			}
@@ -321,57 +340,8 @@ var qpTabs = qpOverflowWidget.extend({
 		return items;
 	},
 
-	// ---------------------------------------
-	// KONTEXTOVÉ MENU (pokud chceš zachovat)
-	// ---------------------------------------
-	_bindContextMenu: function() {
-		var self = this;
-		var ns = "." + this._widgetName;
-
-		this.nav.on("contextmenu" + ns, "li", function(e) {
-			e.preventDefault();
-			var index = $(this).index();
-			self._showContextMenu(e.pageX, e.pageY, index);
-		});
-	},
-
-	_showContextMenu: function(x, y, index) {
-		var self = this;
-
-		$(".qp-tabs-context").remove();
-
-		var $menu = $("<ul class='qp-tabs-context'></ul>").appendTo("body");
-
-		var items = [
-			{ text: "Zavřít", action: () => self.remove(index) },
-			{ text: "Zavřít ostatní", action: () => self._closeOthers(index) },
-			{ text: "Zavřít všechny", action: () => self._closeAll() },
-			{ text: "Refresh", action: () => self.activate(index) }
-		];
-
-		items.forEach(function(item) {
-			$("<li>" + item.text + "</li>")
-				.appendTo($menu)
-				.on("click", function() {
-					item.action();
-					$menu.remove();
-				});
-		});
-
-		$menu.css({ top: x, left: y });
-	},
-
-	_closeOthers: function(index) {
-		var self = this;
-		this.nav.children().each(function(i) {
-			if (i !== index) self.remove(i < index ? 0 : 1);
-		});
-	},
-
-	_closeAll: function() {
-		while (this.nav.children().length) {
-			this.remove(0);
-		}
+	onOverflowChange: function(isOverflowing) {
+		// nothing special for tabs
 	}
 });
 

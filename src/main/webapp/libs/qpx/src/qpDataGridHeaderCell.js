@@ -3,129 +3,112 @@
  */
 var qpDataGridHeaderCell = qpWidget.extend({
 
-	defaults: {
-		index: 0,
-		column: null,
-		grid: null,
-		reorderable: false
-	},
+    _widgetName: "qpDataGridHeaderCell",
 
-	_create: function() {
-		this.el.addClass("qp-dg-header-cell");
+    defaults: {
+        column: null,
+        grid: null,
+        index: 0
+    },
 
-		if (this.options.column.fill) {
-			this.el.addClass("qp-dg-fill");
-		}
+    _create: function() {
+        var col = this.options.column;
 
-		this._render();
-		this._bind();
-	},
+        // wrapper – jeden cell
+        this.wrapper = $("<div class='qp-dg-header-cell'></div>")
+            .appendTo(this.el);
 
-	_render: function() {
-		var col = this.options.column;
+        // text
+        this.title = $("<div class='qp-dg-header-title'></div>")
+            .text(col.title || "")
+            .appendTo(this.wrapper);
 
-		this.el.empty();
+        // sort ikona
+        this.sortIcon = $("<div class='qp-dg-sort-icon'></div>")
+            .appendTo(this.wrapper);
 
-		this.titleEl = $('<div class="qp-dg-header-title"></div>')
-			.text(col.title || "")
-			.appendTo(this.el);
+        // zarovnání
+        if (col.align === "right") {
+            this.title.css("text-align", "right");
+        } else if (col.align === "center") {
+            this.title.css("text-align", "center");
+        } else {
+            this.title.css("text-align", "left");
+        }
 
-		this.sortIcon = $('<div class="qp-dg-sort-icon none"></div>')
-			.appendTo(this.el);
+        // počáteční šířka z definice
+        if (col.width) {
+            this.setWidth(col.width);
+        }
 
-		if (!col.fill) {
-			this.resizeEl = $('<div class="qp-dg-resize"></div>')
-				.appendTo(this.el);
-		}
+        // sortable flag (použijeme v _bind)
+        if (col.sortable !== false && col.field) {
+            this.wrapper.addClass("sortable");
+        }
 
-		if (col.width) {
-			this.el.css("flex", "0 0 " + col.width + "px");
-		}
-	},
+        this.updateSortIcon();
+    },
 
 	_bind: function() {
-		var self = this;
-		var col = this.options.column;
+	    var self = this;
+	    var ns = "." + this._widgetName;
+	    var col = this.options.column;
+	    var grid = this.options.grid;
 
-		// CLICK = SORT (NEJDŘÍV OFF, PAK ON)
-		this.el
-			.off("click.qpDgHeaderCell")
-			.on("click.qpDgHeaderCell", function(e) {
-				// nepokračuj, pokud resize
-				if ($(e.target).hasClass("qp-dg-resize")) return;
-				if (!col.sortable || !col.field) return;
+	    if (!grid || !col || col.sortable === false || !col.field) return;
 
-				e.stopPropagation();
-				e.preventDefault();
+	    this.wrapper.on("click" + ns, function(e) {
+	        e.preventDefault();
+	        e.stopPropagation();
 
-				self.options.grid._setSort(col.field);
-			});
-
-		// DRAG-REORDER – jen na wrapperu, ne na buňce
-		if (this.options.reorderable) {
-			var $wrapper = this.el.parent();
-
-			$wrapper.attr("draggable", true);
-			this.el.attr("draggable", false);
-
-			$wrapper
-				.off("dragstart.qpDgHeaderCell")
-				.on("dragstart.qpDgHeaderCell", function(e) {
-					if (self.options.grid._isResizing) return;
-					e.originalEvent.dataTransfer.setData("text/plain", "drag");
-					self.options.grid._onHeaderDragStart(self.options.index);
-				});
-
-			$wrapper
-				.off("dragenter.qpDgHeaderCell")
-				.on("dragenter.qpDgHeaderCell", function() {
-					if (self.options.grid._isResizing) return;
-					self.options.grid._onHeaderDragEnter(self.options.index);
-				});
-
-			$wrapper
-				.off("drop.qpDgHeaderCell")
-				.on("drop.qpDgHeaderCell", function() {
-					if (self.options.grid._isResizing) return;
-					self.options.grid._onHeaderDrop(self.options.index);
-				});
-		}
-
-		// DRAG-RESIZE
-		if (this.resizeEl) {
-			this.resizeEl
-				.off("mousedown.qpDgHeaderCell")
-				.on("mousedown.qpDgHeaderCell", function(e) {
-					e.stopPropagation();
-					self.options.grid._onHeaderResizeStart(e, self.options.index);
-				});
-		}
+	        grid._setSort(col.field);   // 🔥 TADY SE SPOUŠTÍ AJAX SORT
+	    });
 	},
 
-	updateSortIcon: function() {
-		var sort = this.options.grid._state.sort;
-		var col = this.options.column;
+    // ---------------------------------------
+    // SORT ICON UPDATE
+    // ---------------------------------------
+    updateSortIcon: function() {
+        var grid = this.options.grid;
+        var col = this.options.column;
 
-		if (!col.sortable || !col.field) {
-			this.sortIcon.removeClass("asc desc").addClass("none");
-			return;
-		}
+        if (!grid || !grid._state || !grid._state.sort) {
+            this.sortIcon.removeClass("asc desc").hide();
+            return;
+        }
 
-		if (sort.field !== col.field || !sort.dir) {
-			this.sortIcon.removeClass("asc desc").addClass("none");
-			return;
-		}
+        var sort = grid._state.sort;
 
-		if (sort.dir === "asc") {
-			this.sortIcon.removeClass("desc none").addClass("asc");
-		} else {
-			this.sortIcon.removeClass("asc none").addClass("desc");
-		}
-	},
+        if (sort.field !== col.field || !sort.dir) {
+            this.sortIcon.removeClass("asc desc").hide();
+            return;
+        }
 
-	setWidth: function(w) {
-		this.el.css("flex", "0 0 " + w + "px");
-	}
+        this.sortIcon.show();
+
+        if (sort.dir === "asc") {
+            this.sortIcon.removeClass("desc").addClass("asc");
+        } else {
+            this.sortIcon.removeClass("asc").addClass("desc");
+        }
+    },
+
+    // ---------------------------------------
+    // WIDTH HANDLING
+    // ---------------------------------------
+    setWidth: function(w) {
+        if (typeof w === "number") w = w + "px";
+        this.wrapper.css("width", w);
+    },
+
+    destroy: function() {
+        var ns = "." + this._widgetName;
+        if (this.wrapper) {
+            this.wrapper.off(ns);
+        }
+        this.el.empty();
+        this.el.removeData(this._widgetName);
+    }
 });
 
 $.qpDefine("qpDataGridHeaderCell", qpDataGridHeaderCell);

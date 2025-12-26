@@ -1,5 +1,5 @@
 /* --------------------------------------------------------
- * plugin: qpOverflowWidget
+ * plugin: qpOverflowWidget (sjednocené overflow API)
  * --------------------------------------------------------
  */
 var qpOverflowWidget = qpWidget.extend({
@@ -11,18 +11,23 @@ var qpOverflowWidget = qpWidget.extend({
 	},
 
 	_create: function() {
+
+		// wrapper může existovat (qpTabs, qpToolBar)
+		this._overflowContainer = this.wrapper || this.el;
+
 		this._createMoreButton();
 		this._createPopup();
 		this._bindResizeObserver();
 	},
 
-	// ---------------------------------------
-	// MORE BUTTON
-	// ---------------------------------------
+	/* ---------------------------------------
+	 * MORE BUTTON
+	 * ---------------------------------------
+	 */
 	_createMoreButton: function() {
 		this.moreBtn = $("<div class='qp-overflow-more'></div>")
 			.html(this.options.moreIcon)
-			.appendTo(this.wrapper)
+			.appendTo(this._overflowContainer)
 			.hide();
 
 		this.moreBtn.on("click." + this._widgetName, (e) => {
@@ -31,9 +36,10 @@ var qpOverflowWidget = qpWidget.extend({
 		});
 	},
 
-	// ---------------------------------------
-	// POPUP
-	// ---------------------------------------
+	/* ---------------------------------------
+	 * POPUP
+	 * ---------------------------------------
+	 */
 	_createPopup: function() {
 		this.popup = $("<ul class='qp-overflow-popup'></ul>")
 			.appendTo("body")
@@ -78,9 +84,10 @@ var qpOverflowWidget = qpWidget.extend({
 		});
 	},
 
-	// ---------------------------------------
-	// RESIZE OBSERVER
-	// ---------------------------------------
+	/* ---------------------------------------
+	 * RESIZE OBSERVER
+	 * ---------------------------------------
+	 */
 	_bindResizeObserver: function() {
 		this._resizeObserver = new ResizeObserver(() => {
 			this.checkOverflow();
@@ -88,14 +95,55 @@ var qpOverflowWidget = qpWidget.extend({
 				this.positionPopup();
 			}
 		});
-		this._resizeObserver.observe(this.wrapper[0]);
+
+		var target = this.wrapper ? this.wrapper[0] : this.el[0];
+		this._resizeObserver.observe(target);
 	},
 
-	// ---------------------------------------
-	// ABSTRACT
-	// ---------------------------------------
+	/* ---------------------------------------
+	 * SJEDNOCENÉ OVERFLOW API
+	 * ---------------------------------------
+	 */
+
 	checkOverflow: function() {
-		// implementují potomci
+		if (!this.options.responsive) {
+			this.moreBtn.hide();
+			this.popup.hide();
+			return;
+		}
+
+		var containerWidth = this.getOverflowTargetWidth();
+		var items = this.getOverflowItems();
+
+		if (items.length > 0) {
+			this.moreBtn.show();
+			this.fillPopup(items);
+			this.onOverflowChange(true);
+		} else {
+			this.moreBtn.hide();
+			this.popup.hide();
+			this.onOverflowChange(false);
+		}
+	},
+
+	/* ---------------------------------------
+	 * ABSTRAKTNÍ METODY – implementují potomci
+	 * ---------------------------------------
+	 */
+
+	// vrací šířku prostoru, do kterého se obsah musí vejít
+	getOverflowTargetWidth: function() {
+		throw "qpOverflowWidget: getOverflowTargetWidth() must be implemented";
+	},
+
+	// vrací seznam položek, které se nevejdou
+	getOverflowItems: function() {
+		throw "qpOverflowWidget: getOverflowItems() must be implemented";
+	},
+
+	// volá se při změně overflow stavu
+	onOverflowChange: function(isOverflowing) {
+		// volitelné
 	},
 
 	destroy: function() {

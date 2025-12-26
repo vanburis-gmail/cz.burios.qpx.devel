@@ -22,6 +22,7 @@
 		<%-- 
 		--%>
 		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.core.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/src/qpWidgetFactory.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpOverflowWidget.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpTabs.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpToolBar.js?build=${ timeNo }"></script>
@@ -73,14 +74,38 @@
 		$("#myTabs").qpTabs({
 			closable: true,
 			responsive: true,
-			data: [
-				{ title: "Dashboard", content: "<p>Obsah dashboardu</p>" },
-				{ title: "Položka 2", content: "<p>Obsah tiem 2</p>" },
-				{ title: "Položka 3", content: "<p>Obsah tiem 3</p>" },
-				{ title: "Položka 4", content: "<p>Obsah tiem 4</p>" },
-				{ title: "Položka 5", content: "<p>Obsah tiem 5</p>" },
-				{ title: "Položka 6", content: "<p>Obsah tiem 6</p>" },
-				{ title: "Položka 7", content: "<p>Obsah tiem 7</p>" },
+			height: 300,
+			data: [{ 
+					title: "Grid", 
+					content: { 
+						type: "qpDataGrid", 
+						options: { 
+							responsive: true,
+							selectable: true,
+							height: "100%",
+							columns: [
+								{ field: "id",    title: "ID", width: 80  },
+								{ field: "name",  title: "Jméno", width: 200  },
+								{ field: "email", title: "E-mail", width: 175  }
+							],
+							dataSource: {
+								type: "local",
+								data: [
+									{ id: 3, name: "Lucie Malá", email: "lucie@example.com" },
+									{ id: 4, name: "Jaromír Dostál", email: "jaromir@example.com" },
+									{ id: 10, name: "David Richter", email: "david@example.com" },
+									{ id: 20, name: "Pavel Kuobek", email: "pavel@example.com" },
+									{ id: 99, name: "Anna Svobodová", email: "anna@example.com" }
+
+								]
+							}
+						}
+					} 
+				},
+				{ title: "Dashboard", content: {
+				    template: "<div>Hello {{name}}</div>",
+				    data: { name: "Josef" }
+				}},
 				{ title: "Nastavení", content: "<p>Konfigurace systému</p>" }
 			]
 		});
@@ -110,13 +135,13 @@
 		tabs.add("Nový tab", "<p>Obsah nového tabu</p>");
 		*/
 		</script>
-				<div style="height: 25px;"></div>
+		<div style="height: 25px;"></div>
 		<div id="remoteDataGrid" style="height: 200px;"></div>
 		<script>
 		$("#remoteDataGrid").qpDataGrid({
 			responsive: true,
 			columns: [
-				{ field: "NUMBER", title: "ID", width: 50  },
+				{ field: "NUMBER", title: "ID", width: 50, sortable: false  },
 				{ field: "CODE3", title: "Code2", width: 80, sortable: true },
 				{ field: "CODE2", title: "Code3", width: 80, sortable: true },
 				{ field: "NAME", title: "Název", width: 250, sortable: true }
@@ -137,14 +162,14 @@
 		    }
 		});
 		</script>
+		<%-- 
+		--%>
 		
 		<%-- 
 		--%>
 		<%-- 
 		<div id="localDataGrid" style="height: 200px;"></div>
-		--%>
 		<script>
-		/*
 		$("#localDataGrid").qpDataGrid({
 			responsive: true,
 			columns: [
@@ -169,6 +194,7 @@
 				]
 			},
 			selectable: true
+		/*
 			, onRowClick: function(rowData, rowWidget) {
 				console.log("Klik na řádek:", rowData);
 			}
@@ -178,8 +204,9 @@
 			, onRowSelect: function(rowData, rowWidget) {
 				console.log("Vybrán řádek:", rowData);
 			}
-		});
 		*/
+		});
 		</script>
+		--%>
 	</body>
 </html>

@@ -4,8 +4,9 @@
  */
 var qpToolBar = qpOverflowWidget.extend({
 
+	_widgetName: "qpToolBar",
+	
 	version: "1.0.0",
-
 	defaults: {
 		data: [],
 		responsive: true,
@@ -205,7 +206,46 @@ var qpToolBar = qpOverflowWidget.extend({
 		this.bar.animate({
 			scrollLeft: this.bar.scrollLeft() + amount
 		}, 150);
+	},
+	
+	getOverflowTargetWidth: function() {
+	    return this.wrapper.width();
+	},
+
+	getOverflowItems: function() {
+	    var items = [];
+	    var wrapperRight = this.wrapper.offset().left + this.wrapper.width();
+
+	    this.bar.children(".qp-btn").each((i, el) => {
+	        var $el = $(el);
+	        var right = $el.offset().left + $el.outerWidth();
+
+	        if (right > wrapperRight - this.moreBtn.outerWidth()) {
+	            items.push({
+	                text: $el.find(".qp-btn-text").text() || $el.data("id"),
+	                action: () => {
+	                    if (this.options.onClick) {
+	                        this.options.onClick($el.data("id"), $el);
+	                    }
+	                }
+	            });
+	        }
+	    });
+
+	    return items;
+	},
+
+	onOverflowChange: function(isOverflowing) {
+	    // toolbar může zobrazit/skrýt scroll arrows
+	    if (isOverflowing) {
+	        this.leftArrow.show();
+	        this.rightArrow.show();
+	    } else {
+	        this.leftArrow.hide();
+	        this.rightArrow.hide();
+	    }
 	}
+	
 });
 
 $.qpDefine("qpToolBar", qpToolBar);
