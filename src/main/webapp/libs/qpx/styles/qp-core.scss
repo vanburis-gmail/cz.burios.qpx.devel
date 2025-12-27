@@ -1,0 +1,169 @@
+@charset "UTF-8";
+
+/* ============================
+   RESET + NORMALIZACE
+============================ */
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p,
+blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn,
+em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var,
+b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas,
+details, embed, figure, figcaption, footer, header, hgroup, menu, nav,
+output, ruby, section, summary, time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    line-height: 1.5;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background-color: #fff;
+    color: #333;
+}
+
+/* Typografie */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 0.5em;
+}
+
+p {
+    margin-bottom: 1em;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+/* Seznamy */
+ul, ol {
+    margin-left: 1.5em;
+    margin-bottom: 1em;
+}
+
+/* Tabulky */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+th {
+    background-color: #f2f2f2;
+    text-align: left;
+}
+
+/* Formuláře */
+input, select, textarea, button {
+    font: inherit;
+    padding: 0.5em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+
+    &:hover {
+        background-color: #0056b3;
+    }
+}
+
+/* Obrázky */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================
+   QPX GRID SYSTEM
+============================ */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -10px;
+}
+
+.col {
+    flex: 1;
+    padding: 10px;
+}
+
+/* Grid velikosti */
+@for $i from 1 through 12 {
+    .col-#{$i} {
+        flex: 0 0 (100% / 12 * $i);
+    }
+}
+
+/* Breakpointy */
+@media (max-width: 992px) {
+    .col-md-6 { flex: 0 0 50%; }
+    .col-md-12 { flex: 0 0 100%; }
+}
+
+@media (max-width: 768px) {
+    .col-sm-12 { flex: 0 0 100%; }
+}
+
+/* ============================
+   DOPLŇKOVÉ STYLY
+============================ */
+.header, .footer {
+    background: #333;
+    color: #fff;
+    padding: 20px;
+}
+
+.nav {
+    background: #555;
+    color: #fff;
+    padding: 10px;
+}
+
+.card {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+/* ----- qpOverflowWidget ----- */
+
+/* ============================
+   DROPDOWN Z-INDEX FIX
+============================ */
+.qp-toolbar-wrapper,
+.qp-toolbar,
+.qp-btn {
+    position: relative;
+}

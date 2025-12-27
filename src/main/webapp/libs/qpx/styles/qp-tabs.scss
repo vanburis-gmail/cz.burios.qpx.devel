@@ -1,67 +1,263 @@
-.qp-tabs-nav-wrapper {
-	position: relative;
-	display: flex;
-	align-items: center;
-	overflow: hidden;
-	background: var(--bg);
-	border-bottom: 1px solid var(--border);
-	padding-right: 32px;
+/* ============================
+   qpTabs – hlavní widget
+============================ */
+
+.qp-tabs-root {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
+/* ============================
+   NAV WRAPPER
+============================ */
+.qp-tabs-nav-wrapper,
+.qp-toolbar-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: #f7f7f7;
+    border-bottom: 1px solid #ccc;
+    padding-right: 32px; // rezerva pro More
+}
+
+/* ============================
+   NAV LIST
+============================ */
 .qp-tabs-nav {
-	display: flex;
-	white-space: nowrap;
-	overflow-x: auto;
-	scrollbar-width: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
 
-	&::-webkit-scrollbar {
-		display: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    li {
+        padding: 8px 14px;
+        cursor: pointer;
+        position: relative;
+        user-select: none;
+	    border-right: 1px solid var(--qp-border-light);
+	    color: var(--qp-text);
+	    background: var(--qp-bg-alt);
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        &:hover {
+            background: #e4e4e4;
+        }
+
+        &.active {
+            background: #fff;
+            border-bottom: 2px solid #0078d4;
+            font-weight: bold;
+        }
+
+        &.dragging {
+            opacity: 0.5;
+        }
+
+        &.drag-over {
+            background: #d0e7ff;
+        }
+    }
+	.qp-tabs-nav li {
+
+	    &:hover {
+	        background: var(--qp-bg-hover);
+	    }
+
+	    &.active {
+	        background: var(--qp-bg);
+	        border-bottom: 2px solid var(--qp-primary);
+	        color: var(--qp-text);
+	    }
 	}
-
-	li {
-		padding: 8px 14px;
-		cursor: pointer;
-		user-select: none;
-		border-right: 1px solid var(--border);
-		background: var(--hover);
-		color: var(--text);
-		display: flex;
-		align-items: center;
-		gap: 6px;
-
-		&:hover {
-			background: var(--hover);
-		}
-
-		&.active {
-			background: var(--bg-panel);
-			border-bottom: 2px solid var(--active-border);
-			font-weight: bold;
-		}
-
-		.qp-tab-close {
-			margin-left: 6px;
-			cursor: pointer;
-			color: var(--text);
-
-			&:hover {
-				color: red;
-			}
-		}
-	}
+	
 }
 
+/* ============================
+   IKONY
+============================ */
+.qp-tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* ============================
+   CLOSE BUTTON
+============================ */
+.qp-tab-close {
+    margin-left: 6px;
+    color: #666;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+        color: #c00;
+    }
+}
+
+/* ============================
+   OBSAH TABŮ
+============================ */
 .qp-tabs-content {
-	background: var(--bg-panel);
-	border: 1px solid var(--border);
-	border-top: none;
-	padding: 12px;
+    padding: 12px;
+    background: var(--qp-bg);
+    border: 1px solid var(--qp-border);
+    border-top: none;
 
-	.qp-tab-panel {
-		display: none;
+    flex: 1 1 auto;
+    position: relative;
+    overflow: hidden;
 
-		&.active {
-			display: block;
-		}
-	}
+    .qp-tabs-nav-wrapper {
+        margin-top: 10px;
+	    border-bottom: 1px solid var(--qp-border);
+	    background: var(--qp-bg-alt);
+    }
+}
+.qp-tab-panel {
+    display: none;
+
+    &.active {
+        display: block;
+    }
+
+    // absolutní layout uvnitř contentu
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 0;
+    box-sizing: border-box;
+
+    &:not(.active) {
+        display: none;
+    }
+}
+
+/* ============================
+   LOADING
+============================ */
+.qp-tabs-loading {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+/* ============================
+   KONTEXTOVÉ MENU
+============================ */
+.qp-tabs-context {
+    position: absolute;
+	background: var(--qp-bg);
+	border: 1px solid var(--qp-border);
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+    z-index: 9999;
+    max-height: 300px;
+    overflow-y: auto;
+	box-shadow: 0 2px 6px var(--qp-shadow);
+
+    li {
+        padding: 6px 14px;
+        cursor: pointer;
+        white-space: nowrap;
+	    color: var(--qp-text);
+
+        &:hover {
+	        background: var(--qp-primary);
+	        color: #fff;
+        }
+    }
+}
+
+/* ============================
+   RESPONSIVE: MORE BUTTON
+============================ */
+.qp-tabs-more {
+    margin-left: auto;
+    padding: 6px 10px;
+    background: var(--qp-bg-alt);
+    border: 1px solid var(--qp-border);
+    cursor: pointer;
+    user-select: none;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        background: var(--qp-bg-hover);
+    }
+}
+
+.qp-tabs-more-menu {
+    position: absolute;
+	background: var(--qp-bg);
+	border: 1px solid var(--qp-border);
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+    z-index: 9999;
+    max-height: 300px;
+    overflow-y: auto;
+	box-shadow: 0 2px 6px var(--qp-shadow);
+
+    li {
+        padding: 6px 14px;
+        cursor: pointer;
+        white-space: nowrap;
+	    color: var(--qp-text);
+
+        &:hover {
+	        background: var(--qp-primary);
+	        color: #fff;
+        }
+    }
+}
+
+/* ============================
+   NON-RESPONSIVE: SCROLL BUTTONS
+============================ */
+.qp-tabs-scroll-left,
+.qp-tabs-scroll-right {
+    width: 24px;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    background: #eee;
+	border: 1px solid var(--qp-border);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+
+    &:hover {
+        background: #ddd;
+    }
 }

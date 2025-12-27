@@ -1,27 +1,41 @@
-// ---------------------------------------------
-// LIGHT THEME
-// ---------------------------------------------
-$light-bg:            #f7f7f7;
-$light-bg-panel:      #ffffff;
-$light-border:        #cccccc;
-$light-text:          #222222;
-$light-hover:         #e4e4e4;
-$light-active:        #d0e7ff;
-$light-active-border: #7bb4f6;
-$light-popup-bg:      #ffffff;
-$light-popup-hover:   #0078d4;
-$light-popup-text:    #ffffff;
+/* ============================
+   GLOBAL THEME VARIABLES
+============================ */
 
-// ---------------------------------------------
-// DARK THEME
-// ---------------------------------------------
-$dark-bg:             #2b2b2b;
-$dark-bg-panel:       #1e1e1e;
-$dark-border:         #444444;
-$dark-text:           #e6e6e6;
-$dark-hover:          #3a3a3a;
-$dark-active:         #3d4f66;
-$dark-active-border:  #5c8ec7;
-$dark-popup-bg:       #2a2a2a;
-$dark-popup-hover:    #4a90e2;
-$dark-popup-text:     #ffffff;
+/* Default (light) theme */
+:root {
+    --qp-bg: #ffffff;
+    --qp-bg-alt: #f7f7f7;
+    --qp-bg-hover: #e5e5e5;
+
+    --qp-border: #ccc;
+    --qp-border-light: #ddd;
+
+    --qp-text: #333;
+    --qp-text-light: #666;
+
+    --qp-primary: #0078d4;
+    --qp-primary-hover: #005fa3;
+
+    --qp-shadow: rgba(0,0,0,0.15);
+    --qp-shadow-strong: rgba(0,0,0,0.25);
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+    --qp-bg: #1e1e1e;
+    --qp-bg-alt: #2a2a2a;
+    --qp-bg-hover: #333;
+
+    --qp-border: #444;
+    --qp-border-light: #555;
+
+    --qp-text: #e6e6e6;
+    --qp-text-light: #aaa;
+
+    --qp-primary: #4aa3ff;
+    --qp-primary-hover: #1f7ed6;
+
+    --qp-shadow: rgba(0,0,0,0.5);
+    --qp-shadow-strong: rgba(0,0,0,0.7);
+}

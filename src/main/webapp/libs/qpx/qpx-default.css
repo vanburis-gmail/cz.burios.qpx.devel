@@ -184,144 +184,6 @@ img {
 	border-radius: 5px;
 }
 
-/*  -----  ----- */
-.qp-datagrid-row {
-	display: flex;
-	width: 100%;
-	align-items: stretch;
-	position: relative;
-	border-left: 1px solid #dadada;
-}
-
-.qp-datagrid-cell, .qp-datagrid-cell-filler {
-	padding: 6px 10px;
-	border-right: 1px solid #dadada;
-	border-bottom: 1px solid #dadada;
-	box-sizing: border-box;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: flex;
-	align-items: center;
-}
-
-.qp-datagrid-cell-filler {
-	flex: 1 1 auto;
-}
-
-.qp-datagrid-popup-btn {
-	position: absolute;
-	right: 0;
-	bottom: 0;
-	width: 16px;
-	height: 100%;
-	background: transparent;
-	border: none;
-	border-left: 1px solid #dadada;
-	border-radius: 0 !important;
-	cursor: pointer;
-	color: #333;
-}
-
-.qp-datagrid-popup-btn:hover {
-	background-color: #c4c4c4 !important;
-	border-radius: 0 !important;
-}
-
-.qp-datagrid-popup {
-	background: #fff;
-	border: 1px solid #dadada;
-	border-top: none;
-	display: none;
-	flex-direction: column;
-	z-index: 1000;
-	min-height: var(--row-height, 40px);
-	padding: 0 8px;
-}
-/* položky v popupu */
-.qp-datagrid-popup-item {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	width: 100%;
-	padding: 4px 0;
-	border: none; /* žádné border */
-}
-
-.qp-datagrid-popup-label {
-	flex: 0 0 120px;
-	font-weight: 600;
-	margin-right: 8px;
-	text-align: left;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.qp-datagrid-popup-value {
-	flex: 1 1 auto;
-	text-align: left;
-	white-space: nowrap; /* nezalamovat */
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-/* -----  ----- */
-.qp-datagrid {
-	display: flex;
-	flex-direction: column;
-	border: 1px solid #dadada;
-	width: 100%;
-	overflow: hidden;
-}
-.qp-datagrid-header-wrapper {
-	overflow: hidden; /* zabrání dvojitému scrollu */
-}
-.qp-datagrid-header {
-	display: flex;
-	position: sticky;
-	top: 0;
-	background: #f5f5f5;
-	z-index: 10;
-	height: 3em;
-}
-.qp-datagrid-header-label {
-	flex: 1 1 auto;
-	padding: 0 8px;
-}
-.qp-datagrid-header-sort-icon {
-	font-size: 14px;
-	color: #666;
-	padding: 4px;
-	flex: 0 0 12px;
-	cursor: pointer;
-	padding: 8px;
-	
-}
-.qp-datagrid-header-sort-icon:hover {
-	color: #000;
-}
-.qp-datagrid-header-cell {
-	height: 100%;
-	display: flex;
-	align-items: center;
-}
-.qp-datagrid-body {
-	flex: 1 1 auto;
-	overflow-y: auto;
-}
-
-.qp-datagrid-body.scroll-x {
-	overflow-x: auto;
-}
-
-.qp-datagrid-overlay {
-	display: flex;
-	font-weight: bold;
-	font-size: 16px;
-	color: #000;
-}
-
 /* ----- qpOverflowWidget ----- */
 
 .qp-overflow-more {
@@ -1077,12 +939,12 @@ img {
     background: #dce9ff;
 }
 
-/* -----  ----- */
-
 /* SORTABLE */
 .qp-dg-header-cell.sortable {
     cursor: pointer;
 }
+
+/* -----  ----- */
 
 
 
