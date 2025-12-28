@@ -953,5 +953,64 @@ img {
 
 /* -----  ----- */
 
+/* ---------------------------------------------------------
+   MULTI-SORT – ACTIVE STATE + ORDER BADGE
+--------------------------------------------------------- */
+
+/* Aktivní řazení */
+.qp-dg-header-cell.sorted {
+    background: #f0f6ff;
+    color: #0050a8;
+}
+
+/* Ikona se zobrazí, když je sloupec sorted */
+.qp-dg-header-cell.sorted .qp-dg-sort-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Pořadí multi-sortu (1,2,3…) */
+.qp-dg-header-cell.sorted[data-sort-order]::after {
+    content: attr(data-sort-order);
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #0050a8;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0.9;
+}
+
+/* Jemný hover efekt pro sortable */
+.qp-dg-header-cell.sortable:hover {
+    background: #eef3ff;
+}
+
+/* Ikona směru řazení */
+.qp-dg-sort-icon.asc::after {
+    content: "▲";
+}
+
+.qp-dg-sort-icon.desc::after {
+    content: "▼";
+}
+
+/* Když je multi-sort aktivní, ikonka má lehce zvýrazněnou barvu */
+.qp-dg-header-cell.sorted .qp-dg-sort-icon.asc::after,
+.qp-dg-header-cell.sorted .qp-dg-sort-icon.desc::after {
+    color: #0050a8;
+    font-weight: bold;
+}
 
 
