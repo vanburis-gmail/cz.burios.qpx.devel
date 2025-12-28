@@ -845,6 +845,13 @@ img {
     visibility: hidden;
 }
 
+.qp-dg-sort-icon[data-order]:after {
+    content: attr(data-order);
+    font-size: 10px;
+    margin-left: 2px;
+    opacity: 0.7;
+}
+
 /* ---------------------------------------------------------
    RESIZE HANDLE
 --------------------------------------------------------- */

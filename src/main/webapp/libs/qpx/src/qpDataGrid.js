@@ -41,7 +41,8 @@ var qpDataGrid = qpWidget.extend({
 
 		// interní stav gridu (sorting, filtering, paging)
 		this._state = {
-			sort: { field: null, dir: null },
+			// sort: { field: null, dir: null },
+			sort: [],
 			filters: [],
 			page: 1,
 			pageSize: 50
@@ -117,15 +118,28 @@ var qpDataGrid = qpWidget.extend({
 
 			// 🔥 automatické doplnění sort parametrů
 			var sort = this._state.sort;
+				/*
 			if (sort && sort.field) {
 				params.sortField = sort.field;
 				params.sortDir = sort.dir;
+				if (Array.isArray(this._state.sort) && this._state.sort.length) {
+				    params.sort = this._state.sort.map(s => ({
+				        field: s.field,
+				        dir: s.dir
+				    }));
+				}
 			}
+				*/
+			params.sort = this._state.sort.map(s => ({ 
+				field: s.field, 
+				dir: s.dir 
+			}));
 			console.log("_loadDataSource.param: ", params);
 			$.ajax({
 				url: read.url,
 				method: read.method || "GET",
 				data: params,
+				contentType : 'application/json; charset=utf-8',
 				success: function(response) {
 					self._data = response || [];
 					self._renderRows();
@@ -187,6 +201,7 @@ var qpDataGrid = qpWidget.extend({
 	// ---------------------------------------------------------
 	// SORTING API (voláno z headerCell)
 	// ---------------------------------------------------------
+	/*
 	_setSort: function(field) {
 		var sort = this._state.sort;
 
@@ -203,6 +218,47 @@ var qpDataGrid = qpWidget.extend({
 
 		// načtení dat
 		this._loadDataSource();
+	},
+	*/
+	_setSort: function(field, shiftKey, ctrlKey) {
+		console.log("SET SORT:", field, "shift:", shiftKey, "ctrl:", ctrlKey);
+
+	    var sorts = this._state.sort;
+
+	    // CTRL = RESET SORTS
+	    if (ctrlKey) {
+	        this._state.sort = [{ field: field, dir: "asc" }];
+	    }
+	    else if (!shiftKey) {
+	        // SINGLE SORT MODE
+	        var existing = sorts.find(s => s.field === field);
+
+	        if (!existing) {
+	            this._state.sort = [{ field: field, dir: "asc" }];
+	        } else {
+	            existing.dir = existing.dir === "asc" ? "desc" : "asc";
+	            this._state.sort = [existing];
+	        }
+	    }
+	    else {
+	        // MULTI SORT MODE (Shift+Click)
+	        var existing = sorts.find(s => s.field === field);
+
+	        if (!existing) {
+	            sorts.push({ field: field, dir: "asc" });
+	        } else {
+	            existing.dir = existing.dir === "asc" ? "desc" : "asc";
+	        }
+	    }
+		console.log("STATE SORT:", this._state.sort);
+		
+	    // UPDATE HEADER ICONS
+	    this.header.items.forEach(function(item) {
+	        item.widget.updateSortIcon();
+	    });
+
+	    // LOAD DATA
+	    this._loadDataSource();
 	},
 
 	// ---------------------------------------------------------

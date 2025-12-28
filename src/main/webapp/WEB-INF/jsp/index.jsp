@@ -153,7 +153,6 @@
 		            read: {
 		                url: "/devel/data/contacts",
 		                method: "GET"
-		                // , params: { category: "books" }
 		            }
 		        },
 		        onLoaded: function(data) {

@@ -48,7 +48,7 @@ var qpDataGridHeaderCell = qpWidget.extend({
 
         this.updateSortIcon();
     },
-
+	/*
 	_bind: function() {
 	    var self = this;
 	    var ns = "." + this._widgetName;
@@ -64,10 +64,27 @@ var qpDataGridHeaderCell = qpWidget.extend({
 	        grid._setSort(col.field);   // 🔥 TADY SE SPOUŠTÍ AJAX SORT
 	    });
 	},
+	*/
+    _bind: function() {
+        var self = this;
+        var ns = "." + this._widgetName;
+        var col = this.options.column;
+        var grid = this.options.grid;
+
+        if (!grid || !col || col.sortable === false || !col.field) return;
+
+        this.wrapper.on("click" + ns, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            grid._setSort(col.field, e.shiftKey);   // 🔥 SHIFT MULTI-SORT
+        });
+    },
 
     // ---------------------------------------
     // SORT ICON UPDATE
     // ---------------------------------------
+	/*
     updateSortIcon: function() {
         var grid = this.options.grid;
         var col = this.options.column;
@@ -92,7 +109,35 @@ var qpDataGridHeaderCell = qpWidget.extend({
             this.sortIcon.removeClass("asc").addClass("desc");
         }
     },
+	*/
+	updateSortIcon: function() {
+	    var grid = this.options.grid;
+	    var col = this.options.column;
 
+	    var sorts = grid._state.sort;
+	    var index = sorts.findIndex(s => s.field === col.field);
+
+	    if (index === -1) {
+	        this.sortIcon.removeClass("asc desc").hide();
+	        this.wrapper.removeClass("multi-sort");
+	        return;
+	    }
+
+	    var sort = sorts[index];
+
+	    this.sortIcon.show();
+	    this.wrapper.addClass("multi-sort");
+
+	    if (sort.dir === "asc") {
+	        this.sortIcon.removeClass("desc").addClass("asc");
+	    } else {
+	        this.sortIcon.removeClass("asc").addClass("desc");
+	    }
+
+	    // pořadí sortu (1,2,3…)
+	    this.sortIcon.attr("data-order", index + 1);
+	},
+	
     // ---------------------------------------
     // WIDTH HANDLING
     // ---------------------------------------
