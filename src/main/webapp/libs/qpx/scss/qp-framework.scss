@@ -1,0 +1,6 @@
+@import "core/variables";
+@import "themes/light";   // přepíše proměnné
+@import "core/mixins";
+@import "widgets/qp-toolbar";
+@import "widgets/qp-tabs";
+@import "widgets/qp-datagrid";

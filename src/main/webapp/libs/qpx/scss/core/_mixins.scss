@@ -1,0 +1,36 @@
+/* --------------------------------------------------------
+ * MIXINS
+ * -------------------------------------------------------- */
+
+@mixin qp-flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin qp-scroll-hide {
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+}
+
+@mixin qp-button-base {
+    display: inline-flex;
+    align-items: center;
+    gap: $qp-space-2;
+    padding: $qp-space-2 $qp-space-4;
+    border-radius: $qp-radius-sm;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+@mixin qp-popup-base {
+    position: absolute;
+    background: $qp-color-bg;
+    border: 1px solid $qp-color-border-dark;
+    list-style: none;
+    padding: $qp-space-1 0;
+    margin: 0;
+    z-index: $qp-z-popup;
+    box-shadow: $qp-shadow-md;
+}

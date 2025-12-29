@@ -1,0 +1,71 @@
+/* --------------------------------------------------------
+ * qpOverflowWidget — SCSS
+ * --------------------------------------------------------
+ */
+@import "variables"; // nebo "../core/variables" podle struktury
+
+/* MIXINS */
+@mixin qp-flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* MORE BUTTON */
+.qp-overflow-more {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    width: $qp-overflow-width;
+    @include qp-flex-center;
+
+    background: $qp-overflow-bg;
+    border-left: 1px solid $qp-overflow-border;
+    cursor: pointer;
+    user-select: none;
+    z-index: 10;
+
+    font-size: 16px;
+    line-height: 1;
+
+    &::before {
+        content: "\22EE";
+        font-size: 1.25em;
+        line-height: 1;
+        color: $qp-overflow-icon-color;
+    }
+
+    &:hover {
+        background: $qp-overflow-bg-hover;
+    }
+}
+
+/* POPUP */
+.qp-overflow-popup {
+    position: absolute;
+    background: $qp-overflow-popup-bg;
+    border: 1px solid $qp-overflow-popup-border;
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+    z-index: 9999;
+
+    min-width: $qp-overflow-popup-min-width;
+    max-height: $qp-overflow-popup-max-height;
+    overflow-y: auto;
+
+    box-shadow: $qp-overflow-popup-shadow;
+
+    li {
+        padding: $qp-overflow-item-padding-y $qp-overflow-item-padding-x;
+        cursor: pointer;
+        white-space: nowrap;
+
+        &:hover {
+            background: $qp-overflow-item-hover-bg;
+            color: $qp-overflow-item-hover-color;
+        }
+    }
+}

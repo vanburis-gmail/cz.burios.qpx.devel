@@ -1,0 +1,260 @@
+/* --------------------------------------------------------
+ * qpTabs — SCSS
+ * --------------------------------------------------------
+ */
+
+@import "../core/variables";
+@import "../core/mixins";
+
+/* ============================
+   ZÁKLADNÍ LAYOUT
+============================ */
+.qp-tabs-nav-wrapper,
+.qp-toolbar-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+
+    background: $qp-color-bg;
+    border-bottom: 1px solid $qp-color-border;
+
+    padding-right: $qp-overflow-width; // rezerva pro More
+}
+
+/* ============================
+   NAV LIST
+============================ */
+.qp-tabs-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    display: flex;
+    white-space: nowrap;
+    overflow-x: auto;
+
+    @include qp-scroll-hide;
+}
+
+/* ============================
+   TABY
+============================ */
+.qp-tabs-nav li {
+    padding: $qp-space-2 $qp-space-4;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+
+    border-right: 1px solid $qp-color-border-dark;
+    background: $qp-btn-bg;
+
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: $qp-space-2;
+
+    &:hover {
+        background: $qp-btn-bg-hover;
+    }
+
+    &.active {
+        background: $qp-color-bg;
+        border-bottom: 2px solid $qp-color-primary;
+        font-weight: bold;
+    }
+}
+
+/* ============================
+   IKONY
+============================ */
+.qp-tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* ============================
+   CLOSE BUTTON
+============================ */
+.qp-tab-close {
+    margin-left: $qp-space-2;
+    color: #666;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+        color: #c00;
+    }
+}
+
+/* ============================
+   OBSAH TABŮ
+============================ */
+.qp-tabs-content {
+    padding: $qp-space-3;
+    background: $qp-color-bg;
+    border: 1px solid $qp-color-border;
+    border-top: none;
+
+    flex: 1 1 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.qp-tab-panel {
+    display: none;
+
+    &.active {
+        display: block;
+    }
+}
+
+/* ============================
+   LOADING
+============================ */
+.qp-tabs-loading {
+    padding: $qp-space-5;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+/* ============================
+   DRAG & DROP
+============================ */
+.qp-tabs-nav li.dragging {
+    opacity: 0.5;
+}
+
+.qp-tabs-nav li.drag-over {
+    background: lighten($qp-color-primary, 40%);
+}
+
+/* ============================
+   KONTEXTOVÉ MENU
+============================ */
+.qp-tabs-context {
+    @include qp-popup-base;
+
+    max-height: 300px;
+    overflow-y: auto;
+
+    li {
+        padding: $qp-space-3 $qp-space-5;
+        cursor: pointer;
+        white-space: nowrap;
+
+        &:hover {
+            background: $qp-color-primary;
+            color: $qp-dropdown-hover-color;
+        }
+    }
+}
+
+/* ============================
+   MORE BUTTON
+============================ */
+.qp-tabs-more {
+    margin-left: auto;
+    padding: $qp-space-2 $qp-space-4;
+
+    background: $qp-toolbar-more-bg;
+    border: 1px solid $qp-toolbar-more-border;
+    border-radius: $qp-radius-sm;
+
+    cursor: pointer;
+    user-select: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        background: $qp-toolbar-more-bg-hover;
+    }
+}
+
+.qp-tabs-more-menu {
+    @include qp-popup-base;
+
+    max-height: 300px;
+    overflow-y: auto;
+
+    li {
+        padding: $qp-space-2 $qp-space-5;
+        cursor: pointer;
+        white-space: nowrap;
+
+        &:hover {
+            background: $qp-color-primary;
+            color: $qp-dropdown-hover-color;
+        }
+    }
+}
+
+/* ============================
+   SCROLL BUTTONS
+============================ */
+.qp-tabs-scroll-left,
+.qp-tabs-scroll-right {
+    width: $qp-scroll-btn-width;
+    height: 100%;
+
+    @include qp-flex-center;
+
+    cursor: pointer;
+    user-select: none;
+
+    background: $qp-scroll-btn-bg;
+    border: 1px solid $qp-scroll-btn-border;
+
+    display: none;
+
+    font-size: 12px;
+
+    &:hover {
+        background: $qp-scroll-btn-bg-hover;
+    }
+}
+
+/* ============================
+   NESTED TABS
+============================ */
+.qp-tabs-content .qp-tabs-nav-wrapper {
+    margin-top: $qp-space-3;
+    border-top: 1px solid $qp-color-border-dark;
+}
+
+/* ============================
+   ABSOLUTNÍ LAYOUT PANELŮ
+============================ */
+.qp-tabs-root {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.qp-tab-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 0;
+    box-sizing: border-box;
+
+    &:not(.active) {
+        display: none;
+    }
+}
