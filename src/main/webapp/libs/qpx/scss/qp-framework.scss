@@ -1,6 +1,17 @@
-@import "core/variables";
-@import "themes/light";   // přepíše proměnné
-@import "core/mixins";
-@import "widgets/qp-toolbar";
-@import "widgets/qp-tabs";
-@import "widgets/qp-datagrid";
+/* Core */
+@use "core/variables";
+@use "core/mixins";
+@use "core/reset";
+@use "core/layout";
+
+/* Themes */
+@use "theme/theme-base";
+@use "theme/theme-light";
+@use "theme/theme-dark";
+@use "theme/theme-high-contrast";
+
+/* Widgets */
+@use "widgets/qpDataGrid/index" as qpDataGrid;
+@use "widgets/qpOverflow/index" as qpOverflow;
+@use "widgets/qpTabs/index" as qpTabs;
+@use "widgets/qpToolBar/index" as qpToolBar;

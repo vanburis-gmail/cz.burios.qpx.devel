@@ -1,0 +1,41 @@
+.qp-dg-sort-icon {
+	width: 12px;
+	height: 12px;
+	margin-left: 6px;
+	display: none;
+
+	&.asc::after {
+		content: "▲";
+	}
+
+	&.desc::after {
+		content: "▼";
+	}
+}
+
+.qp-dg-header-cell.sorted {
+	background: var(--qp-color-bg-selected);
+	color: var(--qp-color-primary);
+
+	.qp-dg-sort-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&[data-sort-order]::after {
+		content: attr(data-sort-order);
+		position: absolute;
+		top: 4px;
+		right: 4px;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: var(--qp-color-primary);
+		color: #fff;
+		font-size: 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+}

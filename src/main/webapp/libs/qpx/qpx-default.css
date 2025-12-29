@@ -530,12 +530,6 @@ img {
    WRAPPER
 ============================ */
 .qp-toolbar-wrapper {
-	/*
-    display: flex;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-	*/
     background: #f7f7f7;
     border-bottom: 1px solid #ccc;
     padding: 4px;

@@ -1,0 +1,9 @@
+{
+	"devDependencies": {
+		"sass": "^1.97.1"
+	},
+	"scripts": {
+		"build-css": "npx sass \"src/main/webapp/libs/qpx/scss/qp-framework.scss\" \"src/main/webapp/libs/qpx/themes/jquery.qpx.default.css\"",
+		"test-css": "npx sass \"src/main/webapp/libs/qpx/scss/qp-framework.scss\""
+	}
+}

@@ -1,0 +1,12 @@
+.qp-dg-resize {
+	width: 6px;
+	cursor: col-resize;
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+
+	&:hover {
+		background: rgba(0, 0, 0, 0.05);
+	}
+}

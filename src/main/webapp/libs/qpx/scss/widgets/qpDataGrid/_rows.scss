@@ -1,0 +1,14 @@
+.qp-dg-row {
+    display: flex;
+    align-items: center;
+    height: var(--qp-size-row-height);
+    border-bottom: 1px solid var(--qp-color-border-light);
+
+    &:hover {
+        background: var(--qp-color-bg-hover);
+    }
+
+    &.selected {
+        background: var(--qp-color-bg-selected);
+    }
+}

@@ -1,0 +1,67 @@
+/* ---------------------------------------------------------
+   QP OVERFLOW – FULL RESTORED STYLING
+--------------------------------------------------------- */
+
+/* More button (⋮) */
+.qp-overflow-more {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+
+	width: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	background: var(--qp-color-bg-hover);
+	border-left: 1px solid var(--qp-color-border);
+	cursor: pointer;
+	user-select: none;
+	z-index: 10;
+
+	font-size: 16px;
+	line-height: 1;
+}
+
+.qp-overflow-more::before {
+	content: "\22EE";
+	/* ⋮ */
+	font-size: 1.25em;
+	line-height: 1;
+	color: var(--qp-color-text, #333);
+}
+
+.qp-overflow-more:hover {
+	background: var(--qp-color-bg-selected);
+}
+
+/* ---------------------------------------------------------
+   POPUP MENU
+--------------------------------------------------------- */
+.qp-overflow-popup {
+	position: absolute;
+	background: var(--qp-color-bg);
+	border: 1px solid var(--qp-color-border);
+	list-style: none;
+	padding: 4px 0;
+	margin: 0;
+	z-index: 9999;
+
+	min-width: 150px;
+	max-height: 300px;
+	overflow-y: auto;
+
+	box-shadow: 0 2px 6px var(--qp-color-shadow);
+}
+
+.qp-overflow-popup li {
+	padding: 6px 14px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.qp-overflow-popup li:hover {
+	background: var(--qp-color-primary);
+	color: #fff;
+}

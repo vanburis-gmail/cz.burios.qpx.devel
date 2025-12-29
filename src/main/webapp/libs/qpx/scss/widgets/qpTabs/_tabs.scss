@@ -1,0 +1,252 @@
+/* ---------------------------------------------------------
+   QP TABS – FULL RECONSTRUCTION WITH DESIGN SYSTEM
+--------------------------------------------------------- */
+
+/* Root container */
+.qp-tabs-root {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	font-family: var(--qp-font-family);
+	font-size: var(--qp-font-size);
+}
+
+/* Wrapper pro záložky */
+.qp-tabs-nav-wrapper,
+.qp-toolbar-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+	background: var(--qp-color-bg-header);
+	border-bottom: 1px solid var(--qp-color-border);
+	padding-right: 32px;
+	/* rezerva pro More */
+}
+
+/* Nav list */
+.qp-tabs-nav {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	white-space: nowrap;
+	overflow-x: auto;
+	scrollbar-width: none;
+	/* Firefox */
+}
+
+.qp-tabs-nav::-webkit-scrollbar {
+	display: none;
+	/* Chrome */
+}
+
+/* ---------------------------------------------------------
+   TABY
+--------------------------------------------------------- */
+.qp-tabs-nav li {
+	padding: 8px 14px;
+	cursor: pointer;
+	position: relative;
+	user-select: none;
+	border-right: 1px solid var(--qp-color-border-light);
+	background: var(--qp-color-bg-hover);
+	transition: background 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.qp-tabs-nav li:hover {
+	background: var(--qp-color-bg-hover);
+}
+
+.qp-tabs-nav li.active {
+	background: var(--qp-color-bg);
+	border-bottom: 2px solid var(--qp-color-primary);
+	font-weight: bold;
+}
+
+/* ---------------------------------------------------------
+   IKONY
+--------------------------------------------------------- */
+.qp-tab-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.qp-tab-icon img {
+	width: 14px;
+	height: 14px;
+}
+
+/* ---------------------------------------------------------
+   CLOSE BUTTON
+--------------------------------------------------------- */
+.qp-tab-close {
+	margin-left: 6px;
+	color: #666;
+	font-weight: bold;
+	cursor: pointer;
+	user-select: none;
+}
+
+.qp-tab-close:hover {
+	color: #c00;
+}
+
+/* ---------------------------------------------------------
+   OBSAH TABŮ
+--------------------------------------------------------- */
+.qp-tabs-content {
+	padding: 12px;
+	background: var(--qp-color-bg);
+	border: 1px solid var(--qp-color-border);
+	border-top: none;
+	flex: 1 1 auto;
+	position: relative;
+	overflow: hidden;
+}
+
+.qp-tab-panel {
+	display: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	overflow-y: auto;
+	overflow-x: hidden;
+
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.qp-tab-panel.active {
+	display: block;
+}
+
+/* ---------------------------------------------------------
+   LOADING
+--------------------------------------------------------- */
+.qp-tabs-loading {
+	padding: 20px;
+	text-align: center;
+	color: #666;
+	font-style: italic;
+}
+
+/* ---------------------------------------------------------
+   DRAG & DROP
+--------------------------------------------------------- */
+.qp-tabs-nav li.dragging {
+	opacity: 0.5;
+}
+
+.qp-tabs-nav li.drag-over {
+	background: #d0e7ff;
+}
+
+/* ---------------------------------------------------------
+   KONTEXTOVÉ MENU
+--------------------------------------------------------- */
+.qp-tabs-context {
+	position: absolute;
+	background: var(--qp-color-bg);
+	border: 1px solid var(--qp-color-border);
+	list-style: none;
+	padding: 4px 0;
+	margin: 0;
+	z-index: 9999;
+	max-height: 300px;
+	overflow-y: auto;
+	box-shadow: 0 2px 6px var(--qp-color-shadow);
+}
+
+.qp-tabs-context li {
+	padding: 6px 14px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.qp-tabs-context li:hover {
+	background: var(--qp-color-primary);
+	color: #fff;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE: MORE BUTTON
+--------------------------------------------------------- */
+.qp-tabs-more {
+	margin-left: auto;
+	padding: 6px 10px;
+	background: var(--qp-color-bg-hover);
+	border: 1px solid var(--qp-color-border);
+	cursor: pointer;
+	user-select: none;
+	border-radius: 3px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.qp-tabs-more:hover {
+	background: var(--qp-color-bg-selected);
+}
+
+.qp-tabs-more-menu {
+	position: absolute;
+	background: var(--qp-color-bg);
+	border: 1px solid var(--qp-color-border);
+	list-style: none;
+	padding: 4px 0;
+	margin: 0;
+	z-index: 9999;
+	max-height: 300px;
+	overflow-y: auto;
+	box-shadow: 0 2px 6px var(--qp-color-shadow);
+}
+
+.qp-tabs-more-menu li {
+	padding: 6px 14px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.qp-tabs-more-menu li:hover {
+	background: var(--qp-color-primary);
+	color: #fff;
+}
+
+/* ---------------------------------------------------------
+   NON-RESPONSIVE: SCROLL BUTTONS
+--------------------------------------------------------- */
+.qp-tabs-scroll-left,
+.qp-tabs-scroll-right {
+	width: 24px;
+	height: 100%;
+	text-align: center;
+	cursor: pointer;
+	user-select: none;
+	background: var(--qp-color-bg-hover);
+	border: 1px solid var(--qp-color-border);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+}
+
+.qp-tabs-scroll-left:hover,
+.qp-tabs-scroll-right:hover {
+	background: var(--qp-color-bg-selected);
+}
+
+/* ---------------------------------------------------------
+   NESTED TABS
+--------------------------------------------------------- */
+.qp-tabs-content .qp-tabs-nav-wrapper {
+	margin-top: 10px;
+	border-top: 1px solid var(--qp-color-border-light);
+}

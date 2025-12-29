@@ -22,7 +22,7 @@ public class SassBuilder {
 	/*
 	 * /src/main/webapp/libs/qpx/scss/qp-framework.scss
 	 */
-	private static String cssDistDirUri = "/libs/qpx//styles/css";
+	private static String cssDistDirUri = "/libs/qpx/themes";
 
 	
 	public static void main(String[] args) {

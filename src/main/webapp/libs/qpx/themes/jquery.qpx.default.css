@@ -1,0 +1,724 @@
+@charset "UTF-8";
+/* Core */
+/* ---------------------------------------------------------
+   GLOBAL DESIGN TOKENS
+--------------------------------------------------------- */
+/* Colors */
+/* Sizes */
+/* Typography */
+/* --------------------------------------------------------
+ * MIXINS
+ * -------------------------------------------------------- */
+/* Themes */
+:root {
+  --qp-color-bg: #fafafa;
+  --qp-color-bg-header: #f7f7f7;
+  --qp-color-bg-hover: #eef3ff;
+  --qp-color-bg-selected: #dce9ff;
+  --qp-color-border: #ccc;
+  --qp-color-border-light: #ddd;
+  --qp-color-primary: #0050a8;
+  --qp-color-shadow: rgba(0, 0, 0, 0.15);
+  --qp-size-row-height: 32px;
+  --qp-size-header-height: 32px;
+  --qp-size-toolbar-height: 36px;
+  --qp-size-tabs-height: 32px;
+  --qp-font-family: sans-serif;
+  --qp-font-size: 14px;
+}
+
+[data-theme=light] {
+  --qp-color-bg: #fafafa;
+  --qp-color-bg-header: #f7f7f7;
+  --qp-color-bg-hover: #eef3ff;
+  --qp-color-bg-selected: #dce9ff;
+  --qp-color-border: #ccc;
+  --qp-color-border-light: #ddd;
+  --qp-color-primary: #0050a8;
+}
+
+[data-theme=dark] {
+  --qp-color-bg: #1e1e1e;
+  --qp-color-bg-header: #2a2a2a;
+  --qp-color-bg-hover: #333a48;
+  --qp-color-bg-selected: #3b4a63;
+  --qp-color-border: #444;
+  --qp-color-border-light: #555;
+  --qp-color-primary: #4da3ff;
+}
+
+[data-theme=high-contrast] {
+  --qp-color-bg: #000;
+  --qp-color-bg-header: #000;
+  --qp-color-bg-hover: #111;
+  --qp-color-bg-selected: #222;
+  --qp-color-border: #fff;
+  --qp-color-border-light: #fff;
+  --qp-color-primary: #ff0;
+  --qp-font-size: 16px;
+}
+
+/* Widgets */
+/* Core */
+.qp-dg {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--qp-font-family);
+  font-size: var(--qp-font-size);
+}
+
+.qp-dg-header {
+  display: flex;
+  align-items: center;
+  height: var(--qp-size-header-height);
+  background: var(--qp-color-bg-header);
+  border-bottom: 1px solid var(--qp-color-border);
+  user-select: none;
+}
+
+.qp-dg-header-items {
+  display: flex;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.qp-dg-header-cell {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  background: var(--qp-color-bg);
+  border-right: 1px solid var(--qp-color-border-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+}
+.qp-dg-header-cell.sortable:hover {
+  background: var(--qp-color-bg-hover);
+  cursor: pointer;
+}
+.qp-dg-header-cell:last-child {
+  border-right: none;
+}
+
+.qp-dg-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.qp-dg-row {
+  display: flex;
+  align-items: center;
+  height: var(--qp-size-row-height);
+  border-bottom: 1px solid var(--qp-color-border-light);
+}
+.qp-dg-row:hover {
+  background: var(--qp-color-bg-hover);
+}
+.qp-dg-row.selected {
+  background: var(--qp-color-bg-selected);
+}
+
+.qp-dg-sort-icon {
+  width: 12px;
+  height: 12px;
+  margin-left: 6px;
+  display: none;
+}
+.qp-dg-sort-icon.asc::after {
+  content: "▲";
+}
+.qp-dg-sort-icon.desc::after {
+  content: "▼";
+}
+
+.qp-dg-header-cell.sorted {
+  background: var(--qp-color-bg-selected);
+  color: var(--qp-color-primary);
+}
+.qp-dg-header-cell.sorted .qp-dg-sort-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.qp-dg-header-cell.sorted[data-sort-order]::after {
+  content: attr(data-sort-order);
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--qp-color-primary);
+  color: #fff;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qp-dg-header-popup {
+  position: absolute;
+  top: var(--qp-size-header-height);
+  right: 0;
+  min-width: 160px;
+  background: var(--qp-color-bg);
+  border: 1px solid var(--qp-color-border);
+  box-shadow: 0 2px 6px var(--qp-color-shadow);
+  z-index: 9999;
+  padding: 4px 0;
+}
+
+.qp-dg-header-popup-item {
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.qp-dg-header-popup-item:hover {
+  background: var(--qp-color-bg-hover);
+}
+
+.qp-dg-resize {
+  width: 6px;
+  cursor: col-resize;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+.qp-dg-resize:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Core */
+/* ---------------------------------------------------------
+   QP OVERFLOW – FULL RESTORED STYLING
+--------------------------------------------------------- */
+/* More button (⋮) */
+.qp-overflow-more {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--qp-color-bg-hover);
+  border-left: 1px solid var(--qp-color-border);
+  cursor: pointer;
+  user-select: none;
+  z-index: 10;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.qp-overflow-more::before {
+  content: "⋮";
+  /* ⋮ */
+  font-size: 1.25em;
+  line-height: 1;
+  color: var(--qp-color-text, #333);
+}
+
+.qp-overflow-more:hover {
+  background: var(--qp-color-bg-selected);
+}
+
+/* ---------------------------------------------------------
+   POPUP MENU
+--------------------------------------------------------- */
+.qp-overflow-popup {
+  position: absolute;
+  background: var(--qp-color-bg);
+  border: 1px solid var(--qp-color-border);
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+  z-index: 9999;
+  min-width: 150px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 2px 6px var(--qp-color-shadow);
+}
+
+.qp-overflow-popup li {
+  padding: 6px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.qp-overflow-popup li:hover {
+  background: var(--qp-color-primary);
+  color: #fff;
+}
+
+/* Core */
+/* ---------------------------------------------------------
+   QP TABS – FULL RECONSTRUCTION WITH DESIGN SYSTEM
+--------------------------------------------------------- */
+/* Root container */
+.qp-tabs-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: var(--qp-font-family);
+  font-size: var(--qp-font-size);
+}
+
+/* Wrapper pro záložky */
+.qp-tabs-nav-wrapper,
+.qp-toolbar-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--qp-color-bg-header);
+  border-bottom: 1px solid var(--qp-color-border);
+  padding-right: 32px;
+  /* rezerva pro More */
+}
+
+/* Nav list */
+.qp-tabs-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.qp-tabs-nav::-webkit-scrollbar {
+  display: none;
+  /* Chrome */
+}
+
+/* ---------------------------------------------------------
+   TABY
+--------------------------------------------------------- */
+.qp-tabs-nav li {
+  padding: 8px 14px;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  border-right: 1px solid var(--qp-color-border-light);
+  background: var(--qp-color-bg-hover);
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qp-tabs-nav li:hover {
+  background: var(--qp-color-bg-hover);
+}
+
+.qp-tabs-nav li.active {
+  background: var(--qp-color-bg);
+  border-bottom: 2px solid var(--qp-color-primary);
+  font-weight: bold;
+}
+
+/* ---------------------------------------------------------
+   IKONY
+--------------------------------------------------------- */
+.qp-tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qp-tab-icon img {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---------------------------------------------------------
+   CLOSE BUTTON
+--------------------------------------------------------- */
+.qp-tab-close {
+  margin-left: 6px;
+  color: #666;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+.qp-tab-close:hover {
+  color: #c00;
+}
+
+/* ---------------------------------------------------------
+   OBSAH TABŮ
+--------------------------------------------------------- */
+.qp-tabs-content {
+  padding: 12px;
+  background: var(--qp-color-bg);
+  border: 1px solid var(--qp-color-border);
+  border-top: none;
+  flex: 1 1 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.qp-tab-panel {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.qp-tab-panel.active {
+  display: block;
+}
+
+/* ---------------------------------------------------------
+   LOADING
+--------------------------------------------------------- */
+.qp-tabs-loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* ---------------------------------------------------------
+   DRAG & DROP
+--------------------------------------------------------- */
+.qp-tabs-nav li.dragging {
+  opacity: 0.5;
+}
+
+.qp-tabs-nav li.drag-over {
+  background: #d0e7ff;
+}
+
+/* ---------------------------------------------------------
+   KONTEXTOVÉ MENU
+--------------------------------------------------------- */
+.qp-tabs-context {
+  position: absolute;
+  background: var(--qp-color-bg);
+  border: 1px solid var(--qp-color-border);
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+  z-index: 9999;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 2px 6px var(--qp-color-shadow);
+}
+
+.qp-tabs-context li {
+  padding: 6px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.qp-tabs-context li:hover {
+  background: var(--qp-color-primary);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE: MORE BUTTON
+--------------------------------------------------------- */
+.qp-tabs-more {
+  margin-left: auto;
+  padding: 6px 10px;
+  background: var(--qp-color-bg-hover);
+  border: 1px solid var(--qp-color-border);
+  cursor: pointer;
+  user-select: none;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qp-tabs-more:hover {
+  background: var(--qp-color-bg-selected);
+}
+
+.qp-tabs-more-menu {
+  position: absolute;
+  background: var(--qp-color-bg);
+  border: 1px solid var(--qp-color-border);
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+  z-index: 9999;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 2px 6px var(--qp-color-shadow);
+}
+
+.qp-tabs-more-menu li {
+  padding: 6px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.qp-tabs-more-menu li:hover {
+  background: var(--qp-color-primary);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------
+   NON-RESPONSIVE: SCROLL BUTTONS
+--------------------------------------------------------- */
+.qp-tabs-scroll-left,
+.qp-tabs-scroll-right {
+  width: 24px;
+  height: 100%;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  background: var(--qp-color-bg-hover);
+  border: 1px solid var(--qp-color-border);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.qp-tabs-scroll-left:hover,
+.qp-tabs-scroll-right:hover {
+  background: var(--qp-color-bg-selected);
+}
+
+/* ---------------------------------------------------------
+   NESTED TABS
+--------------------------------------------------------- */
+.qp-tabs-content .qp-tabs-nav-wrapper {
+  margin-top: 10px;
+  border-top: 1px solid var(--qp-color-border-light);
+}
+
+/* Core */
+/* ---------------------------------------------------------
+   QP TOOLBAR – FULL RESTORED + THEMED VERSION
+--------------------------------------------------------- */
+/* Wrapper */
+.qp-toolbar-wrapper {
+  background: var(--qp-color-bg-header);
+  border-bottom: 1px solid var(--qp-color-border);
+  padding: 4px;
+  position: relative;
+}
+
+/* ---------------------------------------------------------
+   TOOLBAR (obsah tlačítek)
+--------------------------------------------------------- */
+.qp-toolbar {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  position: relative;
+}
+
+.qp-toolbar::-webkit-scrollbar {
+  display: none; /* Chrome */
+}
+
+/* ---------------------------------------------------------
+   BUTTONY
+--------------------------------------------------------- */
+.qp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--qp-color-bg-hover);
+  border: 1px solid var(--qp-color-border);
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  margin-right: 4px;
+  transition: background 0.2s;
+  position: relative;
+}
+
+.qp-btn:hover {
+  background: var(--qp-color-bg-selected);
+}
+
+.qp-btn:active {
+  background: var(--qp-color-bg-hover);
+}
+
+/* ---------------------------------------------------------
+   TOGGLE BUTTON
+--------------------------------------------------------- */
+.qp-btn-toggle.active {
+  background: var(--qp-color-bg-selected);
+  border-color: var(--qp-color-primary);
+}
+
+/* ---------------------------------------------------------
+   IKONY
+--------------------------------------------------------- */
+.qp-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qp-btn-icon img {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------------------------------------------------------
+   TEXT
+--------------------------------------------------------- */
+.qp-btn-text {
+  display: inline-block;
+}
+
+/* ---------------------------------------------------------
+   DROPDOWN BUTTON
+--------------------------------------------------------- */
+.qp-btn-dropdown {
+  position: relative;
+  padding-right: 18px;
+}
+
+.qp-btn-arrow {
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+/* ---------------------------------------------------------
+   DROPDOWN MENU
+--------------------------------------------------------- */
+.qp-toolbar-dropdown {
+  position: absolute;
+  background: var(--qp-color-bg);
+  border: 1px solid var(--qp-color-border);
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+  z-index: 9999;
+  min-width: 120px;
+  box-shadow: 0 2px 6px var(--qp-color-shadow);
+}
+
+.qp-toolbar-dropdown li {
+  padding: 6px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.qp-toolbar-dropdown li:hover {
+  background: var(--qp-color-primary);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------
+   SEPARATOR
+--------------------------------------------------------- */
+.qp-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--qp-color-border);
+  margin: 0 6px;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE: MORE BUTTON
+--------------------------------------------------------- */
+.qp-toolbar-more {
+  margin-left: auto;
+  padding: 6px 10px;
+  background: var(--qp-color-bg-hover);
+  border: 1px solid var(--qp-color-border);
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qp-toolbar-more:hover {
+  background: var(--qp-color-bg-selected);
+}
+
+/* ---------------------------------------------------------
+   MORE POPUP MENU
+--------------------------------------------------------- */
+.qp-toolbar-more-menu {
+  position: absolute;
+  background: var(--qp-color-bg);
+  border: 1px solid var(--qp-color-border);
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+  z-index: 9999;
+  max-height: 300px;
+  overflow-y: auto;
+  min-width: 120px;
+  box-shadow: 0 2px 6px var(--qp-color-shadow);
+}
+
+.qp-toolbar-more-menu li {
+  padding: 6px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.qp-toolbar-more-menu li:hover {
+  background: var(--qp-color-primary);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------
+   NON-RESPONSIVE: SCROLL BUTTONS
+--------------------------------------------------------- */
+.qp-toolbar-scroll-left,
+.qp-toolbar-scroll-right {
+  width: 24px;
+  height: 100%;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  background: var(--qp-color-bg-hover);
+  border: 1px solid var(--qp-color-border);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.qp-toolbar-scroll-left:hover,
+.qp-toolbar-scroll-right:hover {
+  background: var(--qp-color-bg-selected);
+}
+
+/* ---------------------------------------------------------
+   DROPDOWN Z-INDEX FIX
+--------------------------------------------------------- */
+.qp-toolbar-wrapper,
+.qp-toolbar,
+.qp-btn {
+  position: relative;
+}
+
+/*# sourceMappingURL=jquery.qpx.default.css.map */

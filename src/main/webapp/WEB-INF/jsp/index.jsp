@@ -9,7 +9,10 @@
 		<title>Buriosca.cz - Darwin QPX</title>
 
 		<link rel="icon" href="/devel/favicon.png">
+		<%-- 
 		<link rel="stylesheet" href="/devel/libs/qpx/qpx-default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		--%>
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 
 		<style type="text/css">
 		html, body {
@@ -26,6 +29,8 @@
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpOverflowWidget.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpTabs.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpToolBar.js?build=${ timeNo }"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/src/qpButton.js?build=${ timeNo }"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/src/qpDropdownMenu.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGrid.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGridHeader.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGridHeaderCell.js?build=${ timeNo }"></script>
@@ -39,6 +44,21 @@
 		<script>
 		$("#mainToolbar").qpToolBar({
 			responsive: true,   // overflow → popup
+			data: [
+				{ type: "button", id: "save", text: "Save", icon: "save.svg" }, 
+				{ type: "button", id: "delete", text: "Delete", icon: "trash.svg", toggle: true }, 
+				{ type: "dropdown", id: "more", text: "More", menu: [
+					{ id: "export", text: "Export" }, 
+					{ id: "print", text: "Print" } 
+				]}, 
+				{ type: "separator" }, 
+				{ type: "button", id: "settings", text: "Settings", icon: "gear.svg" } 
+			], 
+			onClick: function(id, $btn) {
+				console.log("Clicked:", id); 
+			}
+		
+			/*
 			data: [
 				{ id: "new", text: "Nový", icon: "fa fa-file" },
 				{ id: "open", text: "Otevřít", icon: "fa fa-folder-open" },
@@ -67,6 +87,7 @@
 			onToggle: function(id, state) {
 				console.log("Toggle:", id, "→", state);
 			}
+			*/
 		});
 		</script>
 		<div id="myTabs" style="height: 150px;"></div>

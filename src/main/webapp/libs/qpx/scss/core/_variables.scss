@@ -1,101 +1,25 @@
-/* --------------------------------------------------------
- * LIGHT THEME — qpFramework
- * --------------------------------------------------------
- *
- * Tento soubor přepisuje globální proměnné
- * definované v core/_variables.scss
- *
- * Importuje se jako poslední, nebo se aplikuje
- * přes .theme-light wrapper.
- */
+/* ---------------------------------------------------------
+   GLOBAL DESIGN TOKENS
+--------------------------------------------------------- */
 
-/* ---------------------------------------
-   BARVY
---------------------------------------- */
-$qp-color-bg:            #ffffff !default;
-$qp-color-bg-alt:        #f7f7f7 !default;
-$qp-color-border:        #cccccc !default;
-$qp-color-border-dark:   #aaaaaa !default;
-$qp-color-text:          #222222 !default;
+/* Colors */
+$qp-color-bg: var(--qp-color-bg);
+$qp-color-bg-header: var(--qp-color-bg-header);
+$qp-color-bg-hover: var(--qp-color-bg-hover);
+$qp-color-bg-selected: var(--qp-color-bg-selected);
 
-$qp-color-primary:       #0078d4 !default;
-$qp-color-primary-hover: #006cbe !default;
+$qp-color-border: var(--qp-color-border);
+$qp-color-border-light: var(--qp-color-border-light);
 
-/* ---------------------------------------
-   BUTTONS
---------------------------------------- */
-$qp-btn-bg:              #eeeeee !default;
-$qp-btn-bg-hover:        #e4e4e4 !default;
-$qp-btn-bg-active:       #dcdcdc !default;
-$qp-btn-border:          #cccccc !default;
+$qp-color-primary: var(--qp-color-primary);
+$qp-color-shadow: var(--qp-color-shadow);
 
-$qp-btn-toggle-bg:       #d0e7ff !default;
-$qp-btn-toggle-border:   #7bb4f6 !default;
+/* Sizes */
+$qp-size-row-height: var(--qp-size-row-height);
+$qp-size-header-height: var(--qp-size-header-height);
+$qp-size-toolbar-height: var(--qp-size-toolbar-height);
+$qp-size-tabs-height: var(--qp-size-tabs-height);
 
-/* ---------------------------------------
-   DROPDOWNS & POPUPS
---------------------------------------- */
-$qp-dropdown-bg:         #ffffff !default;
-$qp-dropdown-border:     #aaaaaa !default;
-$qp-dropdown-shadow:     0 2px 6px rgba(0,0,0,0.2) !default;
-
-$qp-dropdown-hover-bg:   #0078d4 !default;
-$qp-dropdown-hover-color:#ffffff !default;
-
-/* ---------------------------------------
-   TOOLBAR
---------------------------------------- */
-$qp-toolbar-bg:          #f7f7f7 !default;
-$qp-toolbar-border:      #cccccc !default;
-
-/* ---------------------------------------
-   SEPARATORS
---------------------------------------- */
-$qp-separator-color:     #cccccc !default;
-
-/* ---------------------------------------
-   SCROLL BUTTONS
---------------------------------------- */
-$qp-scroll-btn-bg:       #eeeeee !default;
-$qp-scroll-btn-bg-hover: #dddddd !default;
-$qp-scroll-btn-border:   #cccccc !default;
-
-/* ---------------------------------------
-   TYPOGRAPHY
---------------------------------------- */
-$qp-font-size:           14px !default;
-$qp-font-family:         "Segoe UI", sans-serif !default;
-
-/* ---------------------------------------
-   SHADOWS
---------------------------------------- */
-$qp-shadow-sm:           0 1px 3px rgba(0,0,0,0.1) !default;
-$qp-shadow-md:           0 2px 6px rgba(0,0,0,0.2) !default;
-
-/* ---------------------------------------
-   SPACING & RADIUS
---------------------------------------- */
-$qp-radius-sm:           3px !default;
-$qp-radius-md:           4px !default;
-$qp-radius-lg:           6px !default;
-
-$qp-space-1:             4px !default;
-$qp-space-2:             6px !default;
-$qp-space-3:             8px !default;
-$qp-space-4:             10px !default;
-$qp-space-5:             14px !default;
-$qp-space-6:             20px !default;
-
-
-/* Z-index scale */ 
-$qp-z-popup: 9999 !default; 
-$qp-z-toolbar: 10 !default; 
-$qp-z-tabs: 5 !default;
-
-$qp-overflow-width: 32px !default;
-
-$qp-toolbar-more-bg: #eee !default;
-$qp-toolbar-more-border: #ccc !default;
-$qp-toolbar-more-bg-hover:  #ddd !default;
-
-$qp-scroll-btn-width: 24px !default;
+/* Typography */
+$qp-font-family: var(--qp-font-family);
+$qp-font-size: var(--qp-font-size);
