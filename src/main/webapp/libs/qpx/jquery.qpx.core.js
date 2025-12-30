@@ -1,5 +1,5 @@
 // ================================
-// 1) OOP engine: Class
+// OOP engine: Class
 // ================================
 (function(global) {
 

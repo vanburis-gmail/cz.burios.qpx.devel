@@ -18,12 +18,11 @@
  * </pre>
  * 
  */
-
 var qpMixin = {
-	apply: function(target, mixin) {
+	apply: function(targetPrototype, mixin) {
 		Object.keys(mixin).forEach(function(key) {
 			if (typeof mixin[key] === "function") {
-				target[key] = mixin[key];
+				targetPrototype[key] = mixin[key];
 			}
 		});
 	}

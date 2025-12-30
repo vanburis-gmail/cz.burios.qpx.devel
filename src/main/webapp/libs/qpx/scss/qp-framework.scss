@@ -11,7 +11,11 @@
 @use "theme/theme-high-contrast";
 
 /* Widgets */
-@use "widgets/qpDataGrid/index" as qpDataGrid;
+@use "widgets/qpButton/index" as qpButton;
+@use "widgets/qpDropdownMenu/index" as qpDropdownMenu;
+
 @use "widgets/qpOverflow/index" as qpOverflow;
-@use "widgets/qpTabs/index" as qpTabs;
+
 @use "widgets/qpToolBar/index" as qpToolBar;
+@use "widgets/qpTabs/index" as qpTabs;
+@use "widgets/qpDataGrid/index" as qpDataGrid;

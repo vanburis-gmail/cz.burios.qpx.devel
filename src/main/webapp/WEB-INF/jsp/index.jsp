@@ -22,8 +22,8 @@
 		</style>
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
 		<%-- 
+		--%>
 		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.core.js"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpWidgetFactory.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpOverflowWidget.js?build=${ timeNo }"></script>
@@ -35,7 +35,6 @@
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGridHeader.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGridHeaderCell.js?build=${ timeNo }"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/src/qpDataGridRow.js?build=${ timeNo }"></script>
-		--%>
 
 		<script></script>
 	</head>

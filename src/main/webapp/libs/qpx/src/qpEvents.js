@@ -16,15 +16,25 @@
  * </pre>
  * 
  */
+// ================================
+// 3) Globální EventEmitter pro komunikaci mezi widgety
+// ================================
 var qpEvents = {
 	_events: {},
+
 	on: function(event, handler) {
-		this._events[event] = this._events[event] || [];
+		if (!this._events[event]) {
+			this._events[event] = [];
+		}
 		this._events[event].push(handler);
 	},
+
 	off: function(event) {
-		delete this._events[event];
+		if (this._events[event]) {
+			delete this._events[event];
+		}
 	},
+
 	trigger: function(event, data) {
 		var handlers = this._events[event];
 		if (handlers) {
