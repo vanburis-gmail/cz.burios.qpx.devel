@@ -1,0 +1,57 @@
+/* ============================
+   BUTTON BASE
+============================ */
+$qp-btn-bg: #eee;
+$qp-btn-border: 1px solid #ccc;
+$qp-radius-sm: 3px;
+$qp-space-1: 4px;
+$qp-btn-bg-hover: #e4e4e4;
+$qp-btn-bg-active: #dcdcdc;
+
+$qp-btn-toggle-bg: #d0e7ff;
+$qp-btn-toggle-border: #7bb4f6;
+
+.qp-btn {
+    background: $qp-btn-bg;
+    border: 1px solid $qp-btn-border;
+    border-radius: $qp-radius-sm;
+
+    margin-right: $qp-space-1;
+
+    &:hover {
+        background: $qp-btn-bg-hover;
+    }
+
+    &:active {
+        background: $qp-btn-bg-active;
+    }
+}
+
+/* ============================
+   TOGGLE BUTTON
+============================ */
+.qp-btn-toggle.active {
+    background: $qp-btn-toggle-bg;
+    border-color: $qp-btn-toggle-border;
+}
+
+/* ============================
+   ICON
+============================ */
+.qp-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* ============================
+   TEXT
+============================ */
+.qp-btn-text {
+    display: inline-block;
+}

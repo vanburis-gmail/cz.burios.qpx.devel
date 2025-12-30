@@ -38,7 +38,7 @@
 
 		<script></script>
 	</head>
-	<body style="height: 100vh;overflow: auto;">
+	<body style="height: 100vh;overflow: auto;" data-theme="light">
 	
 		<div id="mainToolbar"></div>
 		<script>

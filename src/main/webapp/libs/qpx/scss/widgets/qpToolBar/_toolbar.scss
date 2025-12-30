@@ -4,10 +4,14 @@
 
 /* Wrapper */
 .qp-toolbar-wrapper {
-    background: var(--qp-color-bg-header);
-    border-bottom: 1px solid var(--qp-color-border);
-    padding: 4px;
-    position: relative;
+	position: relative;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+	background: var(--qp-color-bg-header);
+	border-bottom: 1px solid var(--qp-color-border);
+	padding-right: 32px;
+	/* rezerva pro More */
 }
 
 /* ---------------------------------------------------------

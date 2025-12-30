@@ -1,0 +1,45 @@
+/* --------------------------------------------------------
+ * qpDropdownMenu — SCSS
+ * --------------------------------------------------------
+ */
+$qp-space-5: 18px;
+$qp-space-1: 4px;
+$qp-dropdown-min-width: 120px;
+$qp-dropdown-item-padding-y: 6px; 
+$qp-dropdown-item-padding-x: 14px;
+$qp-dropdown-hover-bg: #0078d4;
+$qp-dropdown-hover-color: #fff;
+
+/* ============================
+   DROPDOWN BUTTON
+============================ */
+.qp-btn-dropdown {
+	position: relative;
+	padding-right: $qp-space-5;
+
+	.qp-btn-arrow {
+		font-size: 10px;
+		margin-left: $qp-space-1;
+	}
+}
+
+/* ============================
+   DROPDOWN MENU
+============================ */
+.qp-dropdown-menu,
+.qp-toolbar-dropdown {
+	min-width: $qp-dropdown-min-width;
+	max-height: 300px;
+	overflow-y: auto;
+
+	li {
+		padding: $qp-dropdown-item-padding-y $qp-dropdown-item-padding-x;
+		cursor: pointer;
+		white-space: nowrap;
+
+		&:hover {
+			background: $qp-dropdown-hover-bg;
+			color: $qp-dropdown-hover-color;
+		}
+	}
+}
