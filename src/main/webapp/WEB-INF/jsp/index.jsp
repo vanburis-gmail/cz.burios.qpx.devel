@@ -12,7 +12,7 @@
 		<%-- 
 		<link rel="stylesheet" href="/devel/libs/qpx/qpx-default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 		--%>
-		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 
 		<style type="text/css">
 		html, body {

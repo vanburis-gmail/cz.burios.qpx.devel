@@ -1,3 +1,4 @@
+
 /* Core */
 @use "core/variables";
 @use "core/mixins";
@@ -19,3 +20,57 @@
 @use "widgets/qpToolBar/index" as qpToolBar;
 @use "widgets/qpTabs/index" as qpTabs;
 @use "widgets/qpDataGrid/index" as qpDataGrid;
+
+/* -----  ----- */
+/*
+scss/
+│
+├── core/
+│   ├── _variables.scss
+│   ├── _mixins.scss
+│   ├── _functions.scss
+│   ├── _reset.scss
+│   └── _globals.scss
+│
+├── layout/
+│   ├── _grid.scss
+│   ├── _flex.scss
+│   └── _spacing.scss
+│
+├── themes/
+│   ├── _light.scss
+│   ├── _dark.scss
+│   └── _highcontrast.scss
+│
+├── widgets/
+│   ├── _qpTabs.scss
+│   ├── _qpTabNav.scss
+│   ├── _qpStackLayout.scss
+│   ├── _qpToolbar.scss
+│   ├── _qpOverflow.scss
+│   ├── _qpButton.scss
+│   ├── _qpInput.scss
+│   └── _index.scss
+│
+└── main.scss
+
+*/
+// Core
+@use "core/variables";
+@use "core/mixins";
+@use "core/functions";
+@use "core/reset";
+@use "core/globals";
+
+// Layout
+@use "layout/flex";
+@use "layout/grid";
+@use "layout/spacing";
+
+// Themes
+@use "themes/light";
+@use "themes/dark";
+@use "themes/highcontrast";
+
+// Widgets
+@use "widgets/index";

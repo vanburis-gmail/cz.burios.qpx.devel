@@ -2,17 +2,34 @@
  * MIXINS
  * -------------------------------------------------------- */
 
+@mixin qp-widget-base {
+    box-sizing: border-box;
+    font-family: $qp-font-family;
+    font-size: $qp-font-size;
+}
+@mixin qp-clickable {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+}
+@mixin qp-border {
+    border: 1px solid $qp-color-border;
+    border-radius: $qp-radius;
+}
+@mixin qp-scrollbar-hidden {
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+}
+
 @mixin qp-flex-center {
     display: flex;
     align-items: center;
     justify-content: center;
 }
-
 @mixin qp-scroll-hide {
     scrollbar-width: none;
     &::-webkit-scrollbar { display: none; }
 }
-
 @mixin qp-button-base {
     display: inline-flex;
     align-items: center;
@@ -23,7 +40,6 @@
     user-select: none;
     transition: background 0.2s;
 }
-
 @mixin qp-popup-base {
     position: absolute;
     background: $qp-color-bg;

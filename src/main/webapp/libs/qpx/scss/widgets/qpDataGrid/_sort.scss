@@ -1,3 +1,4 @@
+@use "../../core/variables" as v;
 .qp-dg-sort-icon {
 	width: 12px;
 	height: 12px;
@@ -14,8 +15,8 @@
 }
 
 .qp-dg-header-cell.sorted {
-	background: $qp-color-bg-selected;
-	color: $qp-color-primary;
+	background: v.$qp-color-bg-selected;
+	color: v.$qp-color-primary;
 
 	.qp-dg-sort-icon {
 		display: inline-flex;
@@ -31,7 +32,7 @@
 		width: 14px;
 		height: 14px;
 		border-radius: 50%;
-		background: $qp-color-primary;
+		background: v.$qp-color-primary;
 		color: #fff;
 		font-size: 10px;
 		display: flex;

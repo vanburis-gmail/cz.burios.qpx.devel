@@ -1,14 +1,15 @@
+@use "../../core/variables" as v;
 .qp-dg-row {
     display: flex;
     align-items: center;
-    height: $qp-size-row-height;
-    border-bottom: 1px solid $qp-color-border-light;
+    height: v.$qp-size-row-height;
+    border-bottom: 1px solid v.$qp-color-border-light;
 
     &:hover {
-        background: $qp-color-bg-hover;
+        background: v.$qp-color-bg-hover;
     }
 
     &.selected {
-        background: $qp-color-bg-selected;
+        background: v.$qp-color-bg-selected;
     }
 }

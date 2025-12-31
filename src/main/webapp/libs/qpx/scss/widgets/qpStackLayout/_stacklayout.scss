@@ -1,0 +1,14 @@
+.qp-stacklayout {
+	@include qp-widget-base;
+	@include qp-border;
+	background: $qp-color-bg;
+	padding: $qp-padding;
+
+	.qp-stack-item {
+		display: none;
+
+		&.active {
+			display: block;
+		}
+	}
+}

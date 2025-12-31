@@ -1,19 +1,20 @@
+@use "../../core/variables" as v;
 .qp-dg {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-	font-family: $qp-font-family;
-	font-size: $qp-font-size;
+	font-family: v.$qp-font-family;
+	font-size: v.$qp-font-size;
 }
 
 .qp-dg-header {
 	display: flex;
 	align-items: center;
-	height: $qp-size-header-height;
-	background: $qp-color-bg-header;
-	border-bottom: 1px solid $qp-color-border;
+	height: v.$qp-size-header-height;
+	background: v.$qp-color-bg-header;
+	border-bottom: 1px solid v.$qp-color-border;
 	user-select: none;
 }
 
@@ -27,15 +28,15 @@
 	display: flex;
 	align-items: center;
 	padding: 0 8px;
-	background: $qp-color-bg;
-	border-right: 1px solid $qp-color-border-light;
+	background: v.$qp-color-bg;
+	border-right: 1px solid v.$qp-color-border-light;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	position: relative;
 
 	&.sortable:hover {
-		background: $qp-color-bg-hover;
+		background: v.$qp-color-bg-hover;
 		cursor: pointer;
 	}
 

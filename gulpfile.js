@@ -20,6 +20,8 @@ gulp.task('build-js', function() {
 		"src/main/webapp/libs/qpx/src/qpDropdownMenu.js",
 		"src/main/webapp/libs/qpx/src/qpToolBar.js",
 		"src/main/webapp/libs/qpx/src/qpTabs.js",
+		"src/main/webapp/libs/qpx/src/qpTabNav.js",
+		"src/main/webapp/libs/qpx/src/qpStackLayout.js",
 		"src/main/webapp/libs/qpx/src/qpDataGrid.js",
 		"src/main/webapp/libs/qpx/src/qpDataGridHeader.js",
 		"src/main/webapp/libs/qpx/src/qpDataGridHeaderCell.js",

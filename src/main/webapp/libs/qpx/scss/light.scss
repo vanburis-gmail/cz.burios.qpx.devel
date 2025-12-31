@@ -31,11 +31,9 @@
 @use "widgets/qpToolBar/toolbar" as qpToolBar;
 @use "widgets/qpTabs/tabs" as qpTabs;
 
-/*
-@use "../../widgets/qpDataGrid/header" as qpDataGridHeader;
-@use "../../widgets/qpDataGrid/body" as qpDataGridBody;
-@use "../../widgets/qpDataGrid/rows" as qpDataGridRows;
-@use "../../widgets/qpDataGrid/sort" as qpDataGridSort;
-@use "../../widgets/qpDataGrid/popup" as qpDataGridPopup;
-@use "../../widgets/qpDataGrid/resize" as qpDataGridResize;
-*/
+@use "widgets/qpDataGrid/header" as qpDataGridHeader;
+@use "widgets/qpDataGrid/body" as qpDataGridBody;
+@use "widgets/qpDataGrid/rows" as qpDataGridRows;
+@use "widgets/qpDataGrid/sort" as qpDataGridSort;
+@use "widgets/qpDataGrid/popup" as qpDataGridPopup;
+@use "widgets/qpDataGrid/resize" as qpDataGridResize;

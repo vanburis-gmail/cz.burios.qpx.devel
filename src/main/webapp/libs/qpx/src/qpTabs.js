@@ -1,24 +1,34 @@
 /* --------------------------------------------------------
- * plugin: qpTabs
+ * widget: qpTabs (orchestrátor)
+ * používá: qpTabNav + qpStackLayout
  * --------------------------------------------------------
  */
-var qpTabs = qpOverflowWidget.extend({
+var qpTabs = qpWidget.extend({
 
 	_widgetName: "qpTabs",
 
-	version: "1.0.0",
+	version: "2.0.0",
 
 	defaults: {
 		active: 0,
+
+		// společné chování
+		responsive: true,
 		closable: true,
 		draggable: true,
+		contextMenu: true,
+
+		// obsah
 		lazy: false,
-		lazyLoader: null,
+		lazyLoader: null, // může být funkce nebo string (lookup)
 		ajax: false,
 		ajaxUrl: null,
 		ajaxMap: {},
-		contextMenu: true,
+
 		autoInitNested: true,
+
+		// deklarativní JSON konfigurace
+		// [{ title, content, icon, ajaxUrl, lazyLoader }]
 		data: []
 	},
 
@@ -28,182 +38,82 @@ var qpTabs = qpOverflowWidget.extend({
 	 */
 	_create: function() {
 
-		// root layout class
 		this.el.addClass("qp-tabs-root");
 
-		// NAV + CONTENT
-		this.nav = this.el.find(".qp-tabs-nav");
-		this.content = this.el.find(".qp-tabs-content");
+		// NAV WRAPPER + UL
+		var navWrapper = this.el.find(".qp-tabs-nav-wrapper");
+		var navList;
 
-		if (!this.nav.length) {
-			this.nav = $("<ul class='qp-tabs-nav'></ul>").appendTo(this.el);
+		if (navWrapper.length) {
+			navList = navWrapper.find(".qp-tabs-nav").first();
 		}
-		if (!this.content.length) {
-			this.content = $("<div class='qp-tabs-content'></div>").appendTo(this.el);
+		if (!navWrapper.length) {
+			navWrapper = $("<div class='qp-tabs-nav-wrapper'></div>").prependTo(this.el);
+		}
+		if (!navList || !navList.length) {
+			navList = $("<ul class='qp-tabs-nav'></ul>").appendTo(navWrapper);
 		}
 
-		// wrapper for nav
-		this.nav.wrap("<div class='qp-tabs-nav-wrapper'></div>");
-		this.wrapper = this.nav.parent();
+		// CONTENT
+		var contentEl = this.el.find(".qp-tabs-content");
+		if (!contentEl.length) {
+			contentEl = $("<div class='qp-tabs-content'></div>").appendTo(this.el);
+		}
 
-		// overflow logic (more button, popup, resize observer)
-		qpOverflowWidget.prototype._create.call(this);
+		// pokud máme JSON data, připravíme tabs/panels
+		var navTabs = [];
+		var panels = [];
 
-		// render initial HTML tabs
-		this._renderInitialTabs();
+		if (Array.isArray(this.options.data) && this.options.data.length) {
+			for (var i = 0;i < this.options.data.length;i++) {
+				var item = this.options.data[i];
+				navTabs.push({
+					title: item.title || "Tab",
+					icon: item.icon || null
+				});
+				panels.push({
+					content: item.content || ""
+				});
 
-		// render data-driven tabs
-		this._renderDataTabs();
+				if (item.ajaxUrl) {
+					this.options.ajax = true;
+					this.options.ajaxMap[i] = item.ajaxUrl;
+				}
 
-		// bind events
-		this._bind();
+				if (item.lazyLoader) {
+					this.options.lazy = true;
+					this.options.lazyLoader = item.lazyLoader;
+				}
+			}
+		}
 
-		// activate initial tab
+		// INIT CHILD WIDGETS
+		this.nav = new qpTabNav(navWrapper, {
+			tabs: navTabs,
+			closable: this.options.closable,
+			draggable: this.options.draggable,
+			responsive: this.options.responsive,
+			contextMenu: this.options.contextMenu
+		});
+
+		this.content = new qpStackLayout(contentEl, {
+			panels: panels,
+			lazy: this.options.lazy,
+			lazyLoader: this.options.lazyLoader,
+			ajax: this.options.ajax,
+			ajaxUrl: this.options.ajaxUrl,
+			ajaxMap: this.options.ajaxMap
+		});
+
+		// propojení eventů
+		this._bindNavEvents();
+
+		// HTML initial (pokud nebyla data) – necháme existovat:
+		// - qpTabNav si dekoruje <li>
+		// - qpStackLayout používá .qp-tab-panel
+
+		// aktivace počátečního tabu
 		this.activate(this.options.active);
-
-		// overflow check
-		this.checkOverflow();
-	},
-
-	/* ---------------------------------------
-	 * TEMPLATE SUPPORT
-	 * ---------------------------------------
-	 */
-	_renderTemplate: function(tpl, data) {
-
-		// function template
-		if (typeof tpl === "function") {
-			return tpl(data);
-		}
-
-		// template ID
-		if (typeof tpl === "string" && tpl.startsWith("#")) {
-			var html = $(tpl).html();
-			if (!html) {
-				console.warn("qpTabs: template not found:", tpl);
-				return "";
-			}
-			tpl = html;
-		}
-
-		// string template
-		if (typeof tpl === "string") {
-			return tpl.replace(/\{\{(\w+)\}\}/g, function(_, key) {
-				return data && data[key] != null ? data[key] : "";
-			});
-		}
-
-		console.warn("qpTabs: unsupported template:", tpl);
-		return "";
-	},
-
-	/* ---------------------------------------
-	 * UNIVERSAL CONTENT RENDERER
-	 * ---------------------------------------
-	 */
-	_renderContent: function(content, $container) {
-
-		// 1) TEMPLATE
-		if ($.isPlainObject(content) && (content.template || content.templateId)) {
-			var tpl = content.template || content.templateId;
-			var html = this._renderTemplate(tpl, content.data || {});
-			$container.html(html);
-			return;
-		}
-
-		// 2) lazy function
-		if (typeof content === "function") {
-			content = content.call(this);
-		}
-
-		// 3) array
-		if (Array.isArray(content)) {
-			for (var i = 0; i < content.length; i++) {
-				this._renderContent(content[i], $container);
-			}
-			return;
-		}
-
-		// 4) JSON widget
-		if (this._isWidgetJson(content)) {
-			qpWidgetFactory.create(content, $container);
-			return;
-		}
-
-		// 5) instance of widget
-		if (content instanceof qpWidget) {
-			$container.append(content.el);
-			return;
-		}
-
-		// 6) jQuery element
-		if (content instanceof jQuery) {
-			$container.append(content);
-			return;
-		}
-
-		// 7) HTML / text
-		if (typeof content === "string" || typeof content === "number") {
-			$container.html(content);
-			return;
-		}
-
-		if (content != null) {
-			console.warn("qpTabs: Unsupported content:", content);
-		}
-	},
-
-	_isWidgetJson: function(obj) {
-		return $.isPlainObject(obj) && typeof obj.type === "string";
-	},
-
-	/* ---------------------------------------
-	 * INITIAL HTML TABS
-	 * ---------------------------------------
-	 */
-	_renderInitialTabs: function() {
-		var self = this;
-		this.nav.children().each(function() {
-			self._decorateTab($(this));
-		});
-	},
-
-	/* ---------------------------------------
-	 * DATA → TABS
-	 * ---------------------------------------
-	 */
-	_renderDataTabs: function() {
-		var self = this;
-
-		if (!this.options.data || !this.options.data.length) return;
-
-		this.options.data.forEach(function(item) {
-			var idx = self.add(
-				item.title || "Tab",
-				item.content || "",
-				item.icon || null
-			);
-
-			if (item.ajaxUrl) {
-				self.options.ajax = true;
-				self.options.ajaxMap[idx] = item.ajaxUrl;
-			}
-
-			if (item.lazyLoader) {
-				self.options.lazy = true;
-				self.options.lazyLoader = item.lazyLoader;
-			}
-		});
-	},
-
-	/* ---------------------------------------
-	 * DECORATE TAB
-	 * ---------------------------------------
-	 */
-	_decorateTab: function($tab) {
-		if (this.options.closable && !$tab.find(".qp-tab-close").length) {
-			$("<span class='qp-tab-close'>×</span>").appendTo($tab);
-		}
 	},
 
 	/* ---------------------------------------
@@ -211,20 +121,14 @@ var qpTabs = qpOverflowWidget.extend({
 	 * ---------------------------------------
 	 */
 	add: function(title, content, icon) {
-		var index = this.nav.children().length;
-
-		var $tab = $("<li>" + title + "</li>");
-		this._decorateTab($tab);
-		this.nav.append($tab);
-
-		var $panel = $("<div class='qp-tab-panel'></div>");
-		this._renderContent(content, $panel);
-		this.content.append($panel);
-
-		if (this.options.draggable) $tab.attr("draggable", true);
+		var index = this.nav.addTab(title, icon);
+		this.content.addPanel(content);
 
 		this.activate(index);
-		this.checkOverflow();
+
+		if (typeof this.nav.checkOverflow === "function") {
+			this.nav.checkOverflow();
+		}
 
 		return index;
 	},
@@ -234,13 +138,16 @@ var qpTabs = qpOverflowWidget.extend({
 	 * ---------------------------------------
 	 */
 	remove: function(index) {
-		this.nav.children().eq(index).remove();
-		this.content.children().eq(index).remove();
+		this.nav.removeTab(index);
+		this.content.removePanel(index);
 
-		var newIndex = Math.min(index, this.nav.children().length - 1);
+		var tabs = this.nav.getTabs();
+		var newIndex = Math.min(index, tabs.length - 1);
 		if (newIndex >= 0) this.activate(newIndex);
 
-		this.checkOverflow();
+		if (typeof this.nav.checkOverflow === "function") {
+			this.nav.checkOverflow();
+		}
 	},
 
 	/* ---------------------------------------
@@ -248,18 +155,18 @@ var qpTabs = qpOverflowWidget.extend({
 	 * ---------------------------------------
 	 */
 	activate: function(index) {
-		var tabs = this.nav.children();
-		var contents = this.content.children();
+		var tabs = this.nav.getTabs();
+		var panels = this.content.getPanels();
 
 		if (!tabs.length) return;
 
 		index = Math.max(0, Math.min(index, tabs.length - 1));
 		this.options.active = index;
 
-		tabs.removeClass("active").eq(index).addClass("active");
-		contents.removeClass("active").eq(index).addClass("active");
+		this.nav.activate(index);
+		this.content.activate(index);
 
-		var $panel = contents.eq(index);
+		var $panel = panels.eq(index);
 
 		// lazy loader
 		if (this.options.lazy && !$panel.data("loaded") && typeof this.options.lazyLoader === "function") {
@@ -292,56 +199,19 @@ var qpTabs = qpOverflowWidget.extend({
 	},
 
 	/* ---------------------------------------
-	 * BIND EVENTS
+	 * NAV EVENTS BINDING
 	 * ---------------------------------------
 	 */
-	_bind: function() {
+	_bindNavEvents: function() {
 		var self = this;
-		var ns = "." + this._widgetName;
 
-		// click on tab
-		this.nav.on("click" + ns, "li", function() {
-			self.activate($(this).index());
+		this.nav.onTabClick(function(index) {
+			self.activate(index);
 		});
 
-		// close button
-		this.nav.on("click" + ns, ".qp-tab-close", function(e) {
-			e.stopPropagation();
-			var index = $(this).closest("li").index();
+		this.nav.onTabClose(function(index) {
 			self.remove(index);
 		});
-	},
-
-	/* ---------------------------------------
-	 * OVERFLOW API (UNIFIED)
-	 * ---------------------------------------
-	 */
-	getOverflowTargetWidth: function() {
-		return this.wrapper.width();
-	},
-
-	getOverflowItems: function() {
-		var items = [];
-		var wrapperRight = this.wrapper.offset().left + this.wrapper.width();
-		var moreWidth = this.moreBtn.outerWidth();
-
-		this.nav.children().each((i, el) => {
-			var $el = $(el);
-			var right = $el.offset().left + $el.outerWidth();
-
-			if (right > wrapperRight - moreWidth) {
-				items.push({
-					text: $el.text().trim(),
-					action: () => this.activate(i)
-				});
-			}
-		});
-
-		return items;
-	},
-
-	onOverflowChange: function(isOverflowing) {
-		// nothing special for tabs
 	}
 });
 
