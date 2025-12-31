@@ -1,0 +1,41 @@
+@use "theme/light" as theme; 
+@use "core/variables" as v with (
+	$qp-color-bg: theme.$qp-color-bg,
+	$qp-color-bg-header: theme.$qp-color-bg-header,
+	$qp-color-bg-hover: theme.$qp-color-bg-hover,
+	$qp-color-bg-selected: theme.$qp-color-bg-selected,
+	$qp-color-border: theme.$qp-color-border,
+	$qp-color-border-light: theme.$qp-color-border-light,
+	$qp-color-primary: theme.$qp-color-primary,
+	$qp-color-text: theme.$qp-color-text,
+	$qp-color-shadow: theme.$qp-color-shadow,
+
+	$qp-btn-bg: theme.$qp-btn-bg, 
+	$qp-btn-bg-hover: theme.$qp-btn-bg-hover,
+	$qp-btn-bg-active: theme.$qp-btn-bg-active,
+
+	$qp-btn-toggle-bg: theme.$qp-btn-toggle-bg,
+	$qp-btn-toggle-border: theme.$qp-btn-toggle-border,
+	
+	$qp-radius-sm: theme.$qp-radius-sm,
+	
+	$qp-space-1: theme.$qp-space-1,
+	$qp-space-2: theme.$qp-space-2,
+	$qp-space-4: theme.$qp-space-4,
+	$qp-space-5: theme.$qp-space-5,
+);
+/* Widgets */
+@use "widgets/qpButton/button" as qpButton;
+@use "widgets/qpDropdownMenu/dropdownmenu" as qpDropdownMenu;
+@use "widgets/qpOverflow/overflow" as qpOverflow;
+@use "widgets/qpToolBar/toolbar" as qpToolBar;
+@use "widgets/qpTabs/tabs" as qpTabs;
+
+/*
+@use "../../widgets/qpDataGrid/header" as qpDataGridHeader;
+@use "../../widgets/qpDataGrid/body" as qpDataGridBody;
+@use "../../widgets/qpDataGrid/rows" as qpDataGridRows;
+@use "../../widgets/qpDataGrid/sort" as qpDataGridSort;
+@use "../../widgets/qpDataGrid/popup" as qpDataGridPopup;
+@use "../../widgets/qpDataGrid/resize" as qpDataGridResize;
+*/

@@ -1,11 +1,11 @@
 .qp-dg-header-popup {
 	position: absolute;
-	top: var(--qp-size-header-height);
+	top: $qp-size-header-height;
 	right: 0;
 	min-width: 160px;
-	background: var(--qp-color-bg);
-	border: 1px solid var(--qp-color-border);
-	box-shadow: 0 2px 6px var(--qp-color-shadow);
+	background: $qp-color-bg;
+	border: 1px solid $qp-color-border;
+	box-shadow: 0 2px 6px $qp-color-shadow;
 	z-index: 9999;
 	padding: 4px 0;
 }
@@ -17,6 +17,6 @@
 	cursor: pointer;
 
 	&:hover {
-		background: var(--qp-color-bg-hover);
+		background: $qp-color-bg-hover;
 	}
 }

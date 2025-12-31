@@ -4,16 +4,16 @@
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-	font-family: var(--qp-font-family);
-	font-size: var(--qp-font-size);
+	font-family: $qp-font-family;
+	font-size: $qp-font-size;
 }
 
 .qp-dg-header {
 	display: flex;
 	align-items: center;
-	height: var(--qp-size-header-height);
-	background: var(--qp-color-bg-header);
-	border-bottom: 1px solid var(--qp-color-border);
+	height: $qp-size-header-height;
+	background: $qp-color-bg-header;
+	border-bottom: 1px solid $qp-color-border;
 	user-select: none;
 }
 
@@ -27,15 +27,15 @@
 	display: flex;
 	align-items: center;
 	padding: 0 8px;
-	background: var(--qp-color-bg);
-	border-right: 1px solid var(--qp-color-border-light);
+	background: $qp-color-bg;
+	border-right: 1px solid $qp-color-border-light;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	position: relative;
 
 	&.sortable:hover {
-		background: var(--qp-color-bg-hover);
+		background: $qp-color-bg-hover;
 		cursor: pointer;
 	}
 

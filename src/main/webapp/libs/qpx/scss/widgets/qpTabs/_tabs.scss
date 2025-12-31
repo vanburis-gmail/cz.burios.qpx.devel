@@ -1,14 +1,16 @@
 /* ---------------------------------------------------------
-   QP TABS – FULL RECONSTRUCTION WITH DESIGN SYSTEM
---------------------------------------------------------- */
-
+ * qpTabs
+ * --------------------------------------------------------- 
+ */
+ @use "../../core/variables" as v;
+ 
 /* Root container */
 .qp-tabs-root {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	font-family: var(--qp-font-family);
-	font-size: var(--qp-font-size);
+	font-family: v.$qp-font-family;
+	font-size: v.$qp-font-size;
 }
 
 /* Wrapper pro záložky */
@@ -17,8 +19,8 @@
 	display: flex;
 	align-items: center;
 	overflow: hidden;
-	background: var(--qp-color-bg-header);
-	border-bottom: 1px solid var(--qp-color-border);
+	background: v.$qp-color-bg-header;
+	border-bottom: 1px solid v.$qp-color-border;
 	padding-right: 32px;
 	/* rezerva pro More */
 }
@@ -40,16 +42,14 @@
 	/* Chrome */
 }
 
-/* ---------------------------------------------------------
-   TABY
---------------------------------------------------------- */
+/* TABY */
 .qp-tabs-nav li {
 	padding: 8px 14px;
 	cursor: pointer;
 	position: relative;
 	user-select: none;
-	border-right: 1px solid var(--qp-color-border-light);
-	background: var(--qp-color-bg-hover);
+	border-right: 1px solid v.$qp-color-border-light;
+	background: v.$qp-color-bg-hover;
 	transition: background 0.2s;
 	display: flex;
 	align-items: center;
@@ -57,18 +57,16 @@
 }
 
 .qp-tabs-nav li:hover {
-	background: var(--qp-color-bg-hover);
+	background: v.$qp-color-bg-hover;
 }
 
 .qp-tabs-nav li.active {
-	background: var(--qp-color-bg);
-	border-bottom: 2px solid var(--qp-color-primary);
+	background: v.$qp-color-bg;
+	border-bottom: 2px solid v.$qp-color-primary;
 	font-weight: bold;
 }
 
-/* ---------------------------------------------------------
-   IKONY
---------------------------------------------------------- */
+/* IKONY */
 .qp-tab-icon {
 	display: inline-flex;
 	align-items: center;
@@ -80,9 +78,7 @@
 	height: 14px;
 }
 
-/* ---------------------------------------------------------
-   CLOSE BUTTON
---------------------------------------------------------- */
+/* CLOSE BUTTON */
 .qp-tab-close {
 	margin-left: 6px;
 	color: #666;
@@ -95,13 +91,11 @@
 	color: #c00;
 }
 
-/* ---------------------------------------------------------
-   OBSAH TABŮ
---------------------------------------------------------- */
+/* OBSAH TABŮ */
 .qp-tabs-content {
 	padding: 12px;
-	background: var(--qp-color-bg);
-	border: 1px solid var(--qp-color-border);
+	background: v.$qp-color-bg;
+	border: 1px solid v.$qp-color-border;
 	border-top: none;
 	flex: 1 1 auto;
 	position: relative;
@@ -127,9 +121,7 @@
 	display: block;
 }
 
-/* ---------------------------------------------------------
-   LOADING
---------------------------------------------------------- */
+/* LOADING */
 .qp-tabs-loading {
 	padding: 20px;
 	text-align: center;
@@ -137,9 +129,7 @@
 	font-style: italic;
 }
 
-/* ---------------------------------------------------------
-   DRAG & DROP
---------------------------------------------------------- */
+/* DRAG & DROP */
 .qp-tabs-nav li.dragging {
 	opacity: 0.5;
 }
@@ -148,20 +138,18 @@
 	background: #d0e7ff;
 }
 
-/* ---------------------------------------------------------
-   KONTEXTOVÉ MENU
---------------------------------------------------------- */
+/* KONTEXTOVÉ MENU */
 .qp-tabs-context {
 	position: absolute;
-	background: var(--qp-color-bg);
-	border: 1px solid var(--qp-color-border);
+	background: v.$qp-color-bg;
+	border: 1px solid v.$qp-color-border;
 	list-style: none;
 	padding: 4px 0;
 	margin: 0;
 	z-index: 9999;
 	max-height: 300px;
 	overflow-y: auto;
-	box-shadow: 0 2px 6px var(--qp-color-shadow);
+	box-shadow: 0 2px 6px v.$qp-color-shadow;
 }
 
 .qp-tabs-context li {
@@ -171,18 +159,16 @@
 }
 
 .qp-tabs-context li:hover {
-	background: var(--qp-color-primary);
+	background: v.$qp-color-primary;
 	color: #fff;
 }
 
-/* ---------------------------------------------------------
-   RESPONSIVE: MORE BUTTON
---------------------------------------------------------- */
+/* RESPONSIVE: MORE BUTTON */
 .qp-tabs-more {
 	margin-left: auto;
 	padding: 6px 10px;
-	background: var(--qp-color-bg-hover);
-	border: 1px solid var(--qp-color-border);
+	background: v.$qp-color-bg-hover;
+	border: 1px solid v.$qp-color-border;
 	cursor: pointer;
 	user-select: none;
 	border-radius: 3px;
@@ -192,20 +178,20 @@
 }
 
 .qp-tabs-more:hover {
-	background: var(--qp-color-bg-selected);
+	background: v.$qp-color-bg-selected;
 }
 
 .qp-tabs-more-menu {
 	position: absolute;
-	background: var(--qp-color-bg);
-	border: 1px solid var(--qp-color-border);
+	background: v.$qp-color-bg;
+	border: 1px solid v.$qp-color-border;
 	list-style: none;
 	padding: 4px 0;
 	margin: 0;
 	z-index: 9999;
 	max-height: 300px;
 	overflow-y: auto;
-	box-shadow: 0 2px 6px var(--qp-color-shadow);
+	box-shadow: 0 2px 6px v.$qp-color-shadow;
 }
 
 .qp-tabs-more-menu li {
@@ -215,13 +201,11 @@
 }
 
 .qp-tabs-more-menu li:hover {
-	background: var(--qp-color-primary);
+	background: v.$qp-color-primary;
 	color: #fff;
 }
 
-/* ---------------------------------------------------------
-   NON-RESPONSIVE: SCROLL BUTTONS
---------------------------------------------------------- */
+/* NON-RESPONSIVE: SCROLL BUTTONS */
 .qp-tabs-scroll-left,
 .qp-tabs-scroll-right {
 	width: 24px;
@@ -229,8 +213,8 @@
 	text-align: center;
 	cursor: pointer;
 	user-select: none;
-	background: var(--qp-color-bg-hover);
-	border: 1px solid var(--qp-color-border);
+	background: v.$qp-color-bg-hover;
+	border: 1px solid v.$qp-color-border;
 	display: none;
 	align-items: center;
 	justify-content: center;
@@ -239,13 +223,11 @@
 
 .qp-tabs-scroll-left:hover,
 .qp-tabs-scroll-right:hover {
-	background: var(--qp-color-bg-selected);
+	background: v.$qp-color-bg-selected;
 }
 
-/* ---------------------------------------------------------
-   NESTED TABS
---------------------------------------------------------- */
+/* NESTED TABS */
 .qp-tabs-content .qp-tabs-nav-wrapper {
 	margin-top: 10px;
-	border-top: 1px solid var(--qp-color-border-light);
+	border-top: 1px solid v.$qp-color-border-light;
 }

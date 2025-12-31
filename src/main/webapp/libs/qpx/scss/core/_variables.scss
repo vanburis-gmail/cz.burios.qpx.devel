@@ -1,25 +1,61 @@
 /* ---------------------------------------------------------
    GLOBAL DESIGN TOKENS
 --------------------------------------------------------- */
-
+/* Typography */
+$qp-font-family: "Segoe UI";
+$qp-font-size: 12px;
 /* Colors */
-$qp-color-bg: var(--qp-color-bg);
-$qp-color-bg-header: var(--qp-color-bg-header);
-$qp-color-bg-hover: var(--qp-color-bg-hover);
-$qp-color-bg-selected: var(--qp-color-bg-selected);
+$qp-color-bg: #fafafa !default;
+$qp-color-bg-header: #f7f7f7 !default;
+$qp-color-bg-hover: #eef3ff !default;
+$qp-color-bg-selected: #dce9ff !default;
 
-$qp-color-border: var(--qp-color-border);
-$qp-color-border-light: var(--qp-color-border-light);
+$qp-color-border: #ccc !default;
+$qp-color-border-light: #ddd !default;
 
-$qp-color-primary: var(--qp-color-primary);
-$qp-color-shadow: var(--qp-color-shadow);
+$qp-color-text: #333 !default;
+
+$qp-color-primary: #0050a8 !default;
+$qp-color-shadow: rgba(0, 0, 0, 0.15) !default;
 
 /* Sizes */
-$qp-size-row-height: var(--qp-size-row-height);
-$qp-size-header-height: var(--qp-size-header-height);
-$qp-size-toolbar-height: var(--qp-size-toolbar-height);
-$qp-size-tabs-height: var(--qp-size-tabs-height);
+$qp-size-row-height: 32px !default;
+$qp-size-header-height: 32px !default;
+$qp-size-toolbar-height: 36px !default;
+$qp-size-tabs-height: 32px !default;
 
-/* Typography */
-$qp-font-family: var(--qp-font-family);
-$qp-font-size: var(--qp-font-size);
+$qp-space-1: 4px !default;
+$qp-space-2: 6px !default;
+$qp-space-4: 14px !default;
+$qp-space-5: 18px !default;
+
+$qp-radius-sm: 3px !default;
+
+/* widgets */
+$qp-btn-bg: #eee !default;
+
+$qp-btn-bg-hover: #e4e4e4 !default;
+$qp-btn-bg-active: #dcdcdc !default;
+
+$qp-btn-toggle-bg: #d0e7ff !default;
+$qp-btn-toggle-border: #7bb4f6 !default;
+
+$qp-dropdown-min-width: 120px;
+$qp-dropdown-hover-bg: #0078d4 !default;
+$qp-dropdown-hover-color: #fff !default;
+
+/*
+--dx-component-color-bg: #fff;
+--dx-color-main-bg: #fff;
+--dx-color-primary: #337ab7;
+--dx-color-danger: #d9534f;
+--dx-color-success: #5cb85c;
+--dx-color-warning: #f0ad4e;
+--dx-color-border: #ddd;
+--dx-color-text: #333;
+--dx-color-icon: #333;
+--dx-color-spin-icon: #333;
+--dx-color-link: #337ab7;
+--dx-color-shadow: black;
+--dx-color-separator: #ddd;
+*/

@@ -1,6 +1,8 @@
 /* ---------------------------------------------------------
-   QP TOOLBAR – FULL RESTORED + THEMED VERSION
---------------------------------------------------------- */
+ * qpToolBar
+ * ---------------------------------------------------------
+ */
+@use "../../core/variables" as v;
 
 /* Wrapper */
 .qp-toolbar-wrapper {
@@ -8,15 +10,13 @@
 	display: flex;
 	align-items: center;
 	overflow: hidden;
-	background: var(--qp-color-bg-header);
-	border-bottom: 1px solid var(--qp-color-border);
+	background: v.$qp-color-bg-header;
+	border-bottom: 1px solid v.$qp-color-border;
 	padding-right: 32px;
 	/* rezerva pro More */
 }
 
-/* ---------------------------------------------------------
-   TOOLBAR (obsah tlačítek)
---------------------------------------------------------- */
+/* TOOLBAR (obsah tlačítek) */
 .qp-toolbar {
     display: flex;
     align-items: center;
@@ -30,17 +30,15 @@
     display: none; /* Chrome */
 }
 
-/* ---------------------------------------------------------
-   BUTTONY
---------------------------------------------------------- */
+/* BUTTONY */
 .qp-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 6px 10px;
 
-    background: var(--qp-color-bg-hover);
-    border: 1px solid var(--qp-color-border);
+    background: v.$qp-color-bg-hover;
+    border: 1px solid v.$qp-color-border;
     border-radius: 3px;
 
     cursor: pointer;
@@ -51,24 +49,20 @@
 }
 
 .qp-btn:hover {
-    background: var(--qp-color-bg-selected);
+    background: v.$qp-color-bg-selected;
 }
 
 .qp-btn:active {
-    background: var(--qp-color-bg-hover);
+    background: v.$qp-color-bg-hover;
 }
 
-/* ---------------------------------------------------------
-   TOGGLE BUTTON
---------------------------------------------------------- */
+/* TOGGLE BUTTON */
 .qp-btn-toggle.active {
-    background: var(--qp-color-bg-selected);
-    border-color: var(--qp-color-primary);
+    background: v.$qp-color-bg-selected;
+    border-color: v.$qp-color-primary;
 }
 
-/* ---------------------------------------------------------
-   IKONY
---------------------------------------------------------- */
+/* IKONY */
 .qp-btn-icon {
     display: inline-flex;
     align-items: center;
@@ -80,16 +74,12 @@
     height: 16px;
 }
 
-/* ---------------------------------------------------------
-   TEXT
---------------------------------------------------------- */
+/* TEXT */
 .qp-btn-text {
     display: inline-block;
 }
 
-/* ---------------------------------------------------------
-   DROPDOWN BUTTON
---------------------------------------------------------- */
+/* DROPDOWN BUTTON */
 .qp-btn-dropdown {
     position: relative;
     padding-right: 18px;
@@ -100,9 +90,7 @@
     margin-left: 4px;
 }
 
-/* ---------------------------------------------------------
-   DROPDOWN MENU
---------------------------------------------------------- */
+/* DROPDOWN MENU */
 .qp-toolbar-dropdown {
     position: absolute;
     background: var(--qp-color-bg);
@@ -126,9 +114,7 @@
     color: #fff;
 }
 
-/* ---------------------------------------------------------
-   SEPARATOR
---------------------------------------------------------- */
+/* SEPARATOR  */
 .qp-separator {
     width: 1px;
     height: 20px;
@@ -215,9 +201,7 @@
     background: var(--qp-color-bg-selected);
 }
 
-/* ---------------------------------------------------------
-   DROPDOWN Z-INDEX FIX
---------------------------------------------------------- */
+/* DROPDOWN Z-INDEX FIX */
 .qp-toolbar-wrapper,
 .qp-toolbar,
 .qp-btn {

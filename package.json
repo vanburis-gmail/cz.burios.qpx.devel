@@ -6,7 +6,9 @@
 		"sass": "^1.97.1"
 	},
 	"scripts": {
-		"build-css": "npx sass \"src/main/webapp/libs/qpx/scss/qp-framework.scss\" \"src/main/webapp/libs/qpx/themes/jquery.qpx.default.css\"",
+		"build-css": "npx sass --no-source-map \"src/main/webapp/libs/qpx/scss/qp-framework.scss\" \"src/main/webapp/libs/qpx/themes/jquery.qpx.default.css\"",
+		"build-light": "npx sass --no-source-map \"src/main/webapp/libs/qpx/scss/light.scss\" \"src/main/webapp/libs/qpx/themes/jquery.qpx.light.css\"",
+		"build-dark": "npx sass --no-source-map \"src/main/webapp/libs/qpx/scss/dark.scss\" \"src/main/webapp/libs/qpx/themes/jquery.qpx.dark.css\"",
 		"watch-css": "npx sass --watch --no-source-map \"src/main/webapp/libs/qpx/scss/qp-framework.scss\" \"src/main/webapp/libs/qpx/themes/jquery.qpx.default.css\"",
 		"test-css": "npx sass \"src/main/webapp/libs/qpx/scss/qp-framework.scss\"",
 		"build-js": "gulp build-js"

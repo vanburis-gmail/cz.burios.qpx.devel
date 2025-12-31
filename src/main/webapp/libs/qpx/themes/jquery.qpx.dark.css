@@ -1,0 +1,69 @@
+/* ---------------------------------------------------------
+   GLOBAL DESIGN TOKENS
+--------------------------------------------------------- */
+/* Colors 
+$qp-color-bg: var(--qp-color-bg);
+$qp-color-bg-header: var(--qp-color-bg-header);
+$qp-color-bg-hover: var(--qp-color-bg-hover);
+$qp-color-bg-selected: var(--qp-color-bg-selected);
+
+$qp-color-border: var(--qp-color-border);
+$qp-color-border-light: var(--qp-color-border-light);
+
+$qp-color-primary: var(--qp-color-primary);
+$qp-color-shadow: var(--qp-color-shadow);
+*/
+/* Sizes 
+$qp-size-row-height: var(--qp-size-row-height);
+$qp-size-header-height: var(--qp-size-header-height);
+$qp-size-toolbar-height: var(--qp-size-toolbar-height);
+$qp-size-tabs-height: var(--qp-size-tabs-height);
+*/
+/* Typography 
+$qp-font-family: var(--qp-font-family);
+$qp-font-size: var(--qp-font-size);
+*/
+/* Widgets */
+/* ============================
+   BUTTON BASE
+============================ */
+.qp-btn {
+  background: #2a2a2a;
+  border: 1px solid 1px solid #aaa;
+  border-radius: 3px;
+  margin-right: 4px;
+}
+.qp-btn:hover {
+  background: #454545;
+}
+.qp-btn:active {
+  background: #565656;
+}
+
+/* ============================
+   TOGGLE BUTTON
+============================ */
+.qp-btn-toggle.active {
+  background: rgb(0, 118, 236);
+  border-color: rgb(15, 106, 206);
+}
+
+/* ============================
+   ICON
+============================ */
+.qp-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.qp-btn-icon img {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================
+   TEXT
+============================ */
+.qp-btn-text {
+  display: inline-block;
+}
