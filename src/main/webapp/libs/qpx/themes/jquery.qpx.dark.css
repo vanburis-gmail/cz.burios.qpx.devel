@@ -1,69 +1,203 @@
-/* ---------------------------------------------------------
-   GLOBAL DESIGN TOKENS
---------------------------------------------------------- */
-/* Colors 
-$qp-color-bg: var(--qp-color-bg);
-$qp-color-bg-header: var(--qp-color-bg-header);
-$qp-color-bg-hover: var(--qp-color-bg-hover);
-$qp-color-bg-selected: var(--qp-color-bg-selected);
-
-$qp-color-border: var(--qp-color-border);
-$qp-color-border-light: var(--qp-color-border-light);
-
-$qp-color-primary: var(--qp-color-primary);
-$qp-color-shadow: var(--qp-color-shadow);
-*/
-/* Sizes 
-$qp-size-row-height: var(--qp-size-row-height);
-$qp-size-header-height: var(--qp-size-header-height);
-$qp-size-toolbar-height: var(--qp-size-toolbar-height);
-$qp-size-tabs-height: var(--qp-size-tabs-height);
-*/
-/* Typography 
-$qp-font-family: var(--qp-font-family);
-$qp-font-size: var(--qp-font-size);
-*/
-/* Widgets */
-/* ============================
-   BUTTON BASE
-============================ */
-.qp-btn {
-  background: #2a2a2a;
-  border: 1px solid 1px solid #aaa;
-  border-radius: 3px;
-  margin-right: 4px;
-}
-.qp-btn:hover {
-  background: #454545;
-}
-.qp-btn:active {
-  background: #565656;
+/*!
+ * QPX - qpx-dark.css
+ * Zkompilováno z css/scss/qpx-dark.scss (téma "generic dark").
+ * Soubor je plně soběstačný — obsahuje jak proměnné tématu, tak všechny
+ * strukturální styly komponent.
+ */
+.qpx-theme-generic-dark {
+  --qpx-bg: #2a2a2a;
+  --qpx-surface: #333333;
+  --qpx-border: #474747;
+  --qpx-text: #e6e6e6;
+  --qpx-text-muted: #a3a3a3;
+  --qpx-hover: #3f3f3f;
+  --qpx-accent: #4dabf7;
+  --qpx-accent-contrast: #1b1b1b;
+  --qpx-selected: #38495a;
+  --qpx-success: #3fb875;
+  --qpx-danger: #e2685f;
+  --qpx-warning: #eab84f;
+  --qpx-shadow: rgba(0, 0, 0, .5);
 }
 
-/* ============================
-   TOGGLE BUTTON
-============================ */
-.qp-btn-toggle.active {
-  background: rgb(0, 118, 236);
-  border-color: rgb(15, 106, 206);
+.qpx-view { box-sizing: border-box; }
+.qpx-view * { box-sizing: border-box; }
+
+/* ---------- layout: rows/cols ---------- */
+.qpx-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+.qpx-layout.qpx-rows { flex-direction: column; }
+.qpx-layout.qpx-cols { flex-direction: row; }
+.qpx-layout.qpx-layout-space { gap: 8px; }
+.qpx-layout.qpx-layout-line > .qpx-cell { border: 1px solid var(--qpx-border, #dfe3e8); }
+
+.qpx-cell {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+}
+.qpx-cell > .qpx-view { flex: 1 1 auto; min-width: 0; min-height: 0; }
+.qpx-cell.qpx-spacer { flex: 1 1 auto; overflow: visible; }
+
+@media (max-width: 760px) {
+  .qpx-layout.qpx-cols.qpx-responsive { flex-direction: column; }
+  .qpx-layout.qpx-cols.qpx-responsive > .qpx-cell { width: auto !important; height: auto !important; }
 }
 
-/* ============================
-   ICON
-============================ */
-.qp-btn-icon {
+/* ---------- template ---------- */
+.qpx-template {
+  padding: 10px 12px;
+  overflow: auto;
+  background: var(--qpx-bg, #fff);
+  color: var(--qpx-text, #333);
+}
+.qpx-template.qpx-borderless { padding: 0; }
+.qpx-template.qpx-template-autoheight { height: auto; }
+
+/* ---------- button ---------- */
+.qpx-button {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   justify-content: center;
+  padding: 6px 14px;
+  font-size: 13px;
+  line-height: 1.2;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  background: var(--qpx-surface, #f0f0f0);
+  color: var(--qpx-text, #333);
+  border-color: var(--qpx-border, #ccc);
+  white-space: nowrap;
+  outline: none;
+  transition: background-color .12s ease, border-color .12s ease;
 }
-.qp-btn-icon img {
-  width: 16px;
-  height: 16px;
+.qpx-button:hover { background: var(--qpx-hover, #e6e6e6); }
+.qpx-button:focus-visible { box-shadow: 0 0 0 2px var(--qpx-accent, #337ab7) inset; }
+
+.qpx-button.qpx-button-mode-contained.qpx-button-default { background: var(--qpx-accent, #337ab7); color: var(--qpx-accent-contrast, #fff); border-color: var(--qpx-accent, #337ab7); }
+.qpx-button.qpx-button-mode-contained.qpx-button-success  { background: var(--qpx-success, #2e9e5b); color: #fff; border-color: var(--qpx-success, #2e9e5b); }
+.qpx-button.qpx-button-mode-contained.qpx-button-danger   { background: var(--qpx-danger, #d9534f);  color: #fff; border-color: var(--qpx-danger, #d9534f); }
+.qpx-button.qpx-button-mode-contained.qpx-button-warning  { background: var(--qpx-warning, #e0a72b); color: #2a2a2a; border-color: var(--qpx-warning, #e0a72b); }
+
+.qpx-button.qpx-button-mode-outlined { background: transparent; }
+.qpx-button.qpx-button-mode-outlined.qpx-button-default { color: var(--qpx-accent, #337ab7); border-color: var(--qpx-accent, #337ab7); }
+
+.qpx-button.qpx-button-mode-text { background: transparent; border-color: transparent; }
+.qpx-button.qpx-button-mode-text:hover { background: var(--qpx-hover, #e6e6e6); }
+
+.qpx-button .qpx-icon { font-size: 14px; line-height: 1; }
+
+.qpx-button.qpx-state-disabled,
+.qpx-buttongroup-item.qpx-state-disabled,
+.qpx-dropdownbutton.qpx-state-disabled {
+  opacity: .5;
+  cursor: default;
+  pointer-events: none;
 }
 
-/* ============================
-   TEXT
-============================ */
-.qp-btn-text {
-  display: inline-block;
+/* ---------- buttonGroup ---------- */
+.qpx-buttongroup { display: inline-flex; }
+.qpx-buttongroup-item { border-radius: 0; margin-left: -1px; }
+.qpx-buttongroup-item:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; margin-left: 0; }
+.qpx-buttongroup-item:last-child { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
+.qpx-buttongroup-item.qpx-state-selected {
+  background: var(--qpx-selected, #dbe9f5);
+  border-color: var(--qpx-accent, #337ab7);
+  color: var(--qpx-accent, #337ab7);
+  position: relative;
+  z-index: 1;
 }
+
+/* ---------- dropDownButton ---------- */
+.qpx-dropdownbutton { padding-right: 10px; }
+.qpx-dropdownbutton-main { display: inline-flex; align-items: center; gap: 6px; }
+.qpx-dropdownbutton-arrow { margin-left: 6px; font-size: 10px; color: var(--qpx-text-muted, #767676); }
+.qpx-dropdownbutton-split .qpx-dropdownbutton-arrow { padding-left: 8px; margin-left: 8px; border-left: 1px solid var(--qpx-border, #ccc); }
+
+.qpx-popup-list {
+  position: absolute;
+  z-index: 2000;
+  min-width: 160px;
+  background: var(--qpx-bg, #fff);
+  border: 1px solid var(--qpx-border, #ccc);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px var(--qpx-shadow, rgba(0, 0, 0, .18));
+  padding: 4px 0;
+  color: var(--qpx-text, #333);
+  font-size: 13px;
+}
+.qpx-popup-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.qpx-popup-list-item:hover { background: var(--qpx-hover, #eee); }
+.qpx-popup-list-item.qpx-state-selected { background: var(--qpx-selected, #dbe9f5); color: var(--qpx-accent, #337ab7); }
+.qpx-popup-list-item.qpx-state-disabled { opacity: .5; cursor: default; pointer-events: none; }
+
+/* ---------- qpToolBar ---------- */
+.qpx-toolbar {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 8px;
+  background: var(--qpx-surface, #f8f9fb);
+  border-bottom: 1px solid var(--qpx-border, #d3d9df);
+  color: var(--qpx-text, #333);
+  font-size: 13px;
+}
+.qpx-toolbar-content {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+.qpx-toolbar-section { display: flex; align-items: center; flex: 0 0 auto; gap: 6px; }
+.qpx-toolbar-center { flex: 0 1 auto; margin: 0 auto; }
+.qpx-toolbar-item { display: flex; align-items: center; flex: 0 0 auto; }
+
+.qpx-toolbar-overflow-btn {
+  flex: 0 0 auto;
+  margin-left: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--qpx-text, #333);
+  font-size: 16px;
+}
+.qpx-toolbar-overflow-btn:hover { background: var(--qpx-hover, #eceff1); }
+
+.qpx-toolbar-menu.qpx-popup-list { min-width: 200px; padding: 6px 0; }
+.qpx-toolbar-menu .qpx-toolbar-item.qpx-in-menu { display: flex; width: 100%; padding: 7px 14px; border-radius: 0; }
+.qpx-toolbar-menu .qpx-toolbar-item.qpx-in-menu:hover { background: var(--qpx-hover, #eee); }
+.qpx-toolbar-menu .qpx-toolbar-item.qpx-in-menu > .qpx-button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.qpx-hidden { display: none !important; }

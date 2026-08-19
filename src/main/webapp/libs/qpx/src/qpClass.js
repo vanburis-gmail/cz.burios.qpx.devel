@@ -38,9 +38,26 @@
 		SubClass.prototype = prototype;
 		SubClass.prototype.constructor = SubClass;
 		SubClass.extend = Class.extend;
+		SubClass.mixin = Class.mixin;
 		
 		return SubClass;
 	};
+
+	// Přimíchání dalších vlastností do prototypu (obdoba Java interface / traits).
+	// Používá se např. pro vložení QPX.EventsMixin (on/off/trigger) do QPX.Widget.
+	Class.mixin = function() {
+		var mixins = Array.prototype.slice.call(arguments);
+		for (var i = 0; i < mixins.length; i++) {
+			var mixin = mixins[i];
+			for (var name in mixin) {
+				if (name !== "constructor") {
+					this.prototype[name] = mixin[name];
+				}
+			}
+		}
+		return this;
+	};
+
 	global.Class = Class;
 })(window);
 
@@ -50,3 +67,14 @@
 var qpConfig = {
 	debug: false
 };
+
+// ================================
+// Jmenný prostor knihovny QPX
+// ================================
+(function(global) {
+	var QPX = global.QPX || (global.QPX = {});
+	QPX.version = "0.2.0";
+	QPX.Class = Class;     // stejná třída je dostupná jak globálně jako Class, tak jako QPX.Class
+	QPX.config = qpConfig; // totéž pro globální konfiguraci
+	global.QPX = QPX;
+})(window);

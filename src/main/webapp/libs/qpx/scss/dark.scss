@@ -1,30 +1,38 @@
-@use "theme/dark" as theme; 
-@use "core/variables" as v with (
-	$qp-color-bg: theme.$qp-color-bg,
-	$qp-color-bg-header: theme.$qp-color-bg-header,
-	$qp-color-bg-hover: theme.$qp-color-bg-hover,
-	$qp-color-bg-selected: theme.$qp-color-bg-selected,
-	$qp-color-border: theme.$qp-color-border,
-	$qp-color-border-light: theme.$qp-color-border-light,
-	$qp-color-primary: theme.$qp-color-primary,
-	$qp-color-text: theme.$qp-color-text,
-	$qp-color-shadow: theme.$qp-color-shadow,
+// ====================================================================
+// QPX - _theme-dark.scss
+// Barevné tokeny tématu "generic dark" (styl inspirovaný DevExtreme
+// generic.dark). Stejný princip jako _theme-light.scss, jen s tmavou
+// paletou, vyexportováno na třídu .qpx-theme-generic-dark.
+// ====================================================================
 
-	$qp-btn-bg: theme.$qp-btn-bg, 
-	$qp-btn-border: theme.$qp-btn-border, 
-	$qp-btn-bg-hover: theme.$qp-btn-bg-hover,
-	$qp-btn-bg-active: theme.$qp-btn-bg-active,
+$qpx-theme-class: '.qpx-theme-generic-dark';
 
-	$qp-btn-toggle-bg: theme.$qp-btn-toggle-bg,
-	$qp-btn-toggle-border: theme.$qp-btn-toggle-border,
-	
-	$qp-radius-sm: theme.$qp-radius-sm,
-	
-	$qp-space-1: theme.$qp-space-1,
-	$qp-space-2: theme.$qp-space-2,
-	$qp-space-4: theme.$qp-space-4,
-	$qp-space-5: theme.$qp-space-5,
-); 
+$qpx-bg-dark:              #2a2a2a;
+$qpx-surface-dark:         #333333;
+$qpx-border-dark:          #474747;
+$qpx-text-dark:            #e6e6e6;
+$qpx-text-muted-dark:      #a3a3a3;
+$qpx-hover-dark:           #3f3f3f;
+$qpx-accent-dark:          #4dabf7;
+$qpx-accent-contrast-dark: #1b1b1b;
+$qpx-selected-dark:        #38495a;
+$qpx-success-dark:         #3fb875;
+$qpx-danger-dark:          #e2685f;
+$qpx-warning-dark:         #eab84f;
+$qpx-shadow-dark:          rgba(0, 0, 0, .5);
 
-/* Widgets */
-@use "widgets/qpButton/button" as qpButton;
+#{$qpx-theme-class} {
+    --qpx-bg: #{$qpx-bg-dark};
+    --qpx-surface: #{$qpx-surface-dark};
+    --qpx-border: #{$qpx-border-dark};
+    --qpx-text: #{$qpx-text-dark};
+    --qpx-text-muted: #{$qpx-text-muted-dark};
+    --qpx-hover: #{$qpx-hover-dark};
+    --qpx-accent: #{$qpx-accent-dark};
+    --qpx-accent-contrast: #{$qpx-accent-contrast-dark};
+    --qpx-selected: #{$qpx-selected-dark};
+    --qpx-success: #{$qpx-success-dark};
+    --qpx-danger: #{$qpx-danger-dark};
+    --qpx-warning: #{$qpx-warning-dark};
+    --qpx-shadow: #{$qpx-shadow-dark};
+}

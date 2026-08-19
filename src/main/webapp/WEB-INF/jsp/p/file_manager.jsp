@@ -4,6 +4,7 @@
 <%
 System.out.println("/darwin/");
 %>
+<!DOCTYPE html>
 <html lang="cs">
 <head>
 	<meta charset="UTF-8">

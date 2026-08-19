@@ -1,243 +1,296 @@
-/* --------------------------------------------------------
- * plugin: qpToolBar
- * --------------------------------------------------------
+/*!
+ * uqp - qpToolBar
+ * Panel nástrojů koncipovaný stejně jako DevExtreme dxToolBar:
+ *  - items rozdělené do "before" / "center" / "after"
+ *  - každá položka je samostatný widget: button | buttonGroup | dropDownButton | template
+ *  - responzivní chování: položky, které se nevejdou do šířky panelu,
+ *    se automaticky přesunou do přetečeného menu (ikona "⋮" vpravo),
+ *    podobně jako u panelu nástrojů v Google Chrome DevTools.
+ *
+ * Konfigurace položky (item):
+ *   {
+ *     location: "before" | "center" | "after",   // výchozí "before"
+ *     widget:   "button" | "buttonGroup" | "dropDownButton" | "template",
+ *     locateInMenu: "auto" | "always" | "never",  // výchozí "auto"
+ *     visible: true,
+ *     cssClass: "",
+ *     options: { ...konfigurace vnitřního widgetu, vč. onClick/onItemClick apod. }
+ *   }
+ *
+ * Události toolbaru: onItemClick (agregovaně za všechny typy položek),
+ * onOptionChanged.
  */
-var qpToolBar = qpOverflowWidget.extend({
+(function (uqp, $) {
+    "use strict";
 
-    _widgetName: "qpToolBar",
+    var Toolbar = uqp.Widget.extend({
 
-    version: "1.0.0",
-    defaults: {
-        data: [],
-        responsive: true,
-        scrollStep: 80,
-        onClick: null,
-        onToggle: null
-    },
+        defaults: {
+            items: [],
+            visible: true,
+            disabled: false,
+            theme: "generic-light",  // generic-light | generic-dark
+            overflowMenuIcon: "⋮",
+            onItemClick: null,
+            onOptionChanged: null
+        },
 
-    // ---------------------------------------
-    // CREATE
-    // ---------------------------------------
-    _create: function() {
+        render: function () {
+            var cfg = this.config;
+            var self = this;
 
-        this.wrapper = $("<div class='qp-toolbar-wrapper'></div>").appendTo(this.el);
-        this.bar = $("<div class='qp-toolbar'></div>").appendTo(this.wrapper);
+            this.$container
+                .addClass("uqp-toolbar")
+                .addClass("uqp-theme-" + cfg.theme)
+                .toggleClass("uqp-hidden", !cfg.visible)
+                .toggleClass("uqp-state-disabled", !!cfg.disabled);
 
-        qpOverflowWidget.prototype._create.call(this);
+            if (cfg.onItemClick) { this.on("itemClick", cfg.onItemClick); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
 
-        this._renderDataButtons();
-        this._bind();
-        this._bindScrollButtons();
+            this.$content = $("<div class='uqp-toolbar-content'></div>");
+            this.$before = $("<div class='uqp-toolbar-section uqp-toolbar-before'></div>");
+            this.$center = $("<div class='uqp-toolbar-section uqp-toolbar-center'></div>");
+            this.$after = $("<div class='uqp-toolbar-section uqp-toolbar-after'></div>");
+            this.$content.append(this.$before, this.$center, this.$after);
 
-        this.checkOverflow();
-    },
+            this.$overflowBtn = $("<div class='uqp-toolbar-overflow-btn' tabindex='0' role='button' title='Další položky'></div>")
+                .text(cfg.overflowMenuIcon)
+                .hide();
 
-    // ---------------------------------------
-    // BIND
-    // ---------------------------------------
-    _bind: function() {
-        var self = this;
-        var ns = "." + this._widgetName;
+            this.$container.append(this.$content, this.$overflowBtn);
 
-        this.bar.on("click" + ns, ".qp-btn", function(e) {
-            var $btn = $(this);
-            var id = $btn.data("id");
+            this.$menu = $("<div class='uqp-toolbar-menu uqp-popup-list'></div>").appendTo(document.body).hide();
 
-            if ($btn.hasClass("qp-btn-toggle")) {
-                $btn.toggleClass("active");
-                if (self.options.onToggle) {
-                    self.options.onToggle(id, $btn.hasClass("active"));
+            this._itemRefs = [];
+            this._menuRefs = [];
+            this._isMenuOpen = false;
+
+            this._buildItems();
+            this._bindOverflowMenu();
+            this._bindResize();
+
+            // první rozložení až po zavěšení do DOM (kvůli měření šířky)
+            var self2 = this;
+            setTimeout(function () { self2._doRelayout(); }, 0);
+        },
+
+        _buildItems: function () {
+            var self = this;
+            this.config.items.forEach(function (itemCfg, index) {
+                self._itemRefs.push(self._createItemRef(itemCfg, index));
+            });
+        },
+
+        _createItemRef: function (itemCfg, index) {
+            var self = this;
+            itemCfg.location = itemCfg.location || "before";
+            itemCfg.locateInMenu = itemCfg.locateInMenu || "auto";
+
+            var widgetName = itemCfg.widget || (itemCfg.template !== undefined ? "template" : "button");
+            var options = $.extend({}, itemCfg.options);
+            if (itemCfg.template !== undefined && options.template === undefined) { options.template = itemCfg.template; }
+            if (itemCfg.data !== undefined && options.data === undefined) { options.data = itemCfg.data; }
+            options.view = widgetName;
+
+            var $cell = $("<div class='uqp-toolbar-item'></div>");
+            if (itemCfg.cssClass) { $cell.addClass(itemCfg.cssClass); }
+            if (itemCfg.visible === false) { $cell.hide(); }
+
+            var widget = uqp.ui(options, $cell);
+
+            var ref = {
+                config: itemCfg,
+                order: index,
+                location: itemCfg.location,
+                $cell: $cell,
+                widget: widget,
+                inMenu: false
+            };
+
+            // agregace klikacích událostí jednotlivých typů widgetů do toolbar.onItemClick
+            ["click", "itemClick"].forEach(function (evName) {
+                if (widget.on) {
+                    widget.on(evName, function (e) {
+                        self.trigger("itemClick", $.extend({
+                            itemData: itemCfg,
+                            itemIndex: index,
+                            itemElement: $cell[0],
+                            component: self
+                        }, e || {}));
+                    });
                 }
-            }
+            });
 
-            if (self.options.onClick) {
-                self.options.onClick(id, $btn);
-            }
-        });
-    },
+            return ref;
+        },
 
-    // ---------------------------------------
-    // DATA → BUTTONS
-    // ---------------------------------------
-    _renderDataButtons: function() {
-        var self = this;
+        // -------------------------------------------------------------
+        // Responzivní rozložení: přesun přetékajících položek do menu
+        // -------------------------------------------------------------
+        _bindResize: function () {
+            var self = this;
+            this._onWinResize = function () { self._scheduleRelayout(); };
 
-        this.options.data.forEach(function(item) {
-
-            if (item.type === "separator") {
-                $("<div class='qp-separator'></div>").appendTo(self.bar);
-                return;
-            }
-
-            var widget;
-
-            if (item.type === "button") {
-                widget = $("<div></div>").appendTo(self.bar).qpButton({
-                    id: item.id,
-                    text: item.text,
-                    icon: item.icon,
-                    toggle: item.toggle,
-                    onClick: self.options.onClick
-                });
-            }
-
-            if (item.type === "dropdown") {
-                widget = $("<div></div>").appendTo(self.bar).qpDropdownMenu({
-                    id: item.id,
-                    text: item.text,
-                    icon: item.icon,
-                    items: item.menu,
-                    onClick: self.options.onClick
-                });
-            }
-        });
-    },
-
-    // ---------------------------------------
-    // DROPDOWN
-    // ---------------------------------------
-    _createDropdown: function($btn, menuItems) {
-        var self = this;
-
-        var $menu = $("<ul class='qp-toolbar-dropdown'></ul>").appendTo("body").hide();
-
-        menuItems.forEach(function(mi) {
-            $("<li>" + mi.text + "</li>")
-                .appendTo($menu)
-                .on("click", function(e) {
-                    e.stopPropagation();
-                    $menu.hide();
-                    if (self.options.onClick) {
-                        self.options.onClick(mi.id, $btn);
-                    }
-                });
-        });
-
-        $btn.on("click", function(e) {
-            e.stopPropagation();
-            self._toggleDropdown($btn, $menu);
-        });
-
-        $(document).on("click." + this._widgetName, function() {
-            $menu.hide();
-        });
-    },
-
-    _toggleDropdown: function($btn, $menu) {
-        if ($menu.is(":visible")) {
-            $menu.hide();
-        } else {
-            var o = $btn.offset();
-            $menu.css({
-                top: o.top + $btn.outerHeight(),
-                left: o.left
-            }).show();
-        }
-    },
-
-    // ---------------------------------------
-    // OVERFLOW
-    // ---------------------------------------
-    checkOverflow: function() {
-        var wrapperWidth = this.wrapper.width();
-        var barWidth = this.bar[0].scrollWidth;
-
-        if (this.options.responsive) {
-            if (barWidth > wrapperWidth) {
-                this.moreBtn.show();
-                this.fillPopup(this._getHiddenButtons());
+            if (window.ResizeObserver) {
+                this._resizeObserver = new ResizeObserver(function () { self._scheduleRelayout(); });
+                this._resizeObserver.observe(this.getNode());
             } else {
-                this.moreBtn.hide();
-                this.popup.hide();
+                $(window).on("resize.uqpToolbar" + this.id, this._onWinResize);
             }
+        },
+
+        _scheduleRelayout: function () {
+            var self = this;
+            if (this._layoutRaf) { return; }
+            this._layoutRaf = (window.requestAnimationFrame || window.setTimeout)(function () {
+                self._layoutRaf = null;
+                self._doRelayout();
+            });
+        },
+
+        _doRelayout: function () {
+            var self = this;
+            if (!this.$content || !this.$content.length) { return; }
+
+            this._menuRefs = [];
+            this._itemRefs.forEach(function (ref) {
+                ref.inMenu = (ref.config.locateInMenu === "always" && ref.config.visible !== false);
+                if (ref.inMenu) { self._menuRefs.push(ref); }
+            });
+
+            this._applyPositions();
+
+            var candidates = this._itemRefs.filter(function (r) {
+                return r.config.visible !== false &&
+                    r.config.locateInMenu !== "never" &&
+                    r.config.locateInMenu !== "always";
+            }).slice().reverse(); // sbírání od posledně vykresleného (napravo) -> jako v Chrome DevTools
+
+            var guard = 0;
+            while (candidates.length && this._isOverflowing() && guard < 500) {
+                guard += 1;
+                var ref = candidates.shift();
+                ref.inMenu = true;
+                this._menuRefs.push(ref);
+                this._applyPositions();
+            }
+
+            this.trigger("layoutChanged", { overflowing: this._menuRefs.length > 0 });
+        },
+
+        _isOverflowing: function () {
+            var el = this.$content[0];
+            return el.scrollWidth - 1 > el.clientWidth;
+        },
+
+        _applyPositions: function () {
+            var self = this;
+            this.$before.empty();
+            this.$center.empty();
+            this.$after.empty();
+            this.$menu.empty();
+
+            this._itemRefs.forEach(function (ref) {
+                if (ref.config.visible === false) { return; }
+
+                if (ref.inMenu) {
+                    ref.$cell.addClass("uqp-in-menu").show();
+                    self.$menu.append(ref.$cell);
+                    return;
+                }
+
+                ref.$cell.removeClass("uqp-in-menu").show();
+                var target = ref.location === "center" ? self.$center
+                    : (ref.location === "after" ? self.$after : self.$before);
+                target.append(ref.$cell);
+            });
+
+            this.$overflowBtn.toggle(this._menuRefs.length > 0);
+        },
+
+        // -------------------------------------------------------------
+        // Popup s přetečenými položkami
+        // -------------------------------------------------------------
+        _bindOverflowMenu: function () {
+            var self = this;
+            this.$overflowBtn.on("click.uqpToolbar", function (e) {
+                e.stopPropagation();
+                self._isMenuOpen ? self._closeMenu() : self._openMenu();
+            });
+            $(document).on("mousedown.uqpToolbar" + this.id, function (e) {
+                if (!self._isMenuOpen) { return; }
+                if ($(e.target).closest(self.$menu).length || $(e.target).closest(self.$overflowBtn).length) { return; }
+                self._closeMenu();
+            });
+        },
+
+        _openMenu: function () {
+            var off = this.$overflowBtn.offset();
+            this.$menu.css({
+                top: off.top + this.$overflowBtn.outerHeight(),
+                left: Math.max(0, off.left + this.$overflowBtn.outerWidth() - this.$menu.outerWidth())
+            }).show();
+            this._isMenuOpen = true;
+        },
+
+        _closeMenu: function () {
+            this.$menu.hide();
+            this._isMenuOpen = false;
+        },
+
+        // -------------------------------------------------------------
+        // Veřejné API
+        // -------------------------------------------------------------
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (uqp.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            if (name === "items") {
+                this._itemRefs.forEach(function (ref) { ref.widget.destroy(); ref.$cell.remove(); });
+                this._itemRefs = [];
+                this._buildItems();
+                this._doRelayout();
+            } else if (name === "disabled") {
+                this.$container.toggleClass("uqp-state-disabled", !!value);
+            } else if (name === "visible") {
+                this.$container.toggleClass("uqp-hidden", !value);
+            } else if (name === "theme") {
+                this.$container.removeClass("uqp-theme-" + prev).addClass("uqp-theme-" + value);
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev });
+            return this;
+        },
+
+        // vrátí instanci vnitřního widgetu podle indexu položky v poli items
+        getItemWidget: function (index) {
+            var ref = this._itemRefs[index];
+            return ref ? ref.widget : undefined;
+        },
+
+        repaint: function () { this._doRelayout(); return this; },
+
+        destroy: function () {
+            if (this._resizeObserver) { this._resizeObserver.disconnect(); }
+            $(window).off(".uqpToolbar" + this.id);
+            $(document).off(".uqpToolbar" + this.id);
+            this._itemRefs.forEach(function (ref) { if (ref.widget && ref.widget.destroy) { ref.widget.destroy(); } });
+            if (this.$menu) { this.$menu.remove(); }
+            this._super();
         }
-    },
+    });
 
-    _getHiddenButtons: function() {
-        var items = [];
-        var wrapperRight = this.wrapper.offset().left + this.wrapper.width();
+    uqp.registerWidget("qpToolBar", Toolbar);
+    uqp.qpToolBar = Toolbar;
 
-        this.bar.children(".qp-btn").each((i, el) => {
-            var $el = $(el);
-            var right = $el.offset().left + $el.outerWidth();
-
-            if (right > wrapperRight - this.moreBtn.outerWidth()) {
-                items.push({
-                    text: $el.find(".qp-btn-text").text() || $el.data("id"),
-                    action: () => {
-                        if (this.options.onClick) {
-                            this.options.onClick($el.data("id"), $el);
-                        }
-                    }
-                });
-            }
-        });
-
-        return items;
-    },
-
-    // ---------------------------------------
-    // SCROLL BUTTONS
-    // ---------------------------------------
-    _bindScrollButtons: function() {
-        var self = this;
-
-        this.leftArrow = $("<div class='qp-toolbar-scroll-left'>◀</div>").prependTo(this.wrapper);
-        this.rightArrow = $("<div class='qp-toolbar-scroll-right'>▶</div>").appendTo(this.wrapper);
-
-        this.leftArrow.on("click", function() {
-            self._scrollBar(-self.options.scrollStep);
-        });
-
-        this.rightArrow.on("click", function() {
-            self._scrollBar(self.options.scrollStep);
-        });
-    },
-
-    _scrollBar: function(amount) {
-        this.bar.animate({
-            scrollLeft: this.bar.scrollLeft() + amount
-        }, 150);
-    },
-
-    getOverflowTargetWidth: function() {
-        return this.wrapper.width();
-    },
-
-    getOverflowItems: function() {
-        var items = [];
-        var wrapperRight = this.wrapper.offset().left + this.wrapper.width();
-
-        this.bar.children(".qp-btn").each((i, el) => {
-            var $el = $(el);
-            var right = $el.offset().left + $el.outerWidth();
-
-            if (right > wrapperRight - this.moreBtn.outerWidth()) {
-                items.push({
-                    text: $el.find(".qp-btn-text").text() || $el.data("id"),
-                    action: () => {
-                        if (this.options.onClick) {
-                            this.options.onClick($el.data("id"), $el);
-                        }
-                    }
-                });
-            }
-        });
-
-        return items;
-    },
-
-    onOverflowChange: function(isOverflowing) {
-        // toolbar může zobrazit/skrýt scroll arrows
-        if (isOverflowing) {
-            this.leftArrow.show();
-            this.rightArrow.show();
-        } else {
-            this.leftArrow.hide();
-            this.rightArrow.hide();
-        }
-    }
-
-});
-
-$.qpDefine("qpToolBar", qpToolBar);
+})(window.uqp, jQuery);

@@ -3,7 +3,7 @@
 		"esbuild": "^0.27.2",
 		"gulp": "^5.0.1",
 		"gulp-concat": "^2.6.1",
-		"sass": "^1.97.1"
+		"sass": "^1.99.0"
 	},
 	"scripts": {
 		"build-css": "npx sass --no-source-map \"src/main/webapp/libs/qpx/scss/qp-framework.scss\" \"src/main/webapp/libs/qpx/themes/jquery.qpx.default.css\"",
