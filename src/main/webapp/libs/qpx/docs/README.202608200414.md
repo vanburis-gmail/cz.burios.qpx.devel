@@ -9,17 +9,12 @@ komponenty definovat.
 
 ```html
 <script src="jquery.min.js"></script>
-
-<!-- jedno ze tří vygenerovaných témat (viz sekce 7 - SCSS / CSS build) -->
-<link rel="stylesheet" href="themes/jquery.qpx.default.css">
-<!-- nebo: themes/jquery.qpx.light.css / themes/jquery.qpx.dark.css -->
-
-<script src="jquery.qpx.all.js"></script> <!-- sbalený build ze src/* -->
+<link rel="stylesheet" href="css/qpx.css">
+<script src="qpx.js"></script> <!-- sbalený build ze src/* -->
 ```
 
-Zdrojové JS soubory jsou rozdělené v `src/` (kvůli přehlednosti a dalšímu
-rozšiřování), `jquery.qpx.all.js` v kořeni je jejich prosté spojení pro
-nasazení, vygenerované úlohou `npm run build-js` (viz `gulpfile.js`):
+Zdrojové soubory jsou rozdělené v `src/` (kvůli přehlednosti a dalšímu
+rozšiřování), `qpx.js` v kořeni je jejich prosté spojení pro nasazení:
 
 - `src/qpx.core.js` – jmenný prostor, `qpx.Class`, utility, pub/sub mixin
 - `src/qpx.widget.js` – bázová třída `qpx.Widget`, registr komponent, `qpx.ui()`
@@ -30,10 +25,6 @@ nasazení, vygenerované úlohou `npm run build-js` (viz `gulpfile.js`):
 - `src/qpx.dropdownbutton.js` – komponenta `dropDownButton`
 - `src/qpx.toolbar.js` – komponenta `qpToolBar` (panel nástrojů)
 - `src/qpx.parser.js` – parser `data-qpx-*` atributů, `$.fn.qpx()`, `qpx.parse()`
-
-CSS se negeneruje ručně ani se needituje výsledný `.css` v `themes/` -
-zdroj pravdy jsou soubory v `scss/`, viz sekce **7. SCSS / CSS build**
-níže.
 
 ## 1. Class systém (dědičnost jako v Javě)
 
@@ -236,117 +227,6 @@ Veřejné API: `option()`, `getItemWidget(index)`, `repaint()`.
 proměnné (`--qpx-*`) definované na třídách `qpx-theme-generic-light` /
 `qpx-theme-generic-dark`. Přepnutí za běhu: `toolbar.option("theme", "generic-dark")`.
 
-## 7. SCSS / CSS build (témata generic-light a generic-dark)
-
-Vzhled je barevně vyladěný tak, aby odpovídal výchozím DevExtreme
-tématům **Generic Light** a **Generic Dark** (bílé/tmavě šedé pozadí,
-jemné šedé linky, akcentová modrá `#337ab7` pro light, `#4dabf7` pro
-dark). Zdroj pravdy jsou SCSS soubory v `scss/`; hotové `.css` v
-`themes/` se **negeneruje ani needituje ručně** — vždy vzniká
-kompilací přes `npm run build-*` (viz níže).
-
-### Struktura `scss/`
-
-```
-scss/
-├── qp-framework.scss   ← hlavní vstupní bod ("default" build)
-├── light.scss          ← samostatný vstupní bod, jen téma "generic-light"
-├── dark.scss           ← samostatný vstupní bod, jen téma "generic-dark"
-├── base/
-│   ├── _variables.scss ← designové tokeny (rozměry, mezery, radius...)
-│   │                      + sdílené mixiny (qpx-disabled-state,
-│   │                      qpx-focus-ring, qpx-popup-surface)
-│   └── _normalize.scss ← lehký reset/normalizace, omezený na .qpx-view
-├── themes/
-│   ├── _light.scss     ← barevná paleta "generic-light" (mixin qpx-theme-vars)
-│   └── _dark.scss      ← barevná paleta "generic-dark"  (mixin qpx-theme-vars)
-└── widgets/             ← JEDEN SCSS soubor PRO KAŽDÝ WIDGET
-    ├── _layout.scss
-    ├── _template.scss
-    ├── _button.scss
-    ├── _buttongroup.scss
-    ├── _dropdownbutton.scss
-    ├── _popup-list.scss  ← sdílený vzhled popup menu (dropDownButton + toolbar overflow)
-    └── _toolbar.scss
-```
-
-Soubory se začínajícím podtržítkem (`_button.scss` apod.) jsou tzv.
-"partials" — samy o sobě se nekompilují, importují se přes `@use` do
-některého ze tří vstupních bodů (`qp-framework.scss`, `light.scss`,
-`dark.scss`). Barvy (`--qpx-*`) jsou v SCSS zapsané jako **CSS custom
-properties**, ne jako SCSS proměnné nahrazené při kompilaci — díky tomu
-funguje i běhové přepínání tématu třídou (`qpToolBar.option("theme", ...)`)
-a zároveň si je konzumentská aplikace může kdykoliv přebít vlastním
-pravidlem (`.qpx-theme-generic-light { --qpx-accent: #ff5722; }`).
-
-### Tři výsledné CSS soubory
-
-| vstupní SCSS | výsledný CSS (`themes/`) | k čemu slouží |
-|---|---|---|
-| `qp-framework.scss` | `jquery.qpx.default.css` | obsahuje **obě** témata najednou, přepínatelná za běhu třídou `qpx-theme-generic-light` / `-dark` na kontejneru — vhodné, když appka nabízí přepínač světlo/tma |
-| `light.scss` | `jquery.qpx.light.css` | jen světlé téma, proměnné rovnou na `:root`/`.qpx-view` — netřeba žádná přepínací třída, menší výsledný soubor. Obdoba `dx.light.css` z DevExtreme |
-| `dark.scss` | `jquery.qpx.dark.css` | totéž pro tmavé téma. Obdoba `dx.dark.css` |
-
-### Příkazy npm (definované v `package.json`)
-
-Spouští se z **kořene repozitáře** (tam, kde je `package.json` a
-`gulpfile.js` — tedy o úroveň výš než `src/main/webapp/libs/qpx/`).
-V Eclipse: otevřít záložku **Terminal** (Window → Show View → Terminal,
-nebo vestavěný terminál z EGit/Marketplace pluginu), přepnout se do
-kořenové složky projektu a spustit stejné příkazy jako v běžném
-terminálu.
-
-```bash
-# jen poprvé (nebo po změně devDependencies v package.json) — stáhne sass, gulp...
-npm install
-
-# zkompiluje scss/qp-framework.scss -> .../qpx/themes/jquery.qpx.default.css
-npm run build-css
-
-# zkompiluje scss/light.scss -> .../qpx/themes/jquery.qpx.light.css
-npm run build-light
-
-# zkompiluje scss/dark.scss -> .../qpx/themes/jquery.qpx.dark.css
-npm run build-dark
-
-# jako build-css, ale hlídá uložení souborů v scss/ a přebuilduje automaticky
-npm run watch-css
-
-# jen ověří, že se qp-framework.scss zkompiluje bez chyby (nic neukládá na disk)
-npm run test-css
-
-# spojí soubory z src/ (v pořadí definovaném v gulpfile.js) do jquery.qpx.all.js
-npm run build-js
-```
-
-Běžný postup při úpravě stylů: uprav příslušný `.scss` (nejčastěji
-konkrétní widget v `scss/widgets/`, nebo barvu v `scss/themes/`), spusť
-`npm run watch-css` (nech běžet na pozadí) a obnov stránku v prohlížeči
-— všechny tři `.css` soubory potřebné pro danou úlohu se přegenerují
-automaticky při každém uložení.
-
-### Jak přidat SCSS pro nový widget
-
-1. Vytvoř `scss/widgets/_muj-widget.scss` (jméno partial souboru vždy
-   začíná `_`). Barvy piš jako `var(--qpx-neco, #fallback)`, ne natvrdo
-   — jinak nebude fungovat přepínání tématu. Rozměry/mezery/radius ber
-   z `base/_variables.scss` (`@use "../base/variables" as *;`).
-2. Nový partial přidej přes `@use "widgets/muj-widget";` do
-   `qp-framework.scss` **a** do `light.scss`/`dark.scss` (pokud má
-   widget vypadat stejně ve všech třech buildech, což je obvyklý
-   případ).
-3. Spusť `npm run build-css && npm run build-light && npm run build-dark`
-   (nebo nech běžet `npm run watch-css` a spusť ostatní dva ručně před
-   odevzdáním).
-
-### Přizpůsobení barev vlastní paletě
-
-Nejjednodušší je přepsat proměnné v `scss/themes/_light.scss` /
-`_dark.scss` (mixin `qpx-theme-vars`) a znovu spustit build. Pro
-appku, která qpx jen používá (bez zásahu do zdrojů), stačí v jejím
-vlastním CSS přebít konkrétní `--qpx-*` proměnnou s vyšší specificitou
-— viz příklad výše.
-
 ## Rozšiřování o vlastní komponenty
 
 ```js
@@ -362,38 +242,20 @@ qpx.registerWidget("mywidget", MyWidget);
 Poté je `mywidget` použitelný ve všech třech zápisech (JSON, `$.fn.qpx`,
 `data-qpx-view="mywidget"`).
 
-## Nasazení (Java / Tomcat / Spring)
+## Poznámky k budoucímu nasazení (Java / Tomcat / Spring)
 
 Framework je čistě klientská (view) vrstva bez závislosti na
-konkrétním backendu a leží ve webapp stromu jako statická knihovna:
+konkrétním backendu, takže sedne na obě zvažované varianty:
 
-```
-<projekt>/
-├── package.json            ← npm skripty (build-css, build-js, ...)
-├── gulpfile.js              ← definice pořadí souborů pro build-js
-└── src/main/webapp/libs/qpx/
-    ├── src/                 ← zdrojové JS moduly
-    ├── scss/                ← zdrojové SCSS (viz sekce 7)
-    ├── themes/               ← zkompilované CSS (jquery.qpx.default/light/dark.css)
-    ├── jquery.qpx.all.js     ← zkompilovaný JS bundle (npm run build-js)
-    └── index.html            ← ukázková stránka
-```
-
-- **JSP na Tomcat 11** — obsah `src/main/webapp/libs/qpx/` (po
-  buildu) se servíruje jako statický zdroj, JSP stránka vygeneruje buď
-  HTML s `data-qpx-*` atributy (deklarativní varianta se hodí, když
-  server rovnou generuje značení), nebo předá počáteční JSON
-  konfiguraci do `<script>` bloku pro `qpx.ui(...)`.
+- **JSP na Tomcat 11** — `qpx.js`/`qpx.css` se servírují jako statické
+  zdroje, JSP stránka vygeneruje buď HTML s `data-qpx-*` atributy
+  (deklarativní varianta se hodí, když server rovnou generuje značení),
+  nebo předá počáteční JSON konfiguraci do `<script>` bloku pro
+  `qpx.ui(...)`.
 - **Spring 6+ (Spring MVC / Boot)** — stejný princip; komponenty typu
   `template` lze snadno napojit na REST endpointy (`@RestController`
   vracející JSON) a data doplňovat přes `setValues()` po AJAX volání,
   případně přímo posílat celé JSON konfigurace komponent ze serveru.
-
-Build (`npm run build-css`, `npm run build-js`, ...) se typicky pouští
-buď ručně v Eclipse terminálu před nasazením, nebo navázaný na Maven/
-Gradle build (`frontend-maven-plugin` / `com.github.node-gradle.node`),
-aby se `themes/*.css` a `jquery.qpx.all.js` vygenerovaly automaticky
-při každém buildu WARka.
 
 Do budoucna se počítá s doplněním dalších komponent (formuláře, seznamy/
 datatable, okna) — všechny půjdou postavit stejným způsobem: potomek

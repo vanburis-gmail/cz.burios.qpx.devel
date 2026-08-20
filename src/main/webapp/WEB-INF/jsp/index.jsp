@@ -16,7 +16,7 @@ System.out.println("/devel/index.jsp");
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.dark.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 		--%>
-		<link rel="stylesheet" href="/devel/libs/qpx/themes/qpx.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 
 		<style type="text/css">
 			html, body {
@@ -41,7 +41,7 @@ System.out.println("/devel/index.jsp");
 		</style>
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-		<script type="text/javascript" src="/devel/libs/qpx/qpx.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
 
 		<script></script>
 	</head>

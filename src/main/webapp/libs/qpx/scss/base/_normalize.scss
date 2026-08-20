@@ -1,0 +1,68 @@
+// =====================================================================
+// qpx - base/_normalize.scss
+// Lehká normalizace/reset, schválně omezená pouze na ".qpx-view" (a její
+// potomky). Cílem NENÍ resetovat celou hostitelskou stránku (JSP/Spring
+// aplikace do které se qpx vkládá) - jen zajistit, aby se widgety
+// chovaly napříč prohlížeči stejně a nezávisely na stylech okolní
+// stránky (marginy nadpisů, box-sizing, vzhled tlačítek/inputů...).
+// =====================================================================
+
+@use "variables" as *;
+
+.qpx-view {
+    box-sizing: border-box;
+    font-family: $qpx-font-family;
+    font-size: $qpx-font-size;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-size-adjust: 100%;
+}
+
+.qpx-view,
+.qpx-view * ,
+.qpx-view *::before,
+.qpx-view *::after {
+    box-sizing: border-box;
+}
+
+.qpx-view {
+    // reset typografie uvnitř widgetů (šablony často vkládají h1-h6/p/ul)
+    h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd {
+        margin: 0 0 .5em;
+    }
+    h1, h2, h3, h4, h5, h6 { font-weight: 600; line-height: 1.25; }
+
+    ul, ol { margin: 0 0 .5em; padding-left: 1.25em; }
+
+    img, svg, video, canvas {
+        max-width: 100%;
+        display: block;
+    }
+
+    a { color: var(--qpx-accent, #337ab7); }
+
+    // sjednocení vzhledu formulářových prvků napříč prohlížeči
+    button, input, select, textarea {
+        font: inherit;
+        color: inherit;
+        margin: 0;
+    }
+    button { background: none; border: 0; padding: 0; }
+
+    // odstranění výchozích "user agent" stylů pro klikatelné/dostupné prvky
+    [role="button"], [tabindex] {
+        outline: none;
+    }
+    [role="button"] {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    // odstranění odrážek u prvků, které si vlastní vzhled řeší widgety samy
+    .qpx-popup-list, .qpx-toolbar-menu {
+        list-style: none;
+    }
+}
+
+// utilitní třída pro skrývání (používá ji několik widgetů - visible:false, ...)
+.qpx-hidden { display: none !important; }
