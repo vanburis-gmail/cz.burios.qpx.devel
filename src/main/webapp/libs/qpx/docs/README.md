@@ -141,53 +141,6 @@ Podporované vlastnosti buněk: `width`, `height`, `gravity` (flex-grow),
 `hidden`, `css`. Typ layoutu (`type: "space" | "line"`) řídí mezery /
 oddělovací čáry mezi buňkami.
 
-## 4. Komponenta `template`
-
-Obdoba webix `template`:
-
-```js
-var t = qpx.ui({
-    view: "template",
-    template: "<b>#name#</b> — {meta.role}",
-    data: { name: "Petr", meta: { role: "admin" } }
-}, "#app");
-
-t.setValues({ name: "Jana", meta: { role: "user" } }); // překreslí
-t.setTemplate("Nový obsah: #name#");                    // změní šablonu
-t.define({ css: "card" });                               // změní config
-```
-
-- Šablona podporuje zápis `#promenna#` i `{promenna}`, včetně vnořených
-  cest (`{a.b.c}`).
-- Šablona může být i funkce `function(data){ return html; }` pro
-  složitější vykreslování.
-- API: `setValues(data)`, `getValues()`, `parse(data)`, `setHTML(html)`,
-  `define(prop, value)`, `refresh()`.
-
-## 5. Button / ButtonGroup / DropDownButton
-
-Koncipovány stejně jako odpovídající widgety v **DevExtreme** (`dxButton`,
-`dxButtonGroup`, `dxDropDownButton`) — stejná filozofie `option()`,
-`enable()`/`disable()`, i pojmenování událostí.
-
-```js
-qpx.ui({ view: "button", text: "Uložit", type: "success", stylingMode: "contained",
-    onClick: function (e) { console.log("kliknuto", e.component); } }, "#btn");
-
-qpx.ui({ view: "buttonGroup", selectionMode: "single",
-    items: [{ text: "Den", key: "d" }, { text: "Týden", key: "w" }],
-    onItemClick: function (e) { console.log(e.itemData); } }, "#bg");
-
-qpx.ui({ view: "dropDownButton", text: "Export", splitButton: true,
-    items: [{ text: "PDF", key: "pdf" }, { text: "XLSX", key: "xlsx" }],
-    onButtonClick: function (e) { /* klik na hlavní tlačítko */ },
-    onItemClick: function (e) { /* výběr položky z menu */ } }, "#ddb");
-```
-
-Typ tlačítka (`type`): `normal | default | success | danger | warning`.
-Styl (`stylingMode`): `contained | outlined | text`. Ikona (`icon`) může
-být krátký text/emoji glyf, nebo `"css:trida-ikony"` pro napojení na
-vlastní ikonový font/CSS třídu.
 
 ## 6. qpToolBar — panel nástrojů
 
@@ -369,14 +322,16 @@ konkrétním backendu a leží ve webapp stromu jako statická knihovna:
 
 ```
 <projekt>/
-├── package.json            ← npm skripty (build-css, build-js, ...)
+├── package.json             ← npm skripty (build-css, build-js, ...)
 ├── gulpfile.js              ← definice pořadí souborů pro build-js
 └── src/main/webapp/libs/qpx/
     ├── src/                 ← zdrojové JS moduly
     ├── scss/                ← zdrojové SCSS (viz sekce 7)
-    ├── themes/               ← zkompilované CSS (jquery.qpx.default/light/dark.css)
-    ├── jquery.qpx.all.js     ← zkompilovaný JS bundle (npm run build-js)
-    └── index.html            ← ukázková stránka
+    ├── themes/              ← zkompilované CSS (jquery.qpx.default/light/dark.css)
+    └── jquery.qpx.all.js    ← zkompilovaný JS bundle (npm run build-js)
+└── src/main/webapp/WEB-INF/jsp
+    ├── index.jsp            ← ukázková stránka
+    └── test/                ← testovací jsp soubory
 ```
 
 - **JSP na Tomcat 11** — obsah `src/main/webapp/libs/qpx/` (po
