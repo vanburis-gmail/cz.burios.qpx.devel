@@ -1,54 +1,35 @@
-# QPX
+# qpx
 
-Vlastní JavaScript UI framework postavený nad **jQuery** (dříve pracovní
-název „uqp“, nyní přejmenováno na **QPX**). Základem je Java-like
-objektový systém `Class` (dostupný globálně i jako `QPX.Class`) s
-dědičností, nad kterým stojí báze `QPX.Widget` pro všechny komponenty a
-tři rovnocenné způsoby, jak komponenty definovat.
+Vlastní JavaScript UI framework postavený nad **jQuery**. Základem je
+Java-like objektový systém `qpx.Class` s dědičností, nad kterým stojí
+báze `qpx.Widget` pro všechny komponenty a tři rovnocenné způsoby, jak
+komponenty definovat.
 
 ## Instalace / zapojení
 
 ```html
 <script src="jquery.min.js"></script>
-
-<!-- obě témata jsou samostatné soubory, lze zapojit jedno, nebo obě
-     (přepínání pak řeší CSS třída na widgetu, viz níže) -->
-<link rel="stylesheet" href="css/qpx-light.css">
-<link rel="stylesheet" href="css/qpx-dark.css">
-
+<link rel="stylesheet" href="css/qpx.css">
 <script src="qpx.js"></script> <!-- sbalený build ze src/* -->
 ```
 
-## Struktura souborů
+Zdrojové soubory jsou rozdělené v `src/` (kvůli přehlednosti a dalšímu
+rozšiřování), `qpx.js` v kořeni je jejich prosté spojení pro nasazení:
 
-Každá část frameworku má vlastní soubor pojmenovaný ve tvaru `qpXxx.js`
-(dle zadání — `qpClass.js`, `qpWidget.js`, `qpButton.js` atd.). `qpx.js`
-v kořeni je jejich prosté spojení pro nasazení, v pořadí, ve kterém je
-potřeba je načíst:
-
-| soubor | obsah |
-|---|---|
-| `src/qpClass.js` | OOP jádro — globální `Class` s `.extend()`/`.mixin()`, `qpConfig`, bootstrap jmenného prostoru `QPX` |
-| `src/qpUtils.js` | pomocné utility (`QPX.extend`, `QPX.uid`, `QPX.resolve`, ...) + `QPX.EventsMixin` (on/off/trigger) |
-| `src/qpWidget.js` | bázová třída `QPX.Widget`, registr komponent, tovární metoda `QPX.ui()` |
-| `src/qpLayout.js` | komponenta `layout` (rows/cols, responzivita) |
-| `src/qpTemplate.js` | komponenta `template` |
-| `src/qpButton.js` | komponenta `button` |
-| `src/qpButtonGroup.js` | komponenta `buttonGroup` |
-| `src/qpDropDownButton.js` | komponenta `dropDownButton` |
-| `src/qpToolBar.js` | komponenta `qpToolBar` (panel nástrojů) |
-| `src/qpParser.js` | parser `data-qpx-*` atributů, `$.fn.qpx()`, `QPX.parse()` |
+- `src/qpx.core.js` – jmenný prostor, `qpx.Class`, utility, pub/sub mixin
+- `src/qpx.widget.js` – bázová třída `qpx.Widget`, registr komponent, `qpx.ui()`
+- `src/qpx.layout.js` – layout komponenta (rows/cols, responzivita)
+- `src/qpx.template.js` – komponenta `template`
+- `src/qpx.button.js` – komponenta `button`
+- `src/qpx.buttongroup.js` – komponenta `buttonGroup`
+- `src/qpx.dropdownbutton.js` – komponenta `dropDownButton`
+- `src/qpx.toolbar.js` – komponenta `qpToolBar` (panel nástrojů)
+- `src/qpx.parser.js` – parser `data-qpx-*` atributů, `$.fn.qpx()`, `qpx.parse()`
 
 ## 1. Class systém (dědičnost jako v Javě)
 
-`src/qpClass.js` obsahuje jednoduché, čitelné OOP jádro: `Class.extend()`
-vytvoří potomka a uvnitř přepsaných metod lze zavolat rodičovskou
-implementaci přes `this._super(...)` (obdoba `super.metoda()` v Javě).
-Třída je dostupná jak jako globální `Class`, tak jako `QPX.Class`
-(je to jedna a tatáž reference — `Class === QPX.Class`).
-
 ```js
-var Animal = Class.extend({
+var Animal = qpx.Class.extend({
     init: function (name) { this.name = name; },      // konstruktor
     speak: function () { return this.name + " vydává zvuk"; }
 });
@@ -64,19 +45,22 @@ d.speak();                    // "Rex vydává zvuk (štěká)"
 d instanceof Animal;          // true
 ```
 
-`MyClass.mixin(obj1, obj2, ...)` přimíchá další sadu metod do prototypu
-(obdoba implementace rozhraní / traity). Používá se např. pro
-`QPX.EventsMixin` (on/off/trigger) v `QPX.Widget`.
+- `Class.extend(protoProps, staticProps)` – vytvoří potomka, podporuje
+  `this._super(...)` uvnitř přepsaných metod (obdoba `super.metoda()`).
+- Statické členy (a statické metody) se dědí automaticky.
+- `MyClass.mixin(obj1, obj2, ...)` – přimíchá další sadu metod do
+  prototypu (obdoba implementace rozhraní / traity). Používá se např.
+  pro `qpx.EventsMixin` (on/off/trigger) v `qpx.Widget`.
 
-Všechny UI komponenty (`QPX.Widget` a jeho potomci jako `QPX.Layout`,
-`QPX.Template`, `QPX.Button`, `QPX.qpToolBar`...) jsou postavené právě
-na `Class`, takže je lze běžně rozšiřovat:
+Všechny UI komponenty (`qpx.Widget` a jeho potomci jako `qpx.Layout`,
+`qpx.Template`) jsou postavené právě na `qpx.Class`, takže je lze
+běžně rozšiřovat:
 
 ```js
-var Badge = QPX.Template.extend({
+var Badge = qpx.Template.extend({
     defaults: { template: "<span class='badge'>#text#</span>" }
 });
-QPX.registerWidget("badge", Badge);
+qpx.registerWidget("badge", Badge);
 ```
 
 ## 2. Tři způsoby definice komponent
@@ -84,7 +68,7 @@ QPX.registerWidget("badge", Badge);
 ### a) JSON kompozice (jako webix)
 
 ```js
-QPX.ui({
+qpx.ui({
     rows: [
         { view: "template", height: 44, template: "Toolbar" },
         {
@@ -96,6 +80,9 @@ QPX.ui({
     ]
 }, "#app");
 ```
+
+`rows` / `cols` lze libovolně vnořovat. Buňka bez `view/rows/cols` se
+chová jako prázdný flexibilní spacer.
 
 ### b) Napojení na konkrétní HTML element (jako kendoUI / easyUI)
 
@@ -119,17 +106,20 @@ w.setValues({ jmeno: "Jana" });
 </div>
 ```
 
-Po načtení DOM se automaticky zavolá `QPX.parse(document)`. Automatické
-zpracování lze vypnout nastavením `QPX.autoParse = false;` a spustit
-ručně později přes `QPX.parse(nejakyKorenovyElement)`.
+Po načtení DOM se automaticky zavolá `qpx.parse(document)`, který
+proskenuje celý dokument a všechny takto označené elementy inicializuje.
+Hodnoty atributů se zkusí naparsovat jako JSON (čísla, pole, objekty),
+jinak se použijí jako řetězec. Automatické zpracování lze vypnout
+nastavením `qpx.autoParse = false;` a spustit ručně později přes
+`qpx.parse(nejakyKorenovyElement)`.
 
-Všechny tři přístupy vedou na stejné jádro — `QPX.ui(config, container)`
+Všechny tři přístupy vedou na stejné jádro — `qpx.ui(config, container)`
 — takže je lze libovolně kombinovat v rámci jedné aplikace.
 
 ## 3. Layout (responzivní rows/cols)
 
 ```js
-QPX.ui({
+qpx.ui({
     cols: [
         { view: "template", width: 220, template: "Sidebar" },
         { view: "template", gravity: 1, template: "Content" }
@@ -138,41 +128,64 @@ QPX.ui({
 }, "#app");
 ```
 
+Podporované vlastnosti buněk: `width`, `height`, `gravity` (flex-grow),
+`hidden`, `css`. Typ layoutu (`type: "space" | "line"`) řídí mezery /
+oddělovací čáry mezi buňkami.
+
 ## 4. Komponenta `template`
 
+Obdoba webix `template`:
+
 ```js
-var t = QPX.ui({
+var t = qpx.ui({
     view: "template",
     template: "<b>#name#</b> — {meta.role}",
     data: { name: "Petr", meta: { role: "admin" } }
 }, "#app");
 
-t.setValues({ name: "Jana", meta: { role: "user" } });
+t.setValues({ name: "Jana", meta: { role: "user" } }); // překreslí
+t.setTemplate("Nový obsah: #name#");                    // změní šablonu
+t.define({ css: "card" });                               // změní config
 ```
+
+- Šablona podporuje zápis `#promenna#` i `{promenna}`, včetně vnořených
+  cest (`{a.b.c}`).
+- Šablona může být i funkce `function(data){ return html; }` pro
+  složitější vykreslování.
+- API: `setValues(data)`, `getValues()`, `parse(data)`, `setHTML(html)`,
+  `define(prop, value)`, `refresh()`.
 
 ## 5. Button / ButtonGroup / DropDownButton
 
 Koncipovány stejně jako odpovídající widgety v **DevExtreme** (`dxButton`,
-`dxButtonGroup`, `dxDropDownButton`).
+`dxButtonGroup`, `dxDropDownButton`) — stejná filozofie `option()`,
+`enable()`/`disable()`, i pojmenování událostí.
 
 ```js
-QPX.ui({ view: "button", text: "Uložit", type: "success", stylingMode: "contained",
+qpx.ui({ view: "button", text: "Uložit", type: "success", stylingMode: "contained",
     onClick: function (e) { console.log("kliknuto", e.component); } }, "#btn");
 
-QPX.ui({ view: "buttonGroup", selectionMode: "single",
+qpx.ui({ view: "buttonGroup", selectionMode: "single",
     items: [{ text: "Den", key: "d" }, { text: "Týden", key: "w" }],
     onItemClick: function (e) { console.log(e.itemData); } }, "#bg");
 
-QPX.ui({ view: "dropDownButton", text: "Export", splitButton: true,
+qpx.ui({ view: "dropDownButton", text: "Export", splitButton: true,
     items: [{ text: "PDF", key: "pdf" }, { text: "XLSX", key: "xlsx" }],
     onButtonClick: function (e) { /* klik na hlavní tlačítko */ },
     onItemClick: function (e) { /* výběr položky z menu */ } }, "#ddb");
 ```
 
+Typ tlačítka (`type`): `normal | default | success | danger | warning`.
+Styl (`stylingMode`): `contained | outlined | text`. Ikona (`icon`) může
+být krátký text/emoji glyf, nebo `"css:trida-ikony"` pro napojení na
+vlastní ikonový font/CSS třídu.
+
 ## 6. qpToolBar — panel nástrojů
 
+Widget `qpToolBar` je koncipovaný stejně jako **DevExtreme dxToolBar**:
+
 ```js
-QPX.ui({
+qpx.ui({
     view: "qpToolBar",
     theme: "generic-light",              // nebo "generic-dark"
     items: [
@@ -182,74 +195,48 @@ QPX.ui({
         { location: "center", widget: "template", template: "#count# položek", data: { count: 10 } },
         { location: "after", widget: "button", options: { icon: "🔔" } }
     ],
-    onItemClick: function (e) { console.log(e.itemData, e.itemIndex); }
+    onItemClick: function (e) {
+        // agregovaná událost za všechny typy položek (button/buttonGroup/dropDownButton)
+        console.log(e.itemData, e.itemIndex);
+    }
 }, "#toolbar");
 ```
 
-| pole položky | popis |
+Vlastnosti položky (`items[i]`):
+
+| pole | popis |
 |---|---|
 | `location` | `before` \| `center` \| `after` (výchozí `before`) |
 | `widget` | `button` \| `buttonGroup` \| `dropDownButton` \| `template` (nebo libovolný jiný registrovaný widget) |
-| `locateInMenu` | `auto` (výchozí) \| `always` \| `never` |
+| `locateInMenu` | `auto` (výchozí, přesune se do menu při nedostatku místa) \| `always` (vždy jen v menu) \| `never` (nikdy se do menu nepřesune) |
 | `options` | konfigurace vloženého widgetu (vč. `onClick`/`onItemClick` apod.) |
+| `template` / `data` | zkratka pro `widget: "template"` |
+| `visible`, `cssClass` | viditelnost a vlastní CSS třída buňky |
 
-**Responzivní přetékání:** toolbar sleduje svou šířku (`ResizeObserver`,
-fallback na `resize` okna) a jakmile se položky nevejdou do řádku,
-přesouvá je — od poslední (nejvíce vpravo) směrem doleva — do
-vysouvacího menu s ikonou „⋮“, stejně jako panel nástrojů v **Google
-Chrome DevTools**. Přesunuté položky jsou fyzicky přemístěné DOM uzly
-téhož widgetu, takže si drží všechny vlastnosti i navázané události.
+**Responzivní přetékání:** toolbar sleduje svou šířku (přes
+`ResizeObserver`, s fallbackem na `resize` okna) a jakmile se položky
+nevejdou do řádku, začne je — od poslední (nejvíce vpravo) směrem
+doleva — přesouvat do vysouvacího menu s ikonou „⋮“, stejně jako to
+dělá panel nástrojů v **Google Chrome DevTools**. Položky přesunuté do
+menu jsou to úplně stejné widgety (fyzicky se jen přesune jejich DOM
+uzel), takže si zachovávají všechny své vlastnosti i navázané události.
 
-Veřejné API: `option()`, `getItemWidget(index)`, `repaint()`. Přepnutí
-tématu za běhu: `toolbar.option("theme", "generic-dark")`.
+Veřejné API: `option()`, `getItemWidget(index)`, `repaint()`.
 
-## 7. Stylování — SCSS a samostatná témata
-
-Styly jsou napsané v **SCSS** a rozdělené tak, aby každé téma mělo svůj
-vlastní vstupní `.scss` soubor i svůj vlastní výsledný `.css`:
-
-```
-css/
-  scss/
-    _base.scss         partial se strukturálními styly (bez barev — čerpá
-                        je z CSS custom properties --qpx-*), sdílený oběma tématy
-    _theme-light.scss   partial s barevnou paletou tématu "generic light"
-    _theme-dark.scss    partial s barevnou paletou tématu "generic dark"
-    qpx-light.scss      vstupní soubor: @import 'theme-light'; @import 'base';
-    qpx-dark.scss       vstupní soubor: @import 'theme-dark';  @import 'base';
-  qpx-light.css         zkompilovaný, samostatně použitelný výstup pro světlé téma
-  qpx-dark.css          zkompilovaný, samostatně použitelný výstup pro tmavé téma
-```
-
-Díky tomu je každý výsledný `.css` soubor soběstačný — obsahuje jak
-barevné proměnné, tak všechny strukturální styly komponent — a lze podle
-potřeby zapojit jen jeden z nich, nebo oba najednou (pak přepínání
-tématu za běhu řeší jen přehození CSS třídy `qpx-theme-generic-light` /
-`qpx-theme-generic-dark` na widgetu, což dělá `qpToolBar.option("theme", ...)`
-automaticky).
-
-Přeložení SCSS (pokud máte lokálně Dart Sass):
-
-```
-sass css/scss/qpx-light.scss css/qpx-light.css
-sass css/scss/qpx-dark.scss  css/qpx-dark.css
-```
-
-V tomto prostředí nebyl při generování k dispozici Sass kompilátor, takže
-`qpx-light.css` a `qpx-dark.css` jsou ručně přeložený, ale obsahově
-identický ekvivalent toho, co by výše uvedený příkaz vygeneroval — po
-instalaci Sassu je lze bez úprav znovu vygenerovat ze zdrojových `.scss`.
+**Témata:** `generic-light` a `generic-dark` jsou realizované přes CSS
+proměnné (`--qpx-*`) definované na třídách `qpx-theme-generic-light` /
+`qpx-theme-generic-dark`. Přepnutí za běhu: `toolbar.option("theme", "generic-dark")`.
 
 ## Rozšiřování o vlastní komponenty
 
 ```js
-var MyWidget = QPX.Widget.extend({
+var MyWidget = qpx.Widget.extend({
     defaults: { text: "" },
     render: function () {
         this.$container.addClass("my-widget").text(this.config.text);
     }
 });
-QPX.registerWidget("mywidget", MyWidget);
+qpx.registerWidget("mywidget", MyWidget);
 ```
 
 Poté je `mywidget` použitelný ve všech třech zápisech (JSON, `$.fn.qpx`,
@@ -258,11 +245,19 @@ Poté je `mywidget` použitelný ve všech třech zápisech (JSON, `$.fn.qpx`,
 ## Poznámky k budoucímu nasazení (Java / Tomcat / Spring)
 
 Framework je čistě klientská (view) vrstva bez závislosti na
-konkrétním backendu:
+konkrétním backendu, takže sedne na obě zvažované varianty:
 
-- **JSP na Tomcat 11** — `qpx.js`/`qpx-*.css` se servírují jako statické
-  zdroje; JSP stránka vygeneruje buď HTML s `data-qpx-*` atributy, nebo
-  předá počáteční JSON konfiguraci do `<script>` bloku pro `QPX.ui(...)`.
+- **JSP na Tomcat 11** — `qpx.js`/`qpx.css` se servírují jako statické
+  zdroje, JSP stránka vygeneruje buď HTML s `data-qpx-*` atributy
+  (deklarativní varianta se hodí, když server rovnou generuje značení),
+  nebo předá počáteční JSON konfiguraci do `<script>` bloku pro
+  `qpx.ui(...)`.
 - **Spring 6+ (Spring MVC / Boot)** — stejný princip; komponenty typu
   `template` lze snadno napojit na REST endpointy (`@RestController`
-  vracející JSON) a data doplňovat přes `setValues()` po AJAX volání.
+  vracející JSON) a data doplňovat přes `setValues()` po AJAX volání,
+  případně přímo posílat celé JSON konfigurace komponent ze serveru.
+
+Do budoucna se počítá s doplněním dalších komponent (formuláře, seznamy/
+datatable, okna) — všechny půjdou postavit stejným způsobem: potomek
+`qpx.Widget`, registrace přes `qpx.registerWidget`, a automaticky získají
+podporu všech tří způsobů zápisu.

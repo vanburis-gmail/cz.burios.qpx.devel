@@ -1,5 +1,5 @@
 /*!
- * uqp - template
+ * qpx - template
  * První konkrétní UI komponenta frameworku. Chová se obdobně jako
  * "template" ve webixu: vykresluje HTML podle šablony (string, nebo
  * funkce) a dat, která lze kdykoliv změnit přes setValues()/parse().
@@ -7,12 +7,12 @@
  * Podpora zápisu proměnných v šabloně: "#jmeno#" i "{jmeno}", včetně
  * vnořených cest "{user.name}".
  */
-(function (uqp, $) {
+(function (qpx, $) {
     "use strict";
 
     var VAR_RE = /#([\w.]+)#|\{([\w.]+)\}/g;
 
-    var Template = uqp.Widget.extend({
+    var Template = qpx.Widget.extend({
 
         defaults: {
             template: "",   // string šablona, nebo function(data, common){ return html; }
@@ -23,9 +23,9 @@
 
         render: function () {
             var cfg = this.config;
-            this.$container.addClass("uqp-template");
-            if (cfg.autoheight) { this.$container.addClass("uqp-template-autoheight"); }
-            if (cfg.borderless) { this.$container.addClass("uqp-borderless"); }
+            this.$container.addClass("qpx-template");
+            if (cfg.autoheight) { this.$container.addClass("qpx-template-autoheight"); }
+            if (cfg.borderless) { this.$container.addClass("qpx-borderless"); }
 
             this._templateFn = this._compile(cfg.template);
             this.data = cfg.data || null;
@@ -36,7 +36,7 @@
         // umožňuje za běhu měnit šablonu i další nastavení, podobně jako
         // webix .define()
         define: function (prop, value) {
-            if (uqp.isObject(prop)) {
+            if (qpx.isObject(prop)) {
                 $.extend(this.config, prop);
                 if (prop.template !== undefined) { this._templateFn = this._compile(prop.template); }
             } else {
@@ -82,26 +82,26 @@
         },
 
         _draw: function () {
-            var html = this._templateFn ? this._templateFn(this.data || {}, uqp) : "";
+            var html = this._templateFn ? this._templateFn(this.data || {}, qpx) : "";
             this.$container.html(html);
             this.trigger("afterrender");
         },
 
         _compile: function (tpl) {
-            if (uqp.isFunction(tpl)) { return tpl; }
+            if (qpx.isFunction(tpl)) { return tpl; }
             var str = (tpl === null || tpl === undefined) ? "" : String(tpl);
             return function (data) {
                 data = data || {};
                 return str.replace(VAR_RE, function (match, a, b) {
                     var path = a || b;
-                    var val = uqp.resolve(data, path);
+                    var val = qpx.resolve(data, path);
                     return (val === undefined || val === null) ? "" : val;
                 });
             };
         }
     });
 
-    uqp.registerWidget("template", Template);
-    uqp.Template = Template;
+    qpx.registerWidget("template", Template);
+    qpx.Template = Template;
 
-})(window.uqp, jQuery);
+})(window.qpx, jQuery);

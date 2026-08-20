@@ -1,13 +1,13 @@
 /*!
- * uqp - buttonGroup
+ * qpx - buttonGroup
  * Skupina vizuálně spojených tlačítek, koncepčně jako DevExtreme dxButtonGroup.
  *  - options: items, keyExpr, selectionMode, selectedItemKeys, stylingMode
  *  - události: onItemClick, onSelectionChanged, onOptionChanged
  */
-(function (uqp, $) {
+(function (qpx, $) {
     "use strict";
 
-    var ButtonGroup = uqp.Widget.extend({
+    var ButtonGroup = qpx.Widget.extend({
 
         defaults: {
             items: [],               // [{ text, icon, disabled, key, hint }]
@@ -25,8 +25,8 @@
         render: function () {
             var cfg = this.config;
             this.$container
-                .addClass("uqp-buttongroup")
-                .toggleClass("uqp-hidden", !cfg.visible);
+                .addClass("qpx-buttongroup")
+                .toggleClass("qpx-hidden", !cfg.visible);
 
             if (cfg.onItemClick) { this.on("itemClick", cfg.onItemClick); }
             if (cfg.onSelectionChanged) { this.on("selectionChanged", cfg.onSelectionChanged); }
@@ -49,21 +49,21 @@
                 var key = self._keyOf(item, index);
                 var selected = self.selectedItemKeys.indexOf(key) !== -1;
 
-                var $btn = $("<div class='uqp-buttongroup-item uqp-button uqp-button-mode-" + cfg.stylingMode + "'></div>")
-                    .toggleClass("uqp-state-selected", selected)
-                    .toggleClass("uqp-state-disabled", !!item.disabled || !!cfg.disabled)
+                var $btn = $("<div class='qpx-buttongroup-item qpx-button qpx-button-mode-" + cfg.stylingMode + "'></div>")
+                    .toggleClass("qpx-state-selected", selected)
+                    .toggleClass("qpx-state-disabled", !!item.disabled || !!cfg.disabled)
                     .attr("tabindex", (item.disabled || cfg.disabled) ? "-1" : "0")
                     .attr("role", "button");
 
                 if (item.icon) {
-                    var $icon = $("<span class='uqp-icon'></span>");
+                    var $icon = $("<span class='qpx-icon'></span>");
                     (String(item.icon).indexOf("css:") === 0)
                         ? $icon.addClass(String(item.icon).slice(4))
                         : $icon.text(item.icon);
                     $btn.append($icon);
                 }
                 if (item.text) {
-                    $btn.append($("<span class='uqp-button-text'></span>").text(item.text));
+                    $btn.append($("<span class='qpx-button-text'></span>").text(item.text));
                 }
                 if (item.hint) { $btn.attr("title", item.hint); }
 
@@ -100,7 +100,7 @@
 
         option: function (name, value) {
             if (arguments.length === 0) { return this.config; }
-            if (uqp.isObject(name)) {
+            if (qpx.isObject(name)) {
                 var self = this;
                 $.each(name, function (k, v) { self.option(k, v); });
                 return this;
@@ -121,7 +121,7 @@
         disable: function () { return this.option("disabled", true); }
     });
 
-    uqp.registerWidget("buttonGroup", ButtonGroup);
-    uqp.ButtonGroup = ButtonGroup;
+    qpx.registerWidget("buttonGroup", ButtonGroup);
+    qpx.ButtonGroup = ButtonGroup;
 
-})(window.uqp, jQuery);
+})(window.qpx, jQuery);

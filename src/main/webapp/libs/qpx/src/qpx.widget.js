@@ -1,15 +1,15 @@
 /*!
- * uqp - widget
+ * qpx - widget
  * Základní bázová třída pro všechny UI komponenty + registr a tovární
- * metoda uqp.ui(config, container), přes kterou se skládají komponenty
+ * metoda qpx.ui(config, container), přes kterou se skládají komponenty
  * do JSON stromu (podobně jako ve webixu).
  */
-(function (uqp, $) {
+(function (qpx, $) {
     "use strict";
 
     var registry = {};
 
-    var Widget = uqp.Class.extend({
+    var Widget = qpx.Class.extend({
 
         // výchozí konfigurace, potomci ji přes _super/extend rozšiřují
         defaults: {},
@@ -19,7 +19,7 @@
         //             Pokud není zadán, vytvoří se plovoucí <div>, který je možné později připojit.
         init: function (config, container) {
             this.config = $.extend(true, {}, this.defaults, config || {});
-            this.id = this.config.id || uqp.uid("uqp");
+            this.id = this.config.id || qpx.uid("qpx");
             this._children = [];
             this._handlers = {};
 
@@ -27,13 +27,13 @@
             this.$container = node ? $(node) : $("<div></div>");
 
             this.$container
-                .addClass("uqp-view")
-                .attr("data-uqp-id", this.id)
-                .data("uqp-widget", this);
+                .addClass("qpx-view")
+                .attr("data-qpx-id", this.id)
+                .data("qpx-widget", this);
 
             if (this.config.css) { this.$container.addClass(this.config.css); }
-            if (this.config.width !== undefined) { this.$container.css("width", uqp.toPx(this.config.width)); }
-            if (this.config.height !== undefined) { this.$container.css("height", uqp.toPx(this.config.height)); }
+            if (this.config.width !== undefined) { this.$container.css("width", qpx.toPx(this.config.width)); }
+            if (this.config.height !== undefined) { this.$container.css("height", qpx.toPx(this.config.height)); }
             if (this.config.hidden) { this.$container.hide(); }
 
             this.render();
@@ -68,7 +68,7 @@
             });
             this._children = [];
             if (this.$container) {
-                this.$container.removeData("uqp-widget").empty();
+                this.$container.removeData("qpx-widget").empty();
             }
         },
 
@@ -83,39 +83,39 @@
         getChildren: function () { return this._children.slice(); }
     });
 
-    Widget.mixin(uqp.EventsMixin);
+    Widget.mixin(qpx.EventsMixin);
 
-    uqp.Widget = Widget;
+    qpx.Widget = Widget;
 
     // =================================================================
     // Registr komponent + tovární metoda
     // =================================================================
 
     // registrace nové komponenty pod jménem použitým v "view"
-    uqp.registerWidget = function (name, WidgetClass) {
+    qpx.registerWidget = function (name, WidgetClass) {
         registry[name] = WidgetClass;
-        return uqp;
+        return qpx;
     };
 
-    uqp.getWidgetClass = function (name) {
+    qpx.getWidgetClass = function (name) {
         return registry[name];
     };
 
     // hlavní tovární metoda — sestavování z JSON konfigurace:
-    //   uqp.ui({ view: "template", template: "Ahoj #name#" }, "#mistoVDom");
-    uqp.ui = function (config, container) {
-        if (uqp.isString(config)) {
+    //   qpx.ui({ view: "template", template: "Ahoj #name#" }, "#mistoVDom");
+    qpx.ui = function (config, container) {
+        if (qpx.isString(config)) {
             config = { view: config };
         }
         var view = config.view || (config.rows || config.cols ? "layout" : null);
         if (!view) {
-            throw new Error("uqp: konfigurace komponenty musí obsahovat 'view' (nebo 'rows'/'cols').");
+            throw new Error("qpx: konfigurace komponenty musí obsahovat 'view' (nebo 'rows'/'cols').");
         }
         var WidgetClass = registry[view];
         if (!WidgetClass) {
-            throw new Error("uqp: neregistrovaný typ komponenty '" + view + "'.");
+            throw new Error("qpx: neregistrovaný typ komponenty '" + view + "'.");
         }
         return new WidgetClass(config, container);
     };
 
-})(window.uqp, jQuery);
+})(window.qpx, jQuery);

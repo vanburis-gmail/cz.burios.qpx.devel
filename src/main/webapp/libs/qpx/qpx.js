@@ -1,97 +1,118 @@
-// ================================
-// OOP engine: Class
-// ================================
-(function(global) {
-
-	var Class = function() {};
-	
-	Class.extend = function(props) {
-		var _super = this.prototype || {};
-		var prototype = Object.create(_super);
-		
-		for (var name in props) {
-			if (!props.hasOwnProperty(name)) continue;
-			
-			if (typeof props[name] === "function" &&
-				typeof _super[name] === "function") {
-	
-				// Wrap pro super volání
-				prototype[name] = (function(name, fn) {
-					return function() {
-						var tmp = this._super;
-						this._super = _super[name];
-						var result = fn.apply(this, arguments);
-						this._super = tmp;
-						return result;
-					};
-				})(name, props[name]);
-			} else {
-				prototype[name] = props[name];
-			}
-		}
-
-		function SubClass() {
-			if (this.init) {
-				this.init.apply(this, arguments);
-			}
-		}
-		SubClass.prototype = prototype;
-		SubClass.prototype.constructor = SubClass;
-		SubClass.extend = Class.extend;
-		SubClass.mixin = Class.mixin;
-		
-		return SubClass;
-	};
-
-	// Přimíchání dalších vlastností do prototypu (obdoba Java interface / traits).
-	// Používá se např. pro vložení QPX.EventsMixin (on/off/trigger) do QPX.Widget.
-	Class.mixin = function() {
-		var mixins = Array.prototype.slice.call(arguments);
-		for (var i = 0; i < mixins.length; i++) {
-			var mixin = mixins[i];
-			for (var name in mixin) {
-				if (name !== "constructor") {
-					this.prototype[name] = mixin[name];
-				}
-			}
-		}
-		return this;
-	};
-
-	global.Class = Class;
-})(window);
-
-// ================================
-// Globální konfigurace frameworku
-// ================================
-var qpConfig = {
-	debug: false
-};
-
-// ================================
-// Jmenný prostor knihovny QPX
-// ================================
-(function(global) {
-	var QPX = global.QPX || (global.QPX = {});
-	QPX.version = "0.2.0";
-	QPX.Class = Class;     // stejná třída je dostupná jak globálně jako Class, tak jako QPX.Class
-	QPX.config = qpConfig; // totéž pro globální konfiguraci
-	global.QPX = QPX;
-})(window);
 /*!
- * QPX - qpUtils
- * Pomocné utility a jednoduchý events mixin (pub/sub) sdílené napříč
- * celým frameworkem QPX.
+ * qpx - core
+ * Vlastní JS UI framework nad jQuery.
+ * Modul obsahuje: jmenný prostor qpx, Java-like Class systém s dědičností,
+ * pomocné utility a jednoduchý events mixin (pub/sub).
  */
-(function (QPX, $) {
+(function (root, $) {
     "use strict";
 
     if (!$) {
-        throw new Error("QPX vyžaduje jQuery načtené před sebou.");
+        throw new Error("qpx vyžaduje jQuery načtené před sebou.");
     }
-    QPX.$ = $;
 
-    QPX.extend = function (target) {
+    var qpx = root.qpx = root.qpx || {};
+    qpx.version = "0.1.0";
+    qpx.$ = $;
+
+    // =================================================================
+    // Class systém — inspirováno "Simple JavaScript Inheritance" (J. Resig),
+    // rozšířeno o dědičnost statických členů a mixiny, aby se chovalo
+    // podobně jako třídy v Javě (extends, super volání, statické metody).
+    //
+    //   var Animal = qpx.Class.extend({
+    //       init: function(name){ this.name = name; },
+    //       speak: function(){ return this.name + " vydává zvuk"; }
+    //   });
+    //
+    //   var Dog = Animal.extend({
+    //       speak: function(){ return this._super() + " (štěká)"; }
+    //   });
+    //
+    //   new Dog("Rex").speak();
+    // =================================================================
+    var initializing = false;
+    var fnTest = /xyz/.test(function () { /* eslint-disable */ if (0) { xyz; } /* eslint-enable */ })
+        ? /\b_super\b/
+        : /.*/;
+
+    function Class() {}
+
+    Class.extend = function (protoProps, staticProps) {
+        var _super = this.prototype;
+
+        initializing = true;
+        var prototype = new this();
+        initializing = false;
+
+        for (var name in protoProps) {
+            prototype[name] = (typeof protoProps[name] === "function" &&
+                typeof _super[name] === "function" &&
+                fnTest.test(protoProps[name]))
+                ? (function (name, fn) {
+                    return function () {
+                        var tmp = this._super;
+                        this._super = _super[name];
+                        var ret;
+                        try {
+                            ret = fn.apply(this, arguments);
+                        } finally {
+                            this._super = tmp;
+                        }
+                        return ret;
+                    };
+                })(name, protoProps[name])
+                : protoProps[name];
+        }
+
+        function QpxClass() {
+            if (!initializing && this.init) {
+                this.init.apply(this, arguments);
+            }
+        }
+
+        QpxClass.prototype = prototype;
+        QpxClass.prototype.constructor = QpxClass;
+
+        // dědičnost statických členů (podobně jako statické atributy/metody v Javě)
+        for (var key in this) {
+            if (Object.prototype.hasOwnProperty.call(this, key) && key !== "prototype") {
+                QpxClass[key] = this[key];
+            }
+        }
+        QpxClass.extend = Class.extend;
+        QpxClass.mixin = Class.mixin;
+        QpxClass.implement = Class.mixin;
+
+        if (staticProps) {
+            for (var sKey in staticProps) {
+                QpxClass[sKey] = staticProps[sKey];
+            }
+        }
+
+        return QpxClass;
+    };
+
+    // přimíchání dalších vlastností do prototypu (obdoba Java interface / traits)
+    Class.mixin = function () {
+        var mixins = Array.prototype.slice.call(arguments);
+        for (var i = 0; i < mixins.length; i++) {
+            var mixin = mixins[i];
+            for (var name in mixin) {
+                if (name !== "constructor") {
+                    this.prototype[name] = mixin[name];
+                }
+            }
+        }
+        return this;
+    };
+
+    qpx.Class = Class;
+
+    // =================================================================
+    // Utility
+    // =================================================================
+    qpx.extend = function (target) {
         var args = Array.prototype.slice.call(arguments, 1);
         for (var i = 0; i < args.length; i++) {
             var src = args[i];
@@ -101,11 +122,11 @@ var qpConfig = {
         return target;
     };
 
-    QPX.isString = function (v) { return typeof v === "string"; };
-    QPX.isFunction = function (v) { return typeof v === "function"; };
-    QPX.isObject = function (v) { return v !== null && typeof v === "object" && !Array.isArray(v); };
+    qpx.isString = function (v) { return typeof v === "string"; };
+    qpx.isFunction = function (v) { return typeof v === "function"; };
+    qpx.isObject = function (v) { return v !== null && typeof v === "object" && !Array.isArray(v); };
 
-    QPX.uid = (function () {
+    qpx.uid = (function () {
         var counter = 0;
         return function (prefix) {
             counter += 1;
@@ -113,12 +134,12 @@ var qpConfig = {
         };
     })();
 
-    QPX.toPx = function (v) {
+    qpx.toPx = function (v) {
         return (typeof v === "number") ? v + "px" : v;
     };
 
     // čtení hodnoty z objektu podle cesty "a.b.c"
-    QPX.resolve = function (obj, path) {
+    qpx.resolve = function (obj, path) {
         if (obj == null || !path) { return undefined; }
         var parts = String(path).split(".");
         var cur = obj;
@@ -130,9 +151,9 @@ var qpConfig = {
     };
 
     // =================================================================
-    // Jednoduchý pub/sub mixin — přimíchává se do QPX.Widget přes Class.mixin
+    // Jednoduchý pub/sub mixin — lze přimíchat do libovolné qpx.Class
     // =================================================================
-    QPX.EventsMixin = {
+    qpx.EventsMixin = {
         on: function (event, handler) {
             this._handlers = this._handlers || {};
             (this._handlers[event] = this._handlers[event] || []).push(handler);
@@ -164,29 +185,29 @@ var qpConfig = {
         }
     };
 
-})(window.QPX, window.jQuery);
+})(window, window.jQuery);
 /*!
- * QPX - qpWidget
+ * qpx - widget
  * Základní bázová třída pro všechny UI komponenty + registr a tovární
- * metoda QPX.ui(config, container), přes kterou se skládají komponenty
+ * metoda qpx.ui(config, container), přes kterou se skládají komponenty
  * do JSON stromu (podobně jako ve webixu).
  */
-(function (QPX, $) {
+(function (qpx, $) {
     "use strict";
 
     var registry = {};
 
-    var Widget = QPX.Class.extend({
+    var Widget = qpx.Class.extend({
 
-        // výchozí konfigurace, potomci ji přes extend rozšiřují
+        // výchozí konfigurace, potomci ji přes _super/extend rozšiřují
         defaults: {},
 
-        // config    - konfigurační objekt komponenty
+        // config  - konfigurační objekt komponenty
         // container - (volitelně) DOM element / jQuery výběr, do kterého se komponenta vykreslí.
         //             Pokud není zadán, vytvoří se plovoucí <div>, který je možné později připojit.
         init: function (config, container) {
             this.config = $.extend(true, {}, this.defaults, config || {});
-            this.id = this.config.id || QPX.uid("qpx");
+            this.id = this.config.id || qpx.uid("qpx");
             this._children = [];
             this._handlers = {};
 
@@ -199,8 +220,8 @@ var qpConfig = {
                 .data("qpx-widget", this);
 
             if (this.config.css) { this.$container.addClass(this.config.css); }
-            if (this.config.width !== undefined) { this.$container.css("width", QPX.toPx(this.config.width)); }
-            if (this.config.height !== undefined) { this.$container.css("height", QPX.toPx(this.config.height)); }
+            if (this.config.width !== undefined) { this.$container.css("width", qpx.toPx(this.config.width)); }
+            if (this.config.height !== undefined) { this.$container.css("height", qpx.toPx(this.config.height)); }
             if (this.config.hidden) { this.$container.hide(); }
 
             this.render();
@@ -250,51 +271,51 @@ var qpConfig = {
         getChildren: function () { return this._children.slice(); }
     });
 
-    Widget.mixin(QPX.EventsMixin);
+    Widget.mixin(qpx.EventsMixin);
 
-    QPX.Widget = Widget;
+    qpx.Widget = Widget;
 
     // =================================================================
     // Registr komponent + tovární metoda
     // =================================================================
 
     // registrace nové komponenty pod jménem použitým v "view"
-    QPX.registerWidget = function (name, WidgetClass) {
+    qpx.registerWidget = function (name, WidgetClass) {
         registry[name] = WidgetClass;
-        return QPX;
+        return qpx;
     };
 
-    QPX.getWidgetClass = function (name) {
+    qpx.getWidgetClass = function (name) {
         return registry[name];
     };
 
     // hlavní tovární metoda — sestavování z JSON konfigurace:
-    //   QPX.ui({ view: "template", template: "Ahoj #name#" }, "#mistoVDom");
-    QPX.ui = function (config, container) {
-        if (QPX.isString(config)) {
+    //   qpx.ui({ view: "template", template: "Ahoj #name#" }, "#mistoVDom");
+    qpx.ui = function (config, container) {
+        if (qpx.isString(config)) {
             config = { view: config };
         }
         var view = config.view || (config.rows || config.cols ? "layout" : null);
         if (!view) {
-            throw new Error("QPX: konfigurace komponenty musí obsahovat 'view' (nebo 'rows'/'cols').");
+            throw new Error("qpx: konfigurace komponenty musí obsahovat 'view' (nebo 'rows'/'cols').");
         }
         var WidgetClass = registry[view];
         if (!WidgetClass) {
-            throw new Error("QPX: neregistrovaný typ komponenty '" + view + "'.");
+            throw new Error("qpx: neregistrovaný typ komponenty '" + view + "'.");
         }
         return new WidgetClass(config, container);
     };
 
-})(window.QPX, jQuery);
+})(window.qpx, jQuery);
 /*!
- * QPX - qpLayout
+ * qpx - layout
  * Responzivní layout komponenta umožňující libovolně vnořovat "rows" a "cols",
  * podobně jako ve webixu. Interně staví na flexboxu.
  */
-(function (QPX, $) {
+(function (qpx, $) {
     "use strict";
 
-    var Layout = QPX.Widget.extend({
+    var Layout = qpx.Widget.extend({
 
         defaults: {
             type: "clean",     // clean | space (mezery mezi buňkami) | line (oddělovací čáry)
@@ -308,7 +329,7 @@ var qpConfig = {
 
             if (cfg.type === "space") { this.$container.addClass("qpx-layout-space"); }
             if (cfg.type === "line") { this.$container.addClass("qpx-layout-line"); }
-            if (cfg.gap !== null && cfg.gap !== undefined) { this.$container.css("gap", QPX.toPx(cfg.gap)); }
+            if (cfg.gap !== null && cfg.gap !== undefined) { this.$container.css("gap", qpx.toPx(cfg.gap)); }
 
             if (cfg.rows) {
                 this.$container.addClass("qpx-rows");
@@ -326,7 +347,7 @@ var qpConfig = {
             items.forEach(function (itemCfg) {
                 if (itemCfg === undefined || itemCfg === null) { return; }
 
-                var isSpacer = QPX.isObject(itemCfg) &&
+                var isSpacer = qpx.isObject(itemCfg) &&
                     !itemCfg.view && !itemCfg.rows && !itemCfg.cols;
 
                 var $cell = $("<div class='qpx-cell qpx-" + direction + "'></div>");
@@ -338,18 +359,18 @@ var qpConfig = {
                     return; // prázdná buňka = flexibilní mezera
                 }
 
-                var child = QPX.ui(itemCfg, $cell);
+                var child = qpx.ui(itemCfg, $cell);
                 self.addChild(child);
             });
         },
 
         _applySizing: function ($cell, itemCfg) {
-            if (!itemCfg || !QPX.isObject(itemCfg)) { return; }
+            if (!itemCfg || !qpx.isObject(itemCfg)) { return; }
             if (itemCfg.width !== undefined) {
-                $cell.css({ "flex": "0 0 auto", "width": QPX.toPx(itemCfg.width) });
+                $cell.css({ "flex": "0 0 auto", "width": qpx.toPx(itemCfg.width) });
             }
             if (itemCfg.height !== undefined) {
-                $cell.css({ "flex": "0 0 auto", "height": QPX.toPx(itemCfg.height) });
+                $cell.css({ "flex": "0 0 auto", "height": qpx.toPx(itemCfg.height) });
             }
             if (itemCfg.gravity !== undefined) {
                 $cell.css("flex-grow", itemCfg.gravity);
@@ -358,25 +379,25 @@ var qpConfig = {
         }
     });
 
-    QPX.registerWidget("layout", Layout);
-    QPX.Layout = Layout;
+    qpx.registerWidget("layout", Layout);
+    qpx.Layout = Layout;
 
-})(window.QPX, jQuery);
+})(window.qpx, jQuery);
 /*!
- * QPX - qpTemplate
- * Komponenta vykreslující HTML podle šablony (string, nebo funkce) a dat,
- * která lze kdykoliv změnit přes setValues()/parse() — koncepčně stejné
- * jako "template" ve webixu.
+ * qpx - template
+ * První konkrétní UI komponenta frameworku. Chová se obdobně jako
+ * "template" ve webixu: vykresluje HTML podle šablony (string, nebo
+ * funkce) a dat, která lze kdykoliv změnit přes setValues()/parse().
  *
  * Podpora zápisu proměnných v šabloně: "#jmeno#" i "{jmeno}", včetně
  * vnořených cest "{user.name}".
  */
-(function (QPX, $) {
+(function (qpx, $) {
     "use strict";
 
     var VAR_RE = /#([\w.]+)#|\{([\w.]+)\}/g;
 
-    var Template = QPX.Widget.extend({
+    var Template = qpx.Widget.extend({
 
         defaults: {
             template: "",   // string šablona, nebo function(data, common){ return html; }
@@ -400,7 +421,7 @@ var qpConfig = {
         // umožňuje za běhu měnit šablonu i další nastavení, podobně jako
         // webix .define()
         define: function (prop, value) {
-            if (QPX.isObject(prop)) {
+            if (qpx.isObject(prop)) {
                 $.extend(this.config, prop);
                 if (prop.template !== undefined) { this._templateFn = this._compile(prop.template); }
             } else {
@@ -446,40 +467,40 @@ var qpConfig = {
         },
 
         _draw: function () {
-            var html = this._templateFn ? this._templateFn(this.data || {}, QPX) : "";
+            var html = this._templateFn ? this._templateFn(this.data || {}, qpx) : "";
             this.$container.html(html);
             this.trigger("afterrender");
         },
 
         _compile: function (tpl) {
-            if (QPX.isFunction(tpl)) { return tpl; }
+            if (qpx.isFunction(tpl)) { return tpl; }
             var str = (tpl === null || tpl === undefined) ? "" : String(tpl);
             return function (data) {
                 data = data || {};
                 return str.replace(VAR_RE, function (match, a, b) {
                     var path = a || b;
-                    var val = QPX.resolve(data, path);
+                    var val = qpx.resolve(data, path);
                     return (val === undefined || val === null) ? "" : val;
                 });
             };
         }
     });
 
-    QPX.registerWidget("template", Template);
-    QPX.Template = Template;
+    qpx.registerWidget("template", Template);
+    qpx.Template = Template;
 
-})(window.QPX, jQuery);
+})(window.qpx, jQuery);
 /*!
- * QPX - qpButton
+ * qpx - button
  * Tlačítko se stejnou koncepcí jako DevExtreme dxButton:
  *  - options: text, icon, type, stylingMode, disabled, visible, hint, template
  *  - metody: option(), enable(), disable(), focus()
  *  - události: onClick, onOptionChanged
  */
-(function (QPX, $) {
+(function (qpx, $) {
     "use strict";
 
-    var Button = QPX.Widget.extend({
+    var Button = qpx.Widget.extend({
 
         defaults: {
             text: "",
@@ -525,7 +546,7 @@ var qpConfig = {
             var cfg = this.config;
             this.$container.empty();
 
-            if (QPX.isFunction(cfg.template)) {
+            if (qpx.isFunction(cfg.template)) {
                 cfg.template(cfg, this.$container);
                 return;
             }
@@ -561,7 +582,7 @@ var qpConfig = {
         // option("text") -> čtení; option("text","Nový text") -> zápis; option({text:.., icon:..}) -> hromadně
         option: function (name, value) {
             if (arguments.length === 0) { return this.config; }
-            if (QPX.isObject(name)) {
+            if (qpx.isObject(name)) {
                 var self = this;
                 $.each(name, function (k, v) { self.option(k, v); });
                 return this;
@@ -587,20 +608,20 @@ var qpConfig = {
         }
     });
 
-    QPX.registerWidget("button", Button);
-    QPX.Button = Button;
+    qpx.registerWidget("button", Button);
+    qpx.Button = Button;
 
-})(window.QPX, jQuery);
+})(window.qpx, jQuery);
 /*!
- * QPX - qpButtonGroup
+ * qpx - buttonGroup
  * Skupina vizuálně spojených tlačítek, koncepčně jako DevExtreme dxButtonGroup.
  *  - options: items, keyExpr, selectionMode, selectedItemKeys, stylingMode
  *  - události: onItemClick, onSelectionChanged, onOptionChanged
  */
-(function (QPX, $) {
+(function (qpx, $) {
     "use strict";
 
-    var ButtonGroup = QPX.Widget.extend({
+    var ButtonGroup = qpx.Widget.extend({
 
         defaults: {
             items: [],               // [{ text, icon, disabled, key, hint }]
@@ -693,7 +714,7 @@ var qpConfig = {
 
         option: function (name, value) {
             if (arguments.length === 0) { return this.config; }
-            if (QPX.isObject(name)) {
+            if (qpx.isObject(name)) {
                 var self = this;
                 $.each(name, function (k, v) { self.option(k, v); });
                 return this;
@@ -714,23 +735,23 @@ var qpConfig = {
         disable: function () { return this.option("disabled", true); }
     });
 
-    QPX.registerWidget("buttonGroup", ButtonGroup);
-    QPX.ButtonGroup = ButtonGroup;
+    qpx.registerWidget("buttonGroup", ButtonGroup);
+    qpx.ButtonGroup = ButtonGroup;
 
-})(window.QPX, jQuery);
+})(window.qpx, jQuery);
 /*!
- * QPX - qpDropDownButton
+ * qpx - dropDownButton
  * Tlačítko s rozbalovacím seznamem položek, koncepčně jako DevExtreme
  * dxDropDownButton (volitelně "split" tlačítko se samostatnou šipkou).
  *  - options: text, icon, items, keyExpr, displayExpr, splitButton, useSelectMode
  *  - události: onButtonClick, onItemClick, onSelectionChanged, onOptionChanged
  */
-(function (QPX, $) {
+(function (qpx, $) {
     "use strict";
 
     var openInstance = null; // aktuálně otevřená instance (jen jedna najednou)
 
-    var DropDownButton = QPX.Widget.extend({
+    var DropDownButton = qpx.Widget.extend({
 
         defaults: {
             text: "",
@@ -811,7 +832,7 @@ var qpConfig = {
             var cfg = this.config;
             this.$menu.empty();
             if (cfg.dropDownOptions && cfg.dropDownOptions.width) {
-                this.$menu.css("width", QPX.toPx(cfg.dropDownOptions.width));
+                this.$menu.css("width", qpx.toPx(cfg.dropDownOptions.width));
             }
 
             cfg.items.forEach(function (item, index) {
@@ -898,7 +919,7 @@ var qpConfig = {
 
         option: function (name, value) {
             if (arguments.length === 0) { return this.config; }
-            if (QPX.isObject(name)) {
+            if (qpx.isObject(name)) {
                 var self = this;
                 $.each(name, function (k, v) { self.option(k, v); });
                 return this;
@@ -926,12 +947,12 @@ var qpConfig = {
         }
     });
 
-    QPX.registerWidget("dropDownButton", DropDownButton);
-    QPX.DropDownButton = DropDownButton;
+    qpx.registerWidget("dropDownButton", DropDownButton);
+    qpx.DropDownButton = DropDownButton;
 
-})(window.QPX, jQuery);
+})(window.qpx, jQuery);
 /*!
- * QPX - qpToolBar
+ * qpx - qpToolBar
  * Panel nástrojů koncipovaný stejně jako DevExtreme dxToolBar:
  *  - items rozdělené do "before" / "center" / "after"
  *  - každá položka je samostatný widget: button | buttonGroup | dropDownButton | template
@@ -952,10 +973,10 @@ var qpConfig = {
  * Události toolbaru: onItemClick (agregovaně za všechny typy položek),
  * onOptionChanged.
  */
-(function (QPX, $) {
+(function (qpx, $) {
     "use strict";
 
-    var Toolbar = QPX.Widget.extend({
+    var Toolbar = qpx.Widget.extend({
 
         defaults: {
             items: [],
@@ -1029,7 +1050,7 @@ var qpConfig = {
             if (itemCfg.cssClass) { $cell.addClass(itemCfg.cssClass); }
             if (itemCfg.visible === false) { $cell.hide(); }
 
-            var widget = QPX.ui(options, $cell);
+            var widget = qpx.ui(options, $cell);
 
             var ref = {
                 config: itemCfg,
@@ -1176,7 +1197,7 @@ var qpConfig = {
         // -------------------------------------------------------------
         option: function (name, value) {
             if (arguments.length === 0) { return this.config; }
-            if (QPX.isObject(name)) {
+            if (qpx.isObject(name)) {
                 var self = this;
                 $.each(name, function (k, v) { self.option(k, v); });
                 return this;
@@ -1222,16 +1243,16 @@ var qpConfig = {
         }
     });
 
-    QPX.registerWidget("qpToolBar", Toolbar);
-    QPX.qpToolBar = Toolbar;
+    qpx.registerWidget("qpToolBar", Toolbar);
+    qpx.qpToolBar = Toolbar;
 
-})(window.QPX, jQuery);
+})(window.qpx, jQuery);
 /*!
- * QPX - qpParser
+ * qpx - parser
  * Umožňuje definovat komponenty třemi způsoby:
  *
- *  1) JSON skládání (viz QPX.ui/QPX.Layout):
- *       QPX.ui({ rows: [ {view:"template", template:"Ahoj"} ] }, "#app");
+ *  1) JSON skládání (viz qpx.ui/qpx.Layout):
+ *       qpx.ui({ rows: [ {view:"template", template:"Ahoj"} ] }, "#app");
  *
  *  2) Napojení na konkrétní HTML element (jako kendoUI / easyUI):
  *       $("#box").qpx("template", { template: "Ahoj #name#" });
@@ -1240,9 +1261,9 @@ var qpConfig = {
  *
  *  3) Deklarativně přes data-qpx-* atributy přímo v HTML (jako metro UI CSS):
  *       <div data-qpx-view="template" data-qpx-template="Ahoj #name#"></div>
- *       QPX.parse(); // proskenuje dokument a vše inicializuje
+ *       qpx.parse(); // proskenuje dokument a vše inicializuje
  */
-(function (QPX, $) {
+(function (qpx, $) {
     "use strict";
 
     // převede "data-qpx-auto-height" -> "autoHeight"
@@ -1253,7 +1274,7 @@ var qpConfig = {
     // načte všechny data-qpx-* atributy jednoho elementu do konfiguračního objektu.
     // Hodnoty se pokusí naparsovat jako JSON (čísla, booleany, objekty, pole),
     // pokud to nejde, použije se jako obyčejný string.
-    QPX.parseAttrs = function (el) {
+    qpx.parseAttrs = function (el) {
         var config = {};
         var attrs = el.attributes;
         for (var i = 0; i < attrs.length; i++) {
@@ -1277,21 +1298,21 @@ var qpConfig = {
 
     // proskenuje strom (celý dokument, nebo zadaný kořen) a inicializuje
     // všechny dosud neinicializované elementy s atributem data-qpx-view
-    QPX.parse = function (root) {
+    qpx.parse = function (root) {
         var $scope = root ? $(root) : $(document);
         var $found = $scope.find("[data-qpx-view]");
         if ($scope.is && $scope.is("[data-qpx-view]")) { $found = $found.add($scope); }
 
         $found.each(function () {
             if ($(this).data("qpx-widget")) { return; } // už inicializováno
-            var cfg = QPX.parseAttrs(this);
-            QPX.ui(cfg, this);
+            var cfg = qpx.parseAttrs(this);
+            qpx.ui(cfg, this);
         });
-        return QPX;
+        return qpx;
     };
 
     // vrátí instanci komponenty napojenou na daný element (nebo undefined)
-    QPX.$find = function (el) {
+    qpx.$find = function (el) {
         return $(el).data("qpx-widget");
     };
 
@@ -1300,7 +1321,7 @@ var qpConfig = {
     // -----------------------------------------------------------------
     $.fn.qpx = function (view, config) {
         var cfg;
-        if (QPX.isString(view)) {
+        if (qpx.isString(view)) {
             cfg = $.extend({ view: view }, config || {});
         } else {
             cfg = view || {};
@@ -1308,18 +1329,18 @@ var qpConfig = {
 
         var result = this;
         this.each(function () {
-            var widget = QPX.ui(cfg, this);
+            var widget = qpx.ui(cfg, this);
             $(this).data("qpx-widget", widget);
         });
         return result;
     };
 
     // po načtení DOM automaticky zpracuje deklarativně zapsané komponenty,
-    // pokud si to vývojář výslovně nevypne (QPX.autoParse = false;)
+    // pokud si to vývojář výslovně nevypne (qpx.autoParse = false;)
     $(function () {
-        if (QPX.autoParse !== false) {
-            QPX.parse(document);
+        if (qpx.autoParse !== false) {
+            qpx.parse(document);
         }
     });
 
-})(window.QPX, jQuery);
+})(window.qpx, jQuery);

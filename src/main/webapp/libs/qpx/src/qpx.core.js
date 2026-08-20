@@ -1,26 +1,26 @@
 /*!
- * uqp - core
+ * qpx - core
  * Vlastní JS UI framework nad jQuery.
- * Modul obsahuje: jmenný prostor uqp, Java-like Class systém s dědičností,
+ * Modul obsahuje: jmenný prostor qpx, Java-like Class systém s dědičností,
  * pomocné utility a jednoduchý events mixin (pub/sub).
  */
 (function (root, $) {
     "use strict";
 
     if (!$) {
-        throw new Error("uqp vyžaduje jQuery načtené před sebou.");
+        throw new Error("qpx vyžaduje jQuery načtené před sebou.");
     }
 
-    var uqp = root.uqp = root.uqp || {};
-    uqp.version = "0.1.0";
-    uqp.$ = $;
+    var qpx = root.qpx = root.qpx || {};
+    qpx.version = "0.1.0";
+    qpx.$ = $;
 
     // =================================================================
     // Class systém — inspirováno "Simple JavaScript Inheritance" (J. Resig),
     // rozšířeno o dědičnost statických členů a mixiny, aby se chovalo
     // podobně jako třídy v Javě (extends, super volání, statické metody).
     //
-    //   var Animal = uqp.Class.extend({
+    //   var Animal = qpx.Class.extend({
     //       init: function(name){ this.name = name; },
     //       speak: function(){ return this.name + " vydává zvuk"; }
     //   });
@@ -65,32 +65,32 @@
                 : protoProps[name];
         }
 
-        function UqpClass() {
+        function QpxClass() {
             if (!initializing && this.init) {
                 this.init.apply(this, arguments);
             }
         }
 
-        UqpClass.prototype = prototype;
-        UqpClass.prototype.constructor = UqpClass;
+        QpxClass.prototype = prototype;
+        QpxClass.prototype.constructor = QpxClass;
 
         // dědičnost statických členů (podobně jako statické atributy/metody v Javě)
         for (var key in this) {
             if (Object.prototype.hasOwnProperty.call(this, key) && key !== "prototype") {
-                UqpClass[key] = this[key];
+                QpxClass[key] = this[key];
             }
         }
-        UqpClass.extend = Class.extend;
-        UqpClass.mixin = Class.mixin;
-        UqpClass.implement = Class.mixin;
+        QpxClass.extend = Class.extend;
+        QpxClass.mixin = Class.mixin;
+        QpxClass.implement = Class.mixin;
 
         if (staticProps) {
             for (var sKey in staticProps) {
-                UqpClass[sKey] = staticProps[sKey];
+                QpxClass[sKey] = staticProps[sKey];
             }
         }
 
-        return UqpClass;
+        return QpxClass;
     };
 
     // přimíchání dalších vlastností do prototypu (obdoba Java interface / traits)
@@ -107,12 +107,12 @@
         return this;
     };
 
-    uqp.Class = Class;
+    qpx.Class = Class;
 
     // =================================================================
     // Utility
     // =================================================================
-    uqp.extend = function (target) {
+    qpx.extend = function (target) {
         var args = Array.prototype.slice.call(arguments, 1);
         for (var i = 0; i < args.length; i++) {
             var src = args[i];
@@ -122,24 +122,24 @@
         return target;
     };
 
-    uqp.isString = function (v) { return typeof v === "string"; };
-    uqp.isFunction = function (v) { return typeof v === "function"; };
-    uqp.isObject = function (v) { return v !== null && typeof v === "object" && !Array.isArray(v); };
+    qpx.isString = function (v) { return typeof v === "string"; };
+    qpx.isFunction = function (v) { return typeof v === "function"; };
+    qpx.isObject = function (v) { return v !== null && typeof v === "object" && !Array.isArray(v); };
 
-    uqp.uid = (function () {
+    qpx.uid = (function () {
         var counter = 0;
         return function (prefix) {
             counter += 1;
-            return (prefix || "uqp") + counter;
+            return (prefix || "qpx") + counter;
         };
     })();
 
-    uqp.toPx = function (v) {
+    qpx.toPx = function (v) {
         return (typeof v === "number") ? v + "px" : v;
     };
 
     // čtení hodnoty z objektu podle cesty "a.b.c"
-    uqp.resolve = function (obj, path) {
+    qpx.resolve = function (obj, path) {
         if (obj == null || !path) { return undefined; }
         var parts = String(path).split(".");
         var cur = obj;
@@ -151,9 +151,9 @@
     };
 
     // =================================================================
-    // Jednoduchý pub/sub mixin — lze přimíchat do libovolné uqp.Class
+    // Jednoduchý pub/sub mixin — lze přimíchat do libovolné qpx.Class
     // =================================================================
-    uqp.EventsMixin = {
+    qpx.EventsMixin = {
         on: function (event, handler) {
             this._handlers = this._handlers || {};
             (this._handlers[event] = this._handlers[event] || []).push(handler);
@@ -179,7 +179,7 @@
             }
             // zrcadlení jako jQuery event na kontejneru, aby šlo napojit i $(el).on(...)
             if (this.$container) {
-                this.$container.trigger("uqp:" + event, args);
+                this.$container.trigger("qpx:" + event, args);
             }
             return this;
         }

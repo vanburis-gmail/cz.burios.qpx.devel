@@ -1,5 +1,5 @@
 /*!
- * uqp - qpToolBar
+ * qpx - qpToolBar
  * Panel nástrojů koncipovaný stejně jako DevExtreme dxToolBar:
  *  - items rozdělené do "before" / "center" / "after"
  *  - každá položka je samostatný widget: button | buttonGroup | dropDownButton | template
@@ -20,10 +20,10 @@
  * Události toolbaru: onItemClick (agregovaně za všechny typy položek),
  * onOptionChanged.
  */
-(function (uqp, $) {
+(function (qpx, $) {
     "use strict";
 
-    var Toolbar = uqp.Widget.extend({
+    var Toolbar = qpx.Widget.extend({
 
         defaults: {
             items: [],
@@ -40,27 +40,27 @@
             var self = this;
 
             this.$container
-                .addClass("uqp-toolbar")
-                .addClass("uqp-theme-" + cfg.theme)
-                .toggleClass("uqp-hidden", !cfg.visible)
-                .toggleClass("uqp-state-disabled", !!cfg.disabled);
+                .addClass("qpx-toolbar")
+                .addClass("qpx-theme-" + cfg.theme)
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled);
 
             if (cfg.onItemClick) { this.on("itemClick", cfg.onItemClick); }
             if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
 
-            this.$content = $("<div class='uqp-toolbar-content'></div>");
-            this.$before = $("<div class='uqp-toolbar-section uqp-toolbar-before'></div>");
-            this.$center = $("<div class='uqp-toolbar-section uqp-toolbar-center'></div>");
-            this.$after = $("<div class='uqp-toolbar-section uqp-toolbar-after'></div>");
+            this.$content = $("<div class='qpx-toolbar-content'></div>");
+            this.$before = $("<div class='qpx-toolbar-section qpx-toolbar-before'></div>");
+            this.$center = $("<div class='qpx-toolbar-section qpx-toolbar-center'></div>");
+            this.$after = $("<div class='qpx-toolbar-section qpx-toolbar-after'></div>");
             this.$content.append(this.$before, this.$center, this.$after);
 
-            this.$overflowBtn = $("<div class='uqp-toolbar-overflow-btn' tabindex='0' role='button' title='Další položky'></div>")
+            this.$overflowBtn = $("<div class='qpx-toolbar-overflow-btn' tabindex='0' role='button' title='Další položky'></div>")
                 .text(cfg.overflowMenuIcon)
                 .hide();
 
             this.$container.append(this.$content, this.$overflowBtn);
 
-            this.$menu = $("<div class='uqp-toolbar-menu uqp-popup-list'></div>").appendTo(document.body).hide();
+            this.$menu = $("<div class='qpx-toolbar-menu qpx-popup-list'></div>").appendTo(document.body).hide();
 
             this._itemRefs = [];
             this._menuRefs = [];
@@ -93,11 +93,11 @@
             if (itemCfg.data !== undefined && options.data === undefined) { options.data = itemCfg.data; }
             options.view = widgetName;
 
-            var $cell = $("<div class='uqp-toolbar-item'></div>");
+            var $cell = $("<div class='qpx-toolbar-item'></div>");
             if (itemCfg.cssClass) { $cell.addClass(itemCfg.cssClass); }
             if (itemCfg.visible === false) { $cell.hide(); }
 
-            var widget = uqp.ui(options, $cell);
+            var widget = qpx.ui(options, $cell);
 
             var ref = {
                 config: itemCfg,
@@ -136,7 +136,7 @@
                 this._resizeObserver = new ResizeObserver(function () { self._scheduleRelayout(); });
                 this._resizeObserver.observe(this.getNode());
             } else {
-                $(window).on("resize.uqpToolbar" + this.id, this._onWinResize);
+                $(window).on("resize.qpxToolbar" + this.id, this._onWinResize);
             }
         },
 
@@ -195,12 +195,12 @@
                 if (ref.config.visible === false) { return; }
 
                 if (ref.inMenu) {
-                    ref.$cell.addClass("uqp-in-menu").show();
+                    ref.$cell.addClass("qpx-in-menu").show();
                     self.$menu.append(ref.$cell);
                     return;
                 }
 
-                ref.$cell.removeClass("uqp-in-menu").show();
+                ref.$cell.removeClass("qpx-in-menu").show();
                 var target = ref.location === "center" ? self.$center
                     : (ref.location === "after" ? self.$after : self.$before);
                 target.append(ref.$cell);
@@ -214,11 +214,11 @@
         // -------------------------------------------------------------
         _bindOverflowMenu: function () {
             var self = this;
-            this.$overflowBtn.on("click.uqpToolbar", function (e) {
+            this.$overflowBtn.on("click.qpxToolbar", function (e) {
                 e.stopPropagation();
                 self._isMenuOpen ? self._closeMenu() : self._openMenu();
             });
-            $(document).on("mousedown.uqpToolbar" + this.id, function (e) {
+            $(document).on("mousedown.qpxToolbar" + this.id, function (e) {
                 if (!self._isMenuOpen) { return; }
                 if ($(e.target).closest(self.$menu).length || $(e.target).closest(self.$overflowBtn).length) { return; }
                 self._closeMenu();
@@ -244,7 +244,7 @@
         // -------------------------------------------------------------
         option: function (name, value) {
             if (arguments.length === 0) { return this.config; }
-            if (uqp.isObject(name)) {
+            if (qpx.isObject(name)) {
                 var self = this;
                 $.each(name, function (k, v) { self.option(k, v); });
                 return this;
@@ -261,11 +261,11 @@
                 this._buildItems();
                 this._doRelayout();
             } else if (name === "disabled") {
-                this.$container.toggleClass("uqp-state-disabled", !!value);
+                this.$container.toggleClass("qpx-state-disabled", !!value);
             } else if (name === "visible") {
-                this.$container.toggleClass("uqp-hidden", !value);
+                this.$container.toggleClass("qpx-hidden", !value);
             } else if (name === "theme") {
-                this.$container.removeClass("uqp-theme-" + prev).addClass("uqp-theme-" + value);
+                this.$container.removeClass("qpx-theme-" + prev).addClass("qpx-theme-" + value);
             }
 
             this.trigger("optionChanged", { name: name, value: value, previousValue: prev });
@@ -282,15 +282,15 @@
 
         destroy: function () {
             if (this._resizeObserver) { this._resizeObserver.disconnect(); }
-            $(window).off(".uqpToolbar" + this.id);
-            $(document).off(".uqpToolbar" + this.id);
+            $(window).off(".qpxToolbar" + this.id);
+            $(document).off(".qpxToolbar" + this.id);
             this._itemRefs.forEach(function (ref) { if (ref.widget && ref.widget.destroy) { ref.widget.destroy(); } });
             if (this.$menu) { this.$menu.remove(); }
             this._super();
         }
     });
 
-    uqp.registerWidget("qpToolBar", Toolbar);
-    uqp.qpToolBar = Toolbar;
+    qpx.registerWidget("qpToolBar", Toolbar);
+    qpx.qpToolBar = Toolbar;
 
-})(window.uqp, jQuery);
+})(window.qpx, jQuery);

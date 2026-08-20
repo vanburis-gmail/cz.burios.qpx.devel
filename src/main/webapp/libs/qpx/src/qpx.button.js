@@ -1,14 +1,14 @@
 /*!
- * uqp - button
+ * qpx - button
  * Tlačítko se stejnou koncepcí jako DevExtreme dxButton:
  *  - options: text, icon, type, stylingMode, disabled, visible, hint, template
  *  - metody: option(), enable(), disable(), focus()
  *  - události: onClick, onOptionChanged
  */
-(function (uqp, $) {
+(function (qpx, $) {
     "use strict";
 
-    var Button = uqp.Widget.extend({
+    var Button = qpx.Widget.extend({
 
         defaults: {
             text: "",
@@ -26,7 +26,7 @@
         render: function () {
             var cfg = this.config;
             this.$container
-                .addClass("uqp-button")
+                .addClass("qpx-button")
                 .attr("tabindex", cfg.disabled ? "-1" : "0")
                 .attr("role", "button");
 
@@ -37,11 +37,11 @@
             this._applyState();
 
             var self = this;
-            this.$container.on("click.uqpButton", function (e) {
+            this.$container.on("click.qpxButton", function (e) {
                 if (self.config.disabled) { return; }
                 self.trigger("click", { event: e, component: self, element: self.getNode() });
             });
-            this.$container.on("keydown.uqpButton", function (e) {
+            this.$container.on("keydown.qpxButton", function (e) {
                 if (self.config.disabled) { return; }
                 if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
@@ -54,13 +54,13 @@
             var cfg = this.config;
             this.$container.empty();
 
-            if (uqp.isFunction(cfg.template)) {
+            if (qpx.isFunction(cfg.template)) {
                 cfg.template(cfg, this.$container);
                 return;
             }
 
             if (cfg.icon) {
-                var $icon = $("<span class='uqp-icon'></span>");
+                var $icon = $("<span class='qpx-icon'></span>");
                 if (String(cfg.icon).indexOf("css:") === 0) {
                     $icon.addClass(String(cfg.icon).slice(4));
                 } else {
@@ -69,7 +69,7 @@
                 this.$container.append($icon);
             }
             if (cfg.text) {
-                this.$container.append($("<span class='uqp-button-text'></span>").text(cfg.text));
+                this.$container.append($("<span class='qpx-button-text'></span>").text(cfg.text));
             }
             if (cfg.hint) { this.$container.attr("title", cfg.hint); }
         },
@@ -77,12 +77,12 @@
         _applyState: function () {
             var cfg = this.config;
             this.$container
-                .removeClass("uqp-button-normal uqp-button-default uqp-button-success uqp-button-danger uqp-button-warning")
-                .addClass("uqp-button-" + cfg.type)
-                .removeClass("uqp-button-mode-contained uqp-button-mode-outlined uqp-button-mode-text")
-                .addClass("uqp-button-mode-" + cfg.stylingMode)
-                .toggleClass("uqp-state-disabled", !!cfg.disabled)
-                .toggleClass("uqp-hidden", !cfg.visible)
+                .removeClass("qpx-button-normal qpx-button-default qpx-button-success qpx-button-danger qpx-button-warning")
+                .addClass("qpx-button-" + cfg.type)
+                .removeClass("qpx-button-mode-contained qpx-button-mode-outlined qpx-button-mode-text")
+                .addClass("qpx-button-mode-" + cfg.stylingMode)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-hidden", !cfg.visible)
                 .attr("aria-disabled", !!cfg.disabled)
                 .attr("tabindex", cfg.disabled ? "-1" : "0");
         },
@@ -90,7 +90,7 @@
         // option("text") -> čtení; option("text","Nový text") -> zápis; option({text:.., icon:..}) -> hromadně
         option: function (name, value) {
             if (arguments.length === 0) { return this.config; }
-            if (uqp.isObject(name)) {
+            if (qpx.isObject(name)) {
                 var self = this;
                 $.each(name, function (k, v) { self.option(k, v); });
                 return this;
@@ -111,12 +111,12 @@
         focus: function () { this.$container.trigger("focus"); return this; },
 
         destroy: function () {
-            this.$container.off(".uqpButton");
+            this.$container.off(".qpxButton");
             this._super();
         }
     });
 
-    uqp.registerWidget("button", Button);
-    uqp.Button = Button;
+    qpx.registerWidget("button", Button);
+    qpx.Button = Button;
 
-})(window.uqp, jQuery);
+})(window.qpx, jQuery);

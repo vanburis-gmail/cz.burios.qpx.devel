@@ -1,16 +1,16 @@
 /*!
- * uqp - dropDownButton
+ * qpx - dropDownButton
  * Tlačítko s rozbalovacím seznamem položek, koncepčně jako DevExtreme
  * dxDropDownButton (volitelně "split" tlačítko se samostatnou šipkou).
  *  - options: text, icon, items, keyExpr, displayExpr, splitButton, useSelectMode
  *  - události: onButtonClick, onItemClick, onSelectionChanged, onOptionChanged
  */
-(function (uqp, $) {
+(function (qpx, $) {
     "use strict";
 
     var openInstance = null; // aktuálně otevřená instance (jen jedna najednou)
 
-    var DropDownButton = uqp.Widget.extend({
+    var DropDownButton = qpx.Widget.extend({
 
         defaults: {
             text: "",
@@ -34,9 +34,9 @@
         render: function () {
             var cfg = this.config;
             this.$container
-                .addClass("uqp-dropdownbutton uqp-button uqp-button-mode-" + cfg.stylingMode)
-                .toggleClass("uqp-dropdownbutton-split", !!cfg.splitButton)
-                .toggleClass("uqp-hidden", !cfg.visible);
+                .addClass("qpx-dropdownbutton qpx-button qpx-button-mode-" + cfg.stylingMode)
+                .toggleClass("qpx-dropdownbutton-split", !!cfg.splitButton)
+                .toggleClass("qpx-hidden", !cfg.visible);
 
             if (cfg.onButtonClick) { this.on("buttonClick", cfg.onButtonClick); }
             if (cfg.onItemClick) { this.on("itemClick", cfg.onItemClick); }
@@ -59,20 +59,20 @@
             var cfg = this.config;
             this.$container.empty().attr("tabindex", cfg.disabled ? "-1" : "0");
 
-            this.$mainPart = $("<span class='uqp-dropdownbutton-main'></span>");
+            this.$mainPart = $("<span class='qpx-dropdownbutton-main'></span>");
             if (cfg.icon) {
-                var $icon = $("<span class='uqp-icon'></span>");
+                var $icon = $("<span class='qpx-icon'></span>");
                 (String(cfg.icon).indexOf("css:") === 0) ? $icon.addClass(String(cfg.icon).slice(4)) : $icon.text(cfg.icon);
                 this.$mainPart.append($icon);
             }
-            this.$textEl = $("<span class='uqp-button-text'></span>").text(this._currentText());
+            this.$textEl = $("<span class='qpx-button-text'></span>").text(this._currentText());
             this.$mainPart.append(this.$textEl);
 
-            this.$arrowPart = $("<span class='uqp-dropdownbutton-arrow'>▾</span>");
+            this.$arrowPart = $("<span class='qpx-dropdownbutton-arrow'>▾</span>");
 
             this.$container.append(this.$mainPart, this.$arrowPart);
 
-            this.$menu = $("<div class='uqp-popup-list uqp-dropdownbutton-menu'></div>").appendTo(document.body).hide();
+            this.$menu = $("<div class='qpx-popup-list qpx-dropdownbutton-menu'></div>").appendTo(document.body).hide();
             this._renderMenuItems();
         },
 
@@ -91,17 +91,17 @@
             var cfg = this.config;
             this.$menu.empty();
             if (cfg.dropDownOptions && cfg.dropDownOptions.width) {
-                this.$menu.css("width", uqp.toPx(cfg.dropDownOptions.width));
+                this.$menu.css("width", qpx.toPx(cfg.dropDownOptions.width));
             }
 
             cfg.items.forEach(function (item, index) {
                 var key = self._keyOf(item, index);
-                var $row = $("<div class='uqp-popup-list-item'></div>")
-                    .toggleClass("uqp-state-disabled", !!item.disabled)
-                    .toggleClass("uqp-state-selected", cfg.useSelectMode && cfg.selectedItemKey === key);
+                var $row = $("<div class='qpx-popup-list-item'></div>")
+                    .toggleClass("qpx-state-disabled", !!item.disabled)
+                    .toggleClass("qpx-state-selected", cfg.useSelectMode && cfg.selectedItemKey === key);
 
                 if (item.icon) {
-                    var $icon = $("<span class='uqp-icon'></span>");
+                    var $icon = $("<span class='qpx-icon'></span>");
                     (String(item.icon).indexOf("css:") === 0) ? $icon.addClass(String(item.icon).slice(4)) : $icon.text(item.icon);
                     $row.append($icon);
                 }
@@ -128,25 +128,25 @@
             var cfg = this.config;
 
             if (cfg.splitButton) {
-                this.$mainPart.on("click.uqpDdb", function (e) {
+                this.$mainPart.on("click.qpxDdb", function (e) {
                     if (self.config.disabled) { return; }
                     self._close();
                     self.trigger("buttonClick", { event: e, component: self, element: self.getNode() });
                 });
-                this.$arrowPart.on("click.uqpDdb", function (e) {
+                this.$arrowPart.on("click.qpxDdb", function (e) {
                     if (self.config.disabled) { return; }
                     e.stopPropagation();
                     self._toggle();
                 });
             } else {
-                this.$container.on("click.uqpDdb", function (e) {
+                this.$container.on("click.qpxDdb", function (e) {
                     if (self.config.disabled) { return; }
                     self._toggle();
                     self.trigger("buttonClick", { event: e, component: self, element: self.getNode() });
                 });
             }
 
-            $(document).on("mousedown.uqpDdb" + this.id, function (e) {
+            $(document).on("mousedown.qpxDdb" + this.id, function (e) {
                 if (!self._isOpen) { return; }
                 if ($(e.target).closest(self.$menu).length || $(e.target).closest(self.$container).length) { return; }
                 self._close();
@@ -178,7 +178,7 @@
 
         option: function (name, value) {
             if (arguments.length === 0) { return this.config; }
-            if (uqp.isObject(name)) {
+            if (qpx.isObject(name)) {
                 var self = this;
                 $.each(name, function (k, v) { self.option(k, v); });
                 return this;
@@ -198,15 +198,15 @@
         disable: function () { return this.option("disabled", true); },
 
         destroy: function () {
-            this.$container.off(".uqpDdb");
-            $(document).off(".uqpDdb" + this.id);
+            this.$container.off(".qpxDdb");
+            $(document).off(".qpxDdb" + this.id);
             if (this.$menu) { this.$menu.remove(); }
             if (openInstance === this) { openInstance = null; }
             this._super();
         }
     });
 
-    uqp.registerWidget("dropDownButton", DropDownButton);
-    uqp.DropDownButton = DropDownButton;
+    qpx.registerWidget("dropDownButton", DropDownButton);
+    qpx.DropDownButton = DropDownButton;
 
-})(window.uqp, jQuery);
+})(window.qpx, jQuery);
