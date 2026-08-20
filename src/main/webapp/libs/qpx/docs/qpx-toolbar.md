@@ -9,45 +9,52 @@ přetékajícího menu (ikona „⋮“ vpravo). Zdroj: `qpx.toolbar.js`. Dědí
 [`qpx.Widget`](./qpx-widget-base.md).
 
 ## Options
-
-| Option | Typ | Výchozí | Popis |
-|---|---|---|---|
-| `items` | array | `[]` | Položky panelu (viz níže) |
-| `visible` | boolean | `true` | `false` přidá třídu `qpx-hidden` |
-| `disabled` | boolean | `false` | Přidá třídu `qpx-state-disabled` na celý panel |
-| `theme` | `"generic-light"` \| `"generic-dark"` | `"generic-light"` | Přidá třídu `qpx-theme-<theme>` |
-| `overflowMenuIcon` | string | `"⋮"` | Text/glyph tlačítka pro otevření přetékajícího menu |
-| `onItemClick` | `function(e)` | `null` | Zkratka za `.on("itemClick", fn)` — agregovaně za všechny typy položek |
-| `onOptionChanged` | `function(e)` | `null` | Zkratka za `.on("optionChanged", fn)` |
+<table>
+<tr><td> Option </td><td> Typ </td><td> Výchozí </td><td> Popis </td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td> items </td><td> array </td><td> [] </td><td> Položky panelu (viz níže) </td></tr>
+<tr><td> visible </td><td> boolean </td><td> true </td><td> false přidá třídu qpx-hidden </td></tr>
+<tr><td> disabled </td><td> boolean </td><td> false </td><td> Přidá třídu qpx-state-disabled na celý panel </td></tr>
+<tr><td> theme </td><td> "generic-light" </td><td> "generic-dark" </td><td> "generic-light" </td><td> Přidá třídu qpx-theme-<theme> </td></tr>
+<tr><td> overflowMenuIcon </td><td> string </td><td> "⋮" </td><td> Text/glyph tlačítka pro otevření přetékajícího menu </td></tr>
+<tr><td> onItemClick </td><td> function(e) </td><td> null </td><td> Zkratka za .on("itemClick", fn) — agregovaně za všechny typy položek </td></tr>
+<tr><td> onOptionChanged </td><td> function(e) </td><td> null </td><td> Zkratka za .on("optionChanged", fn) </td></tr>
+</table>
 
 ### Konfigurace položky (`item`)
 
-| Vlastnost | Typ | Výchozí | Popis |
-|---|---|---|---|
-| `location` | `"before"` \| `"center"` \| `"after"` | `"before"` | Do které zóny se položka vykreslí |
-| `widget` | `"button"` \| `"buttonGroup"` \| `"dropDownButton"` \| `"template"` \| jiný registrovaný view | `"button"` (nebo `"template"`, pokud je zadán `template`) | Typ vnitřního widgetu položky |
-| `locateInMenu` | `"auto"` \| `"always"` \| `"never"` | `"auto"` | `auto` = přesune se do přetékajícího menu, pokud se nevejde; `always` = vždy jen v menu; `never` = nikdy se do menu nepřesune |
-| `visible` | boolean | `true` | `false` = položka se nevykreslí vůbec (ani do menu) |
-| `cssClass` | string | – | CSS třída na obalující buňku položky |
-| `options` | object | `{}` | Konfigurace předaná dovnitř vnitřního widgetu (`text`, `icon`, `onClick`, `items`, ...) |
-| `template` / `data` | – | – | Zkratka pro `widget: "template"` — pokud jsou zadány přímo na položce (ne v `options`), promítnou se do `options.template` / `options.data` |
+<table>
+<tr><td> Vlastnost </td><td> Typ </td><td> Výchozí </td><td> Popis </td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td> location </td><td> "before" </td><td> "center" </td><td> "after" </td><td> "before" </td><td> Do které zóny se položka vykreslí </td></tr>
+<tr><td> widget </td><td> "button" </td><td> "buttonGroup" </td><td> "dropDownButton" </td><td> "template" </td><td> jiný registrovaný view <tr><td> "button" (nebo "template", pokud je zadán template) </td><td> Typ vnitřního widgetu položky </td></tr>
+<tr><td> locateInMenu </td><td> "auto" </td><td> "always" </td><td> "never" </td><td> "auto" </td><td> auto = přesune se do přetékajícího menu, pokud se nevejde; always = vždy jen v menu; never = nikdy se do menu nepřesune </td></tr>
+<tr><td> visible </td><td> boolean </td><td> true </td><td> false = položka se nevykreslí vůbec (ani do menu) </td></tr>
+<tr><td> cssClass </td><td> string </td><td> – </td><td> CSS třída na obalující buňku položky </td></tr>
+<tr><td> options </td><td> object </td><td> {} </td><td> Konfigurace předaná dovnitř vnitřního widgetu (text, icon, onClick, items, ...) </td></tr>
+<tr><td> template / data </td><td> – </td><td> – </td><td> Zkratka pro widget: "template" — pokud jsou zadány přímo na položce (ne v options), promítnou se do options.template / options.data </td></tr>
+</table>
 
 ## Metody
 
-| Metoda | Popis |
-|---|---|
-| `option()` / `option(name)` / `option(name, value)` / `option({...})` | Zápis `items` kompletně zničí a znovu postaví všechny položky; zápis `disabled`/`visible`/`theme` jen přepne odpovídající CSS třídu |
-| `getItemWidget(index)` | Vrátí instanci vnitřního widgetu položky podle jejího indexu v poli `items` |
-| `repaint()` | Vynutí přepočet responzivního rozložení (`_doRelayout`) |
-| `destroy()` | Zruší `ResizeObserver`/resize handler, zničí všechny vnitřní widgety položek a odstraní přetékající menu z `document.body` |
+<table>
+</td><td> Metoda </td><td> Popis </td><td>
+<tr><td>---</td><td>---</td><td>
+<tr><td> option() / option(name) / option(name, value) / option({...}) </td><td> Zápis items kompletně zničí a znovu postaví všechny položky; zápis disabled/visible/theme jen přepne odpovídající CSS třídu </td></tr>
+<tr><td> getItemWidget(index) </td><td> Vrátí instanci vnitřního widgetu položky podle jejího indexu v poli items </td></tr>
+<tr><td> repaint() </td><td> Vynutí přepočet responzivního rozložení (_doRelayout) </td></tr>
+<tr><td> destroy() </td><td> Zruší ResizeObserver/resize handler, zničí všechny vnitřní widgety položek a odstraní přetékající menu z document.body </td></tr>
+</table>
 
 ## Události
 
-| Event | Data (`e`) | Kdy se vyvolá |
-|---|---|---|
-| `itemClick` | `{ itemData, itemIndex, itemElement, component, ...event z vnitřního widgetu }` | Agregovaně při `click`/`itemClick` libovolného vnitřního widgetu položky |
-| `optionChanged` | `{ name, value, previousValue }` | Po změně přes `option()` |
-| `layoutChanged` | `{ overflowing }` | Po každém přepočtu responzivního rozložení (`overflowing` = zda je aktuálně něco v přetékajícím menu) |
+<table>
+<tr><td> Event </td><td> Data (e) </td><td> Kdy se vyvolá </td></tr>
+<tr><td>---</td><td>---</td><td>---</td></tr>
+<tr><td> itemClick </td><td> { itemData, itemIndex, itemElement, component, ...event z vnitřního widgetu } </td><td> Agregovaně při click/itemClick libovolného vnitřního widgetu položky </td></tr>
+<tr><td> optionChanged </td><td> { name, value, previousValue } </td><td> Po změně přes option() </td></tr>
+<tr><td> layoutChanged </td><td> { overflowing } </td><td> Po každém přepočtu responzivního rozložení (overflowing = zda je aktuálně něco v přetékajícím menu) </td></tr>
+</table>
 
 Panel navíc naslouchá vlastním `click`/`itemClick` eventům jednotlivých
 vnitřních widgetů a přeposílá je jako toolbar `itemClick` — takže stačí
