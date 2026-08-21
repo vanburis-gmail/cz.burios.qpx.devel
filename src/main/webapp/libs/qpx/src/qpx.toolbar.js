@@ -1,5 +1,5 @@
 /*!
- * qpx - qpToolBar
+ * qpx - qpToolBar (refactored)
  * Panel nástrojů koncipovaný stejně jako DevExtreme dxToolBar:
  *  - items rozdělené do "before" / "center" / "after"
  *  - každá položka je samostatný widget: button | buttonGroup | dropDownButton | template
@@ -18,7 +18,7 @@
  *   }
  *
  * Události toolbaru: onItemClick (agregovaně za všechny typy položek),
- * onOptionChanged.
+ * onOptionChanged, layoutChanged.
  */
 (function (qpx, $) {
     "use strict";
@@ -43,7 +43,8 @@
                 .addClass("qpx-toolbar")
                 .addClass("qpx-theme-" + cfg.theme)
                 .toggleClass("qpx-hidden", !cfg.visible)
-                .toggleClass("qpx-state-disabled", !!cfg.disabled);
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .attr("role", "toolbar");
 
             if (cfg.onItemClick) { this.on("itemClick", cfg.onItemClick); }
             if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
@@ -60,11 +61,16 @@
 
             this.$container.append(this.$content, this.$overflowBtn);
 
-            this.$menu = $("<div class='qpx-toolbar-menu qpx-popup-list'></div>").appendTo(document.body).hide();
+            this.$menu = $("<div class='qpx-toolbar-menu qpx-popup-list' role='menu'></div>")
+                .appendTo(document.body)
+                .hide();
 
             this._itemRefs = [];
             this._menuRefs = [];
             this._isMenuOpen = false;
+            this._layoutRaf = null;
+            this._resizeObserver = null;
+            this._onWinResize = null;
 
             this._buildItems();
             this._bindOverflowMenu();
@@ -75,15 +81,22 @@
             setTimeout(function () { self2._doRelayout(); }, 0);
         },
 
+        // -------------------------------------------------------------
+        // Vytvoření položek
+        // -------------------------------------------------------------
         _buildItems: function () {
             var self = this;
-            this.config.items.forEach(function (itemCfg, index) {
+            this._itemRefs = [];
+            (this.config.items || []).forEach(function (itemCfg, index) {
                 self._itemRefs.push(self._createItemRef(itemCfg, index));
             });
+            this._applyPositions();
         },
 
         _createItemRef: function (itemCfg, index) {
             var self = this;
+
+            itemCfg = itemCfg || {};
             itemCfg.location = itemCfg.location || "before";
             itemCfg.locateInMenu = itemCfg.locateInMenu || "auto";
 
@@ -130,6 +143,7 @@
         // -------------------------------------------------------------
         _bindResize: function () {
             var self = this;
+
             this._onWinResize = function () { self._scheduleRelayout(); };
 
             if (window.ResizeObserver) {
@@ -143,7 +157,8 @@
         _scheduleRelayout: function () {
             var self = this;
             if (this._layoutRaf) { return; }
-            this._layoutRaf = (window.requestAnimationFrame || window.setTimeout)(function () {
+            var raf = window.requestAnimationFrame || window.setTimeout;
+            this._layoutRaf = raf(function () {
                 self._layoutRaf = null;
                 self._doRelayout();
             });
@@ -153,6 +168,7 @@
             var self = this;
             if (!this.$content || !this.$content.length) { return; }
 
+            // reset menu refs podle locateInMenu === "always"
             this._menuRefs = [];
             this._itemRefs.forEach(function (ref) {
                 ref.inMenu = (ref.config.locateInMenu === "always" && ref.config.visible !== false);
@@ -161,11 +177,12 @@
 
             this._applyPositions();
 
+            // kandidáti na přesun do menu (auto)
             var candidates = this._itemRefs.filter(function (r) {
                 return r.config.visible !== false &&
                     r.config.locateInMenu !== "never" &&
                     r.config.locateInMenu !== "always";
-            }).slice().reverse(); // sbírání od posledně vykresleného (napravo) -> jako v Chrome DevTools
+            }).slice().reverse(); // od konce (napravo), jako v Chrome DevTools
 
             var guard = 0;
             while (candidates.length && this._isOverflowing() && guard < 500) {
@@ -181,15 +198,19 @@
 
         _isOverflowing: function () {
             var el = this.$content[0];
+            // malá tolerance kvůli zaokrouhlování
             return el.scrollWidth - 1 > el.clientWidth;
         },
 
         _applyPositions: function () {
             var self = this;
-            this.$before.empty();
-            this.$center.empty();
-            this.$after.empty();
-            this.$menu.empty();
+
+            // Nepoužívat empty(), protože maže DOM widgetů a ruší události.
+            // detach() zachová DOM i události.
+            this.$before.children().detach();
+            this.$center.children().detach();
+            this.$after.children().detach();
+            this.$menu.children().detach();
 
             this._itemRefs.forEach(function (ref) {
                 if (ref.config.visible === false) { return; }
@@ -214,10 +235,19 @@
         // -------------------------------------------------------------
         _bindOverflowMenu: function () {
             var self = this;
+
             this.$overflowBtn.on("click.qpxToolbar", function (e) {
                 e.stopPropagation();
                 self._isMenuOpen ? self._closeMenu() : self._openMenu();
             });
+
+            this.$overflowBtn.on("keydown.qpxToolbar", function (e) {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    self._isMenuOpen ? self._closeMenu() : self._openMenu();
+                }
+            });
+
             $(document).on("mousedown.qpxToolbar" + this.id, function (e) {
                 if (!self._isMenuOpen) { return; }
                 if ($(e.target).closest(self.$menu).length || $(e.target).closest(self.$overflowBtn).length) { return; }
@@ -226,11 +256,14 @@
         },
 
         _openMenu: function () {
+            if (!this._menuRefs.length) { return; }
+
             var off = this.$overflowBtn.offset();
             this.$menu.css({
                 top: off.top + this.$overflowBtn.outerHeight(),
                 left: Math.max(0, off.left + this.$overflowBtn.outerWidth() - this.$menu.outerWidth())
             }).show();
+
             this._isMenuOpen = true;
         },
 
@@ -256,8 +289,13 @@
             this.config[name] = value;
 
             if (name === "items") {
-                this._itemRefs.forEach(function (ref) { ref.widget.destroy(); ref.$cell.remove(); });
+                // zničit staré widgety
+                this._itemRefs.forEach(function (ref) {
+                    if (ref.widget && ref.widget.destroy) { ref.widget.destroy(); }
+                    if (ref.$cell) { ref.$cell.remove(); }
+                });
                 this._itemRefs = [];
+                this._menuRefs = [];
                 this._buildItems();
                 this._doRelayout();
             } else if (name === "disabled") {
@@ -278,14 +316,35 @@
             return ref ? ref.widget : undefined;
         },
 
-        repaint: function () { this._doRelayout(); return this; },
+        repaint: function () {
+            this._doRelayout();
+            return this;
+        },
 
         destroy: function () {
-            if (this._resizeObserver) { this._resizeObserver.disconnect(); }
+            // odpojení resize observer / handlerů
+            if (this._resizeObserver) {
+                this._resizeObserver.disconnect();
+                this._resizeObserver = null;
+            }
             $(window).off(".qpxToolbar" + this.id);
             $(document).off(".qpxToolbar" + this.id);
-            this._itemRefs.forEach(function (ref) { if (ref.widget && ref.widget.destroy) { ref.widget.destroy(); } });
+
+            if (this._layoutRaf && window.cancelAnimationFrame) {
+                window.cancelAnimationFrame(this._layoutRaf);
+            }
+            this._layoutRaf = null;
+
+            // zničit vnitřní widgety
+            this._itemRefs.forEach(function (ref) {
+                if (ref.widget && ref.widget.destroy) { ref.widget.destroy(); }
+                if (ref.$cell) { ref.$cell.remove(); }
+            });
+            this._itemRefs = [];
+            this._menuRefs = [];
+
             if (this.$menu) { this.$menu.remove(); }
+
             this._super();
         }
     });

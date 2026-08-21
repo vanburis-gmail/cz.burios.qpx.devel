@@ -1,0 +1,133 @@
+/* ---------------------------------------------------------
+   qpDataGrid – LIGHT THEME (DevExtreme generic-light)
+--------------------------------------------------------- */
+
+.qpx-theme-generic-light .qpx-datagrid {
+    font-family: "Segoe UI", sans-serif;
+    font-size: 14px;
+    color: #333;
+}
+
+.qpx-datagrid-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.qpx-datagrid-header-row {
+    background: #f5f5f5;
+}
+
+.qpx-datagrid-header-cell {
+    padding: 6px 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+}
+
+.qpx-datagrid-header-cell.qpx-datagrid-sortable {
+    cursor: pointer;
+}
+
+.qpx-datagrid-row {
+    border-bottom: 1px solid #eee;
+}
+
+.qpx-datagrid-cell {
+    padding: 4px 8px;
+    vertical-align: middle;
+}
+
+.qpx-datagrid-row:hover {
+    background: #f9f9f9;
+}
+
+.qpx-datagrid-row.qpx-state-selected {
+    background: #d0e6ff;
+    color: #004a9f;
+}
+
+/* Adaptive accordion detail row */
+
+.qpx-datagrid-detail-row {
+    background: #fafafa;
+}
+
+.qpx-datagrid-detail-cell {
+    padding: 0;
+}
+
+.qpx-datagrid-accordion {
+    padding: 6px 10px;
+}
+
+.qpx-datagrid-accordion-item {
+    border-bottom: 1px solid #ddd;
+    padding: 4px 0;
+}
+
+.qpx-datagrid-accordion-header {
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.qpx-datagrid-accordion-content {
+    display: none;
+    padding: 4px 0 6px 0;
+    color: #444;
+}
+
+/* ---------------------------------------------------------
+   qpDataGrid – DARK THEME (DevExtreme generic-dark)
+--------------------------------------------------------- */
+
+.qpx-theme-generic-dark .qpx-datagrid {
+    font-family: "Segoe UI", sans-serif;
+    font-size: 14px;
+    color: #eee;
+}
+
+.qpx-theme-generic-dark .qpx-datagrid-header-row {
+    background: #2b2b2b;
+}
+
+.qpx-theme-generic-dark .qpx-datagrid-header-cell {
+    border-bottom: 1px solid #444;
+}
+
+.qpx-theme-generic-dark .qpx-datagrid-row {
+    border-bottom: 1px solid #333;
+}
+
+.qpx-theme-generic-dark .qpx-datagrid-row:hover {
+    background: #333;
+}
+
+.qpx-theme-generic-dark .qpx-datagrid-row.qpx-state-selected {
+    background: #2a3b55;
+    color: #9fc5ff;
+}
+
+.qpx-theme-generic-dark .qpx-datagrid-detail-row {
+    background: #2b2b2b;
+}
+
+.qpx-theme-generic-dark .qpx-datagrid-accordion-item {
+    border-bottom: 1px solid #444;
+}
+
+.qpx-theme-generic-dark .qpx-datagrid-accordion-content {
+    color: #ccc;
+}
+.qpx-datagrid-cell-adaptive {
+    width: 32px;
+    text-align: center;
+}
+
+.qpx-datagrid-adaptive-btn {
+    display: inline-block;
+    padding: 2px 4px;
+    border-radius: 3px;
+    cursor: pointer;
+    background: #e0e0e0;
+}

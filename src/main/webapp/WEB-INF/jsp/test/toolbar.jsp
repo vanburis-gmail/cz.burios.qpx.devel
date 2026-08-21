@@ -27,7 +27,7 @@ System.out.println("/devel/toolbar.jsp");
 	</head>
 	<body data-theme="light">
 
-		<h1>qpx.qpToolBar — testovací stránka</h1>
+		<h1>QPX qpToolBar — testovací stránka</h1>
 
 		<!-- ============================================================ -->
 		<h2>qpToolBar s položkami všech typů, responzivní přetečení do menu</h2>
@@ -56,7 +56,6 @@ System.out.println("/devel/toolbar.jsp");
 		<script>
 		$(function () {
 			function log(msg) { $("#toolbarLog").text(msg); }
-
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
 				theme: "generic-light",
@@ -100,7 +99,51 @@ System.out.println("/devel/toolbar.jsp");
 					console.log("toolbar optionChanged:", e.name, "->", e.value);
 				}
 			}, "#app0");
-
+			/*
+			$("#app0").qpx("qpToolBar",{
+				view: "qpToolBar",
+				theme: "generic-light",
+				items: [
+					{ location: "before", widget: "button",
+					  options: { icon: "☰", stylingMode: "text", hint: "Menu",
+						onClick: function () { log("Button 'Menu' — click."); } } },
+					{ location: "before", widget: "template", template: "<b style='padding:0 4px;'>qpx Demo</b>" },
+					{ location: "before", widget: "button",
+					  options: { text: "Nový", icon: "➕", type: "default",
+						onClick: function () { log("Button 'Nový' — vytvářím záznam..."); } } },
+					{ location: "before", widget: "buttonGroup",
+					  options: { items: [{ text: "Den", key: "day" }, { text: "Týden", key: "week" }, { text: "Měsíc", key: "month" }],
+						selectedItemKeys: ["week"],
+						onItemClick: function (e) { log("ButtonGroup — kliknuto: " + e.itemData.text); } } },
+					{ location: "before", widget: "dropDownButton",
+					  options: { text: "Export", icon: "⭳", splitButton: true,
+						items: [{ text: "Export do PDF", key: "pdf" }, { text: "Export do Excelu", key: "xlsx" }, { text: "Export do CSV", key: "csv" }],
+						onButtonClick: function () { log("DropDownButton 'Export' — hlavní tlačítko."); },
+						onItemClick: function (e) { log("DropDownButton 'Export' — vybráno: " + e.itemData.text); } } },
+					{ location: "before", widget: "button",
+					  options: { text: "Uložit", type: "success", onClick: function () { log("Button 'Uložit' — ukládám..."); } } },
+					{ location: "before", widget: "button",
+					  options: { text: "Smazat", type: "danger", onClick: function () { log("Button 'Smazat' — mažu záznam..."); } } },
+					{ location: "before", widget: "button",
+					  options: { text: "Filtr", stylingMode: "outlined", onClick: function () { log("Button 'Filtr' — otevírám filtr..."); } } },
+					{ location: "before", widget: "button",
+					  options: { text: "Tisk", stylingMode: "outlined", onClick: function () { log("Button 'Tisk' — tisknu..."); } } },
+					{ location: "center", widget: "template", template: "<span style='color:#888;'>#count# položek</span>", data: { count: 128 } },
+					{ location: "after", widget: "button",
+					  options: { icon: "🔔", stylingMode: "text", hint: "Notifikace", onClick: function () { log("Button 'Notifikace' — click."); } } },
+					{ location: "after", widget: "dropDownButton", locateInMenu: "never",
+					  options: { text: "Petr Novák", icon: "👤",
+						items: [{ text: "Profil", key: "profile" }, { text: "Nastavení", key: "settings" }, { text: "Odhlásit se", key: "logout" }],
+						onItemClick: function (e) { log("Uživatelské menu — vybráno: " + e.itemData.text); } } }
+				],
+				onItemClick: function (e) {
+					console.log("qpx.qpToolBar onItemClick:", e.itemData, "index:", e.itemIndex);
+				},
+				onOptionChanged: function (e) {
+					console.log("toolbar optionChanged:", e.name, "->", e.value);
+				}
+			});			
+			*/
 			toolbar.on("layoutChanged", function (e) {
 				console.log("layoutChanged — overflowing:", e.overflowing);
 			});

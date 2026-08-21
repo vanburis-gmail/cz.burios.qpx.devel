@@ -103,6 +103,7 @@
 
     // hlavní tovární metoda — sestavování z JSON konfigurace:
     //   qpx.ui({ view: "template", template: "Ahoj #name#" }, "#mistoVDom");
+	/*	
     qpx.ui = function (config, container) {
         if (qpx.isString(config)) {
             config = { view: config };
@@ -117,5 +118,28 @@
         }
         return new WidgetClass(config, container);
     };
+	*/
+	qpx.ui = function (config, container) {
+	    if (qpx.isString(config)) {
+	        config = { view: config };
+	    }
+	    var view = config.view || (config.rows || config.cols ? "layout" : null);
+	    if (!view) {
+	        throw new Error("qpx: konfigurace komponenty musí obsahovat 'view' (nebo 'rows'/'cols').");
+	    }
+	    var WidgetClass = registry[view];
+	    if (!WidgetClass) {
+	        throw new Error("qpx: neregistrovaný typ komponenty '" + view + "'.");
+	    }
+
+	    var instance = new WidgetClass(config, container);
+
+	    // 🔥 DOPLNĚNO — stejné chování jako jQuery plugin
+	    if (instance.$container) {
+	        instance.$container.data("qpx-widget", instance);
+	    }
+
+	    return instance;
+	};
 
 })(window.qpx, jQuery);

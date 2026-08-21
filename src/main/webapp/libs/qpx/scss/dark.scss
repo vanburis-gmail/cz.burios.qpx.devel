@@ -17,6 +17,8 @@
 @use "widgets/popup-list";
 @use "widgets/dropdownbutton";
 @use "widgets/toolbar";
+@use "widgets/treeview";
+@use "widgets/datagrid";
 
 :root,
 .qpx-view {

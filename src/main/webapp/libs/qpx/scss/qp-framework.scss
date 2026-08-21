@@ -29,6 +29,7 @@
 @use "widgets/popup-list";
 @use "widgets/dropdownbutton";
 @use "widgets/toolbar";
+@use "widgets/treeview";
 
 .qpx-theme-generic-light { @include light.qpx-theme-vars; }
 .qpx-theme-generic-dark  { @include dark.qpx-theme-vars; }

@@ -13,6 +13,8 @@ gulp.task('build-js', function() {
 		"src/main/webapp/libs/qpx/src/qpx.buttongroup.js",
 		"src/main/webapp/libs/qpx/src/qpx.dropdownbutton.js",
 		"src/main/webapp/libs/qpx/src/qpx.toolbar.js",
+		"src/main/webapp/libs/qpx/src/qpx.treeview.js",
+		"src/main/webapp/libs/qpx/src/qpx.datagrid.js",
 		/*
 		*/
 		"src/main/webapp/libs/qpx/src/qpx.parser.js"
