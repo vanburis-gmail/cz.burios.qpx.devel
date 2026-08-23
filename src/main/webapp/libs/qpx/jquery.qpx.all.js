@@ -983,6 +983,175 @@
 })(window.qpx, jQuery);
 
 /*!
+ * qpx - qpSwitch
+ * Přepínač inspirovaný DevExtreme dxSwitch:
+ *  - options: value, onText, offText, name, disabled, visible, hint, stylingMode
+ *  - metody: option(), value(), toggle(), enable(), disable(), focus()
+ *  - události: onValueChanged, onOptionChanged
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var Switch = qpx.Widget.extend({
+
+        defaults: {
+            value: false,          // true/false
+            onText: "On",
+            offText: "Off",
+            name: "",
+            disabled: false,
+            visible: true,
+            hint: "",
+            stylingMode: "default", // default | outlined | flat
+            onValueChanged: null,
+            onOptionChanged: null
+        },
+
+        render: function () {
+            var cfg = this.config;
+
+            this.$container
+                .addClass("qpx-switch")
+                .addClass("qpx-switch-mode-" + cfg.stylingMode)
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .attr("role", "switch")
+                .attr("tabindex", cfg.disabled ? "-1" : "0")
+                .attr("aria-checked", !!cfg.value);
+
+            if (cfg.name) {
+                this.$container.attr("data-qpx-name", cfg.name);
+            }
+            if (cfg.hint) {
+                this.$container.attr("title", cfg.hint);
+            }
+
+            if (cfg.onValueChanged) { this.on("valueChanged", cfg.onValueChanged); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+
+            this._renderContent();
+            this._bindEvents();
+        },
+
+        _renderContent: function () {
+            var cfg = this.config;
+            this.$container.empty();
+
+            var $track = $("<div class='qpx-switch-track'></div>");
+            var $thumb = $("<div class='qpx-switch-thumb'></div>");
+            var $labelOn = $("<span class='qpx-switch-label qpx-switch-label-on'></span>").text(cfg.onText);
+            var $labelOff = $("<span class='qpx-switch-label qpx-switch-label-off'></span>").text(cfg.offText);
+
+            $track.append($labelOff, $labelOn);
+            $track.append($thumb);
+
+            this.$container.append($track);
+
+            this.$container
+                .toggleClass("qpx-switch-on", !!cfg.value)
+                .toggleClass("qpx-switch-off", !cfg.value)
+                .attr("aria-checked", !!cfg.value);
+        },
+
+        _bindEvents: function () {
+            var self = this;
+
+            this.$container.off(".qpxSwitch");
+
+            this.$container.on("click.qpxSwitch", function (e) {
+                if (self.config.disabled) { return; }
+                self.toggle();
+            });
+
+            this.$container.on("keydown.qpxSwitch", function (e) {
+                if (self.config.disabled) { return; }
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    self.toggle();
+                }
+            });
+        },
+
+        // veřejné API: value() getter/setter
+        value: function (val) {
+            if (arguments.length === 0) {
+                return !!this.config.value;
+            }
+            return this.option("value", !!val);
+        },
+
+        toggle: function () {
+            return this.option("value", !this.config.value);
+        },
+
+        // option("x") -> čtení; option("x", v) -> zápis; option({x:..}) -> hromadně
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+
+            this.config[name] = value;
+
+            if (name === "value") {
+                this.$container
+                    .toggleClass("qpx-switch-on", !!this.config.value)
+                    .toggleClass("qpx-switch-off", !this.config.value)
+                    .attr("aria-checked", !!this.config.value);
+
+                this.trigger("valueChanged", {
+                    value: !!this.config.value,
+                    previousValue: !!prev,
+                    component: this,
+                    element: this.getNode()
+                });
+            } else if (name === "visible") {
+                this.$container.toggleClass("qpx-hidden", !value);
+            } else if (name === "disabled") {
+                this.$container
+                    .toggleClass("qpx-state-disabled", !!value)
+                    .attr("tabindex", value ? "-1" : "0");
+            } else if (name === "stylingMode") {
+                this.$container
+                    .removeClass("qpx-switch-mode-default qpx-switch-mode-outlined qpx-switch-mode-flat")
+                    .addClass("qpx-switch-mode-" + value);
+            }
+
+            this._renderContent();
+
+            this.trigger("optionChanged", {
+                name: name,
+                value: value,
+                previousValue: prev,
+                element: this.getNode(),
+                component: this
+            });
+
+            return this;
+        },
+
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+        focus: function () { this.$container.trigger("focus"); return this; },
+
+        destroy: function () {
+            this.$container.off(".qpxSwitch");
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpSwitch", Switch);
+    qpx.qpSwitch = Switch;
+
+})(window.qpx, jQuery);
+
+/*!
  * qpx - qpToolBar (refactored)
  * Panel nástrojů koncipovaný stejně jako DevExtreme dxToolBar:
  *  - items rozdělené do "before" / "center" / "after"
@@ -1335,6 +1504,691 @@
 
     qpx.registerWidget("qpToolBar", Toolbar);
     qpx.qpToolBar = Toolbar;
+
+})(window.qpx, jQuery);
+
+/*!
+ * qpx - qpTabView
+ * Panel se záložkami koncipovaný podobně jako DevExtreme dxTabPanel:
+ *  - "items" = pole záložek, každá má title/icon a obsah panelu
+ *  - obsah panelu lze zadat jako template (string/funkce), html/text,
+ *    nebo jako vnořenou qpx konfiguraci (view / rows / cols) - stejně
+ *    jako u qpToolBar, takže lze skládat plné qpx widgety.
+ *  - vizuálně i chováním se blíží dxTabPanel: posuvný indikátor pod
+ *    aktivní záložkou, tlačítka pro scroll při přetečení, klávesová
+ *    navigace (šipky/Home/End) podle WAI-ARIA "tabs" patternu,
+ *    volitelný swipe na dotykových zařízeních, deferRendering apod.
+ *
+ * Options (nejbližší ekvivalent k dxTabPanel):
+ *   items, dataSource, selectedIndex, selectedItem,
+ *   tabsPosition: "top"|"bottom"|"left"|"right",
+ *   stylingMode:  "primary" (podtržený indikátor) | "secondary" (vyplněné "pilulky"),
+ *   iconPosition: "start"|"end"|"top"|"bottom",
+ *   animationEnabled, swipeEnabled, deferRendering, repaintChangesOnly,
+ *   showNavButtons, scrollingEnabled, loop, rtlEnabled,
+ *   disabled, visible, focusStateEnabled, hoverStateEnabled,
+ *   itemHoldTimeout, itemTemplate, itemTitleTemplate,
+ *   width, height (řeší už qpx.Widget)
+ *
+ * Events:
+ *   onInitialized, onContentReady, onSelectionChanged,
+ *   onItemClick, onTitleClick, onItemHold, onItemContextMenu,
+ *   onItemRendered, onOptionChanged, onDisposing
+ *
+ * Methods:
+ *   option(name[, value]), selectItem(indexOrItem),
+ *   getSelectedIndex(), getSelectedItem(),
+ *   getItemElement(index), getTabElement(index),
+ *   repaint(), destroy()
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var TabView = qpx.Widget.extend({
+
+        defaults: {
+            items: [],
+            dataSource: null,
+            selectedIndex: 0,
+            selectedItem: null,
+
+            tabsPosition: "top",     // top | bottom | left | right
+            stylingMode: "primary",  // primary | secondary
+            iconPosition: "start",   // start | end | top | bottom
+
+            animationEnabled: true,
+            swipeEnabled: true,
+            deferRendering: true,
+            repaintChangesOnly: false,
+
+            showNavButtons: false,
+            scrollingEnabled: true,
+            loop: false,
+            rtlEnabled: false,
+
+            disabled: false,
+            visible: true,
+            focusStateEnabled: true,
+            hoverStateEnabled: true,
+
+            itemHoldTimeout: 750,
+            itemTemplate: null,
+            itemTitleTemplate: null,
+
+            onInitialized: null,
+            onContentReady: null,
+            onSelectionChanged: null,
+            onItemClick: null,
+            onTitleClick: null,
+            onItemHold: null,
+            onItemContextMenu: null,
+            onItemRendered: null,
+            onOptionChanged: null,
+            onDisposing: null
+        },
+
+        // ---------------------------------------------------------------
+        // Vykreslení
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+            var self = this;
+
+            if ((!cfg.items || !cfg.items.length) && cfg.dataSource) {
+                cfg.items = cfg.dataSource;
+            }
+            cfg.items = cfg.items || [];
+
+            this.$container
+                .addClass("qpx-tabview")
+                .addClass("qpx-tabview-pos-" + cfg.tabsPosition)
+                .addClass("qpx-tabview-styling-" + cfg.stylingMode)
+                .addClass("qpx-icon-position-" + cfg.iconPosition)
+                .toggleClass("qpx-rtl", !!cfg.rtlEnabled)
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-focusable", !!cfg.focusStateEnabled)
+                .toggleClass("qpx-hoverable", !!cfg.hoverStateEnabled)
+                .attr("dir", cfg.rtlEnabled ? "rtl" : "ltr");
+
+            if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
+            if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
+            if (cfg.onSelectionChanged) { this.on("selectionChanged", cfg.onSelectionChanged); }
+            if (cfg.onItemClick) { this.on("itemClick", cfg.onItemClick); }
+            if (cfg.onTitleClick) { this.on("titleClick", cfg.onTitleClick); }
+            if (cfg.onItemHold) { this.on("itemHold", cfg.onItemHold); }
+            if (cfg.onItemContextMenu) { this.on("itemContextMenu", cfg.onItemContextMenu); }
+            if (cfg.onItemRendered) { this.on("itemRendered", cfg.onItemRendered); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+            if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
+
+            // --- DOM kostra -------------------------------------------------
+            this.$tabsWrapper = $("<div class='qpx-tabview-tabswrapper'></div>");
+            this.$navPrev = $("<div class='qpx-tabview-nav qpx-tabview-nav-prev' tabindex='-1' role='button' aria-label='Předchozí záložky'>&#8249;</div>").hide();
+            this.$navNext = $("<div class='qpx-tabview-nav qpx-tabview-nav-next' tabindex='-1' role='button' aria-label='Další záložky'>&#8250;</div>").hide();
+            this.$tabsScroll = $("<div class='qpx-tabview-tabsscroll'></div>");
+            this.$tabsList = $("<div class='qpx-tabview-tabslist' role='tablist'></div>");
+            this.$indicator = $("<div class='qpx-tabview-indicator qpx-no-anim'></div>");
+
+            this.$tabsList.append(this.$indicator);
+            this.$tabsScroll.append(this.$tabsList);
+            this.$tabsWrapper.append(this.$navPrev, this.$tabsScroll, this.$navNext);
+
+            this.$content = $("<div class='qpx-tabview-content' role='presentation'></div>");
+
+            if (cfg.tabsPosition === "bottom") {
+                this.$container.append(this.$content, this.$tabsWrapper);
+            } else {
+                this.$container.append(this.$tabsWrapper, this.$content);
+            }
+
+            this._itemRefs = [];
+            this._selectedIndex = -1;
+            this._layoutRaf = null;
+            this._resizeObserver = null;
+
+            this._buildItems();
+            this._bindNav();
+            this._bindKeyboard();
+            if (cfg.swipeEnabled) { this._bindSwipe(); }
+            this._bindResize();
+
+            var initialIndex = this._resolveInitialIndex();
+            this._selectIndex(initialIndex, { initial: true, silent: false });
+
+            setTimeout(function () {
+                self._updateNavVisibility();
+                self._moveIndicator(false);
+                self.trigger("contentReady", { component: self });
+            }, 0);
+        },
+
+        _resolveInitialIndex: function () {
+            var cfg = this.config;
+            if (cfg.selectedItem != null) {
+                var idx = this._indexOfItem(cfg.selectedItem);
+                if (idx > -1) { return idx; }
+            }
+            return cfg.selectedIndex || 0;
+        },
+
+        // ---------------------------------------------------------------
+        // Sestavení položek (záložka + panel)
+        // ---------------------------------------------------------------
+        _buildItems: function () {
+            var self = this;
+            this._itemRefs = [];
+            (this.config.items || []).forEach(function (itemCfg, index) {
+                self._itemRefs.push(self._createItemRef(itemCfg || {}, index));
+            });
+
+            if (!this.config.deferRendering) {
+                this._itemRefs.forEach(function (ref) { self._renderPanelContent(ref); });
+            }
+        },
+
+        _rebuildItems: function () {
+            this._itemRefs.forEach(function (ref) {
+                if (ref.widget && ref.widget.destroy) { ref.widget.destroy(); }
+                ref.$tab.remove();
+                ref.$panel.remove();
+            });
+            this._itemRefs = [];
+            this._selectedIndex = -1;
+
+            this.$tabsList.empty().append(this.$indicator);
+            this.$content.empty();
+
+            this._buildItems();
+            var idx = this._resolveInitialIndex();
+            this._selectIndex(idx, { initial: true });
+            this._updateNavVisibility();
+        },
+
+        _createItemRef: function (itemCfg, index) {
+            var self = this;
+            var cfg = this.config;
+
+            var $tab = $("<div class='qpx-tabview-tab' role='tab' tabindex='-1'></div>")
+                .attr("aria-selected", "false")
+                .attr("id", this.id + "-tab-" + index)
+                .attr("aria-controls", this.id + "-panel-" + index);
+
+            if (itemCfg.disabled) { $tab.addClass("qpx-state-disabled").attr("aria-disabled", "true"); }
+            if (itemCfg.visible === false) { $tab.addClass("qpx-hidden"); }
+            if (itemCfg.cssClass) { $tab.addClass(itemCfg.cssClass); }
+
+            var $icon = null;
+            if (itemCfg.icon) {
+                $icon = $("<span class='qpx-icon'></span>").addClass("qpx-icon-" + itemCfg.icon);
+            }
+
+            var $title = $("<span class='qpx-tabview-tab-title'></span>");
+            if (qpx.isFunction(cfg.itemTitleTemplate)) {
+                var tContent = cfg.itemTitleTemplate.call(this, itemCfg, index, $title[0]);
+                if (tContent !== undefined) { $title.append(tContent); }
+            } else {
+                $title.text(itemCfg.title != null ? itemCfg.title : (itemCfg.text || ""));
+            }
+
+            if ($icon) {
+                if (cfg.iconPosition === "end" || cfg.iconPosition === "bottom") {
+                    $tab.append($title, $icon);
+                } else {
+                    $tab.append($icon, $title);
+                }
+            } else {
+                $tab.append($title);
+            }
+
+            var $badge = null;
+            if (itemCfg.badge !== undefined && itemCfg.badge !== null && itemCfg.badge !== "") {
+                $badge = $("<span class='qpx-tabview-tab-badge'></span>").text(itemCfg.badge);
+                $tab.append($badge);
+            }
+
+            var $panel = $("<div class='qpx-tabview-panel' role='tabpanel'></div>")
+                .attr("id", this.id + "-panel-" + index)
+                .attr("aria-labelledby", this.id + "-tab-" + index)
+                .hide();
+
+            this.$tabsList.append($tab);
+            this.$content.append($panel);
+
+            var ref = {
+                config: itemCfg,
+                index: index,
+                $tab: $tab,
+                $panel: $panel,
+                widget: null,
+                rendered: false
+            };
+
+            // klik na záložku
+            $tab.on("click.qpxTabView", function (e) {
+                if (itemCfg.disabled || cfg.disabled) { return; }
+                self.trigger("titleClick", { itemData: itemCfg, itemIndex: index, itemElement: $tab[0], component: self, event: e });
+                self.trigger("itemClick", { itemData: itemCfg, itemIndex: index, itemElement: $tab[0], component: self, event: e });
+                self.option("selectedIndex", index);
+            });
+
+            // podržení položky (itemHold), stejně jako u dx widgetů
+            var holdTimer = null;
+            $tab.on("mousedown.qpxTabView touchstart.qpxTabView", function (e) {
+                if (itemCfg.disabled || cfg.disabled) { return; }
+                window.clearTimeout(holdTimer);
+                holdTimer = window.setTimeout(function () {
+                    self.trigger("itemHold", { itemData: itemCfg, itemIndex: index, itemElement: $tab[0], component: self, event: e });
+                }, cfg.itemHoldTimeout);
+            });
+            $tab.on("mouseup.qpxTabView mouseleave.qpxTabView touchend.qpxTabView touchmove.qpxTabView", function () {
+                window.clearTimeout(holdTimer);
+            });
+
+            $tab.on("contextmenu.qpxTabView", function (e) {
+                if (itemCfg.disabled || cfg.disabled) { return; }
+                self.trigger("itemContextMenu", { itemData: itemCfg, itemIndex: index, itemElement: $tab[0], component: self, event: e });
+            });
+
+            return ref;
+        },
+
+        // vykreslení obsahu panelu (líné, dle deferRendering) —
+        // podporuje template (string/funkce), html/text, nebo vnořenou qpx konfiguraci
+        _renderPanelContent: function (ref) {
+            if (ref.rendered) { return; }
+            var itemCfg = ref.config;
+            var cfg = this.config;
+            var content = itemCfg.template !== undefined ? itemCfg.template : cfg.itemTemplate;
+
+            if (qpx.isFunction(content)) {
+                var result = content.call(this, itemCfg, ref.index, ref.$panel[0]);
+                if (result !== undefined && result !== null) { ref.$panel.append(result); }
+            } else if (qpx.isString(content)) {
+                ref.$panel.html(content);
+            } else if (itemCfg.view || itemCfg.rows || itemCfg.cols) {
+                ref.widget = qpx.ui(itemCfg, ref.$panel);
+                this.addChild(ref.widget);
+            } else if (itemCfg.html !== undefined) {
+                ref.$panel.html(itemCfg.html);
+            } else if (itemCfg.text !== undefined && itemCfg.title !== undefined) {
+                // "text" použit jako obsah, "title" jako popisek záložky
+                ref.$panel.text(itemCfg.text);
+            }
+
+            ref.rendered = true;
+            this.trigger("itemRendered", { itemData: itemCfg, itemIndex: ref.index, itemElement: ref.$panel[0], component: this });
+        },
+
+        // ---------------------------------------------------------------
+        // Výběr záložky
+        // ---------------------------------------------------------------
+        _indexOfItem: function (item) {
+            var refs = this._itemRefs;
+            for (var i = 0; i < refs.length; i++) {
+                if (refs[i].config === item) { return i; }
+            }
+            return -1;
+        },
+
+        _findSelectableIndex: function (fromIndex, direction) {
+            var refs = this._itemRefs;
+            if (!refs.length) { return -1; }
+            var loop = this.config.loop;
+            var i = fromIndex;
+            var guard = 0;
+
+            while (guard <= refs.length) {
+                if (i < 0) { i = loop ? refs.length - 1 : 0; }
+                if (i > refs.length - 1) { i = loop ? 0 : refs.length - 1; }
+
+                var ref = refs[i];
+                if (ref && !ref.config.disabled && ref.config.visible !== false) { return i; }
+                if (i === fromIndex && guard > 0) { break; }
+
+                i += direction;
+                guard += 1;
+            }
+            return -1;
+        },
+
+        _selectIndex: function (index, opts) {
+            opts = opts || {};
+            var refs = this._itemRefs;
+            if (!refs.length) { return; }
+
+            index = Math.max(0, Math.min(index, refs.length - 1));
+            if (refs[index] && refs[index].config.disabled) {
+                var alt = this._findSelectableIndex(index, 1);
+                if (alt === -1) { return; }
+                index = alt;
+            }
+            if (index === this._selectedIndex && !opts.initial) { return; }
+
+            var prevIndex = this._selectedIndex;
+            var prevRef = refs[prevIndex];
+            var ref = refs[index];
+
+            if (prevRef) {
+                prevRef.$tab.removeClass("qpx-state-selected").attr({ "aria-selected": "false", tabindex: "-1" });
+                prevRef.$panel.hide();
+            }
+
+            this._selectedIndex = index;
+            this.config.selectedIndex = index;
+            this.config.selectedItem = ref.config;
+
+            this._renderPanelContent(ref);
+
+            ref.$tab.addClass("qpx-state-selected").attr({ "aria-selected": "true", tabindex: "0" });
+            ref.$panel.show();
+
+            this._scrollTabIntoView(ref);
+            this._moveIndicator(this.config.animationEnabled && !opts.initial);
+
+            if (!opts.silent) {
+                this.trigger("selectionChanged", {
+                    component: this,
+                    addedItems: [ref.config],
+                    removedItems: prevRef ? [prevRef.config] : []
+                });
+            }
+        },
+
+        _moveIndicator: function (animate) {
+            var ref = this._itemRefs[this._selectedIndex];
+            if (!ref || !this.$indicator) { return; }
+
+            this.$indicator.toggleClass("qpx-no-anim", !animate);
+
+            var vertical = (this.config.tabsPosition === "left" || this.config.tabsPosition === "right");
+            if (vertical) {
+                this.$indicator.css({ top: ref.$tab.position().top, height: ref.$tab.outerHeight(), left: "", width: "" });
+            } else {
+                this.$indicator.css({ left: ref.$tab.position().left, width: ref.$tab.outerWidth(), top: "", height: "" });
+            }
+        },
+
+        // ---------------------------------------------------------------
+        // Scrollování / nav tlačítka (při přetečení pásu záložek)
+        // ---------------------------------------------------------------
+        _bindNav: function () {
+            var self = this;
+            var step = function () { return Math.max(80, self.$tabsScroll.width() * 0.75); };
+
+            this.$navPrev.on("click.qpxTabView", function () {
+                self.$tabsScroll.stop
+                    ? self.$tabsScroll.animate({ scrollLeft: "-=" + step() }, 150)
+                    : (self.$tabsScroll[0].scrollLeft -= step());
+            });
+            this.$navNext.on("click.qpxTabView", function () {
+                self.$tabsScroll.stop
+                    ? self.$tabsScroll.animate({ scrollLeft: "+=" + step() }, 150)
+                    : (self.$tabsScroll[0].scrollLeft += step());
+            });
+            this.$tabsScroll.on("scroll.qpxTabView", function () { self._updateNavVisibility(); });
+        },
+
+        _updateNavVisibility: function () {
+            var cfg = this.config;
+            var el = this.$tabsScroll[0];
+            if (!el) { return; }
+
+            var vertical = (cfg.tabsPosition === "left" || cfg.tabsPosition === "right");
+            var overflowing = cfg.scrollingEnabled && (vertical
+                ? el.scrollHeight - 1 > el.clientHeight
+                : el.scrollWidth - 1 > el.clientWidth);
+
+            var showButtons = !!cfg.showNavButtons && overflowing;
+            this.$navPrev.toggle(showButtons);
+            this.$navNext.toggle(showButtons);
+            this.$tabsWrapper.toggleClass("qpx-tabview-overflowing", !!overflowing);
+        },
+
+        _scrollTabIntoView: function (ref) {
+            var el = this.$tabsScroll[0];
+            if (!el || !this.config.scrollingEnabled) { return; }
+            var vertical = (this.config.tabsPosition === "left" || this.config.tabsPosition === "right");
+            var tabEl = ref.$tab[0];
+
+            if (vertical) {
+                if (tabEl.offsetTop < el.scrollTop) { el.scrollTop = tabEl.offsetTop; }
+                else if (tabEl.offsetTop + tabEl.offsetHeight > el.scrollTop + el.clientHeight) {
+                    el.scrollTop = tabEl.offsetTop + tabEl.offsetHeight - el.clientHeight;
+                }
+            } else {
+                if (tabEl.offsetLeft < el.scrollLeft) { el.scrollLeft = tabEl.offsetLeft; }
+                else if (tabEl.offsetLeft + tabEl.offsetWidth > el.scrollLeft + el.clientWidth) {
+                    el.scrollLeft = tabEl.offsetLeft + tabEl.offsetWidth - el.clientWidth;
+                }
+            }
+        },
+
+        _bindResize: function () {
+            var self = this;
+            var handler = function () { self._scheduleRelayout(); };
+
+            if (window.ResizeObserver) {
+                this._resizeObserver = new ResizeObserver(handler);
+                this._resizeObserver.observe(this.getNode());
+            } else {
+                $(window).on("resize.qpxTabView" + this.id, handler);
+            }
+        },
+
+        _scheduleRelayout: function () {
+            var self = this;
+            if (this._layoutRaf) { return; }
+            var raf = window.requestAnimationFrame || window.setTimeout;
+            this._layoutRaf = raf(function () {
+                self._layoutRaf = null;
+                self._updateNavVisibility();
+                self._moveIndicator(false);
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Klávesová navigace (WAI-ARIA "tabs" pattern)
+        // ---------------------------------------------------------------
+        _bindKeyboard: function () {
+            var self = this;
+            var cfg = this.config;
+
+            this.$tabsList.on("keydown.qpxTabView", ".qpx-tabview-tab", function (e) {
+                if (cfg.disabled) { return; }
+                var horizontal = !(cfg.tabsPosition === "left" || cfg.tabsPosition === "right");
+                var rtl = !!cfg.rtlEnabled;
+                var nextKey = horizontal ? (rtl ? "ArrowLeft" : "ArrowRight") : "ArrowDown";
+                var prevKey = horizontal ? (rtl ? "ArrowRight" : "ArrowLeft") : "ArrowUp";
+                var handled = true;
+
+                if (e.key === nextKey) {
+                    var n = self._findSelectableIndex(self._selectedIndex + 1, 1);
+                    if (n > -1) { self.option("selectedIndex", n); self._itemRefs[n].$tab.trigger("focus"); }
+                } else if (e.key === prevKey) {
+                    var p = self._findSelectableIndex(self._selectedIndex - 1, -1);
+                    if (p > -1) { self.option("selectedIndex", p); self._itemRefs[p].$tab.trigger("focus"); }
+                } else if (e.key === "Home") {
+                    var f = self._findSelectableIndex(0, 1);
+                    if (f > -1) { self.option("selectedIndex", f); self._itemRefs[f].$tab.trigger("focus"); }
+                } else if (e.key === "End") {
+                    var l = self._findSelectableIndex(self._itemRefs.length - 1, -1);
+                    if (l > -1) { self.option("selectedIndex", l); self._itemRefs[l].$tab.trigger("focus"); }
+                } else if (e.key === "Enter" || e.key === " ") {
+                    var focusedIndex = self._itemRefs.map(function (r) { return r.$tab[0]; }).indexOf(this);
+                    if (focusedIndex > -1) { self.option("selectedIndex", focusedIndex); }
+                } else {
+                    handled = false;
+                }
+
+                if (handled) { e.preventDefault(); }
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Swipe (dotyková zařízení)
+        // ---------------------------------------------------------------
+        _bindSwipe: function () {
+            var self = this;
+            var startX = null, startY = null, tracking = false;
+
+            this.$content.on("touchstart.qpxTabView", function (e) {
+                if (self.config.disabled) { return; }
+                var t = e.originalEvent.touches[0];
+                startX = t.clientX;
+                startY = t.clientY;
+                tracking = true;
+            });
+
+            this.$content.on("touchmove.qpxTabView", function (e) {
+                if (!tracking) { return; }
+                var t = e.originalEvent.touches[0];
+                if (Math.abs(t.clientX - startX) > Math.abs(t.clientY - startY)) {
+                    e.preventDefault(); // horizontální swipe = nescrollovat stránku svisle
+                }
+            });
+
+            this.$content.on("touchend.qpxTabView", function (e) {
+                if (!tracking) { return; }
+                tracking = false;
+                var t = e.originalEvent.changedTouches[0];
+                var dx = t.clientX - startX;
+                var dy = t.clientY - startY;
+                var threshold = 50;
+
+                if (Math.abs(dx) > threshold && Math.abs(dx) > Math.abs(dy)) {
+                    var rtl = !!self.config.rtlEnabled;
+                    var dir = (dx < 0) !== rtl ? 1 : -1; // doleva = další, doprava = předchozí (v LTR)
+                    var target = self._findSelectableIndex(self._selectedIndex + dir, dir);
+                    if (target > -1) { self.option("selectedIndex", target); }
+                }
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            var cfg = this.config;
+
+            switch (name) {
+                case "items":
+                case "dataSource":
+                    cfg.items = value || [];
+                    this._rebuildItems();
+                    break;
+
+                case "selectedIndex":
+                    this._selectIndex(value);
+                    break;
+
+                case "selectedItem":
+                    var idx = this._indexOfItem(value);
+                    if (idx > -1) { this._selectIndex(idx); }
+                    break;
+
+                case "disabled":
+                    cfg.disabled = !!value;
+                    this.$container.toggleClass("qpx-state-disabled", cfg.disabled);
+                    break;
+
+                case "visible":
+                    cfg.visible = !!value;
+                    this.$container.toggleClass("qpx-hidden", !cfg.visible);
+                    break;
+
+                case "tabsPosition":
+                    this.$container.removeClass("qpx-tabview-pos-" + prev).addClass("qpx-tabview-pos-" + value);
+                    cfg.tabsPosition = value;
+                    if (value === "bottom") { this.$container.append(this.$tabsWrapper); }
+                    else { this.$container.prepend(this.$tabsWrapper); }
+                    this._moveIndicator(false);
+                    this._updateNavVisibility();
+                    break;
+
+                case "stylingMode":
+                    this.$container.removeClass("qpx-tabview-styling-" + prev).addClass("qpx-tabview-styling-" + value);
+                    cfg.stylingMode = value;
+                    break;
+
+                case "iconPosition":
+                    this.$container.removeClass("qpx-icon-position-" + prev).addClass("qpx-icon-position-" + value);
+                    cfg.iconPosition = value;
+                    break;
+
+                case "rtlEnabled":
+                    cfg.rtlEnabled = !!value;
+                    this.$container.toggleClass("qpx-rtl", cfg.rtlEnabled).attr("dir", cfg.rtlEnabled ? "rtl" : "ltr");
+                    this._moveIndicator(false);
+                    break;
+
+                case "showNavButtons":
+                case "scrollingEnabled":
+                    cfg[name] = value;
+                    this._updateNavVisibility();
+                    break;
+
+                default:
+                    cfg[name] = value;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        selectItem: function (indexOrItem) {
+            if (typeof indexOrItem === "number") { this.option("selectedIndex", indexOrItem); }
+            else { this.option("selectedItem", indexOrItem); }
+            return this;
+        },
+
+        getSelectedIndex: function () { return this._selectedIndex; },
+        getSelectedItem: function () {
+            var ref = this._itemRefs[this._selectedIndex];
+            return ref ? ref.config : null;
+        },
+        getItemElement: function (index) {
+            var ref = this._itemRefs[index];
+            return ref ? ref.$panel[0] : undefined;
+        },
+        getTabElement: function (index) {
+            var ref = this._itemRefs[index];
+            return ref ? ref.$tab[0] : undefined;
+        },
+
+        repaint: function () {
+            this._updateNavVisibility();
+            this._moveIndicator(false);
+            return this;
+        },
+
+        destroy: function () {
+            if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+            $(window).off(".qpxTabView" + this.id);
+            if (this._layoutRaf && window.cancelAnimationFrame) { window.cancelAnimationFrame(this._layoutRaf); }
+            this._layoutRaf = null;
+
+            this._itemRefs.forEach(function (ref) {
+                if (ref.widget && ref.widget.destroy) { ref.widget.destroy(); }
+                ref.$tab.off(".qpxTabView");
+            });
+            this._itemRefs = [];
+
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpTabView", TabView);
+    qpx.qpTabView = TabView;
 
 })(window.qpx, jQuery);
 
@@ -1844,16 +2698,40 @@
 
 /*!
  * qpx - qpDataGrid
- * Tabulková komponenta inspirovaná DevExtreme dxDataGrid.
- *  - dataSource: array of objects
- *  - columns: [{ dataField, caption, width, minWidth, visible, dataType, format, adaptiveHidden }]
- *  - keyExpr: "id"
- *  - selectionMode: "none" | "single" | "multiple"
- *  - sorting: mode: "none" | "single" | "multiple"
- *  - responsive: adaptive columns do akordeon detailu pod řádkem
- *  - události: onRowClick, onCellClick, onSelectionChanged, onOptionChanged
+ * Tabulková komponenta co nejvíce přiblížená DevExtreme dxDataGrid
+ * (options / events / methods i vzhled), postavená nad původní
+ * implementací qpDataGrid — původní funkcionalita (adaptivní sloupce
+ * s akordeon detailem pod řádkem, klávesová navigace, řazení, výběr
+ * řádků, onRowClick/onCellClick) je zachována beze změny chování.
+ *
+ * Nově doplněno (analogie k dxDataGrid):
+ *  - selection: { mode: "none"|"single"|"multiple", showCheckBoxesMode }
+ *               (selectionMode jako string zůstává funkční, mapuje se do selection.mode)
+ *  - paging: { enabled, pageSize } + pager: { visible, allowedPageSizes,
+ *             showPageSizeSelector, showInfo, showNavigationButtons }
+ *  - filterRow: { visible }  — textový filtr pod hlavičkou, sloupec od sloupce
+ *  - searchPanel: { visible, placeholder, width } — globální hledání nad gridem
+ *  - editing: { mode:"row", allowUpdating, allowAdding, allowDeleting, confirmDelete }
+ *  - sorting.mode "multiple" + shift-klik na hlavičku (číslo pořadí řazení)
+ *  - allowColumnResizing — tažení za okraj hlavičky sloupce
+ *  - showBorders / showRowLines / showColumnLines / rowAlternationEnabled / wordWrapEnabled
+ *  - columns: navíc dataType, alignment, allowSorting, allowFiltering,
+ *             allowResizing, format (string preset i funkce), cellTemplate,
+ *             calculateCellValue
+ *
+ * Events: onInitialized, onContentReady, onRowClick, onCellClick,
+ *         onSelectionChanged, onOptionChanged, onRowInserted, onRowUpdated,
+ *         onRowRemoved, onEditingStart, onRowPrepared, onDisposing
+ *
+ * Methods: option(name[, value]) — vč. tečkové cesty "paging.pageSize",
+ *          refresh()/repaint(), columnOption(field, name[, value]),
+ *          getSelectedRowKeys(), getSelectedRowsData(), selectRows(keys),
+ *          deselectRows(keys), clearSelection(), getDataSource(),
+ *          addRow(), editRow(key), deleteRow(key), saveEditData(),
+ *          cancelEditData(), hasEditData(), pageIndex([i]), pageSize([n]),
+ *          pageCount(), searchByText(text), clearFilter(),
+ *          getRowElement(key), destroy()
  */
-
 (function (qpx, $) {
     "use strict";
 
@@ -1863,52 +2741,170 @@
             dataSource: [],
             columns: [],
             keyExpr: "id",
-            selectionMode: "none", // none | single | multiple
+
+            selection: {
+                mode: "none",              // none | single | multiple
+                showCheckBoxesMode: "onClick" // none | onClick | always
+            },
+            selectionMode: undefined,      // DEPRECATED zpětná kompatibilita, viz selection.mode
+
             sorting: {
                 mode: "single" // none | single | multiple
             },
+
+            paging: {
+                enabled: false,
+                pageSize: 10
+            },
+            pager: {
+                visible: "auto",           // auto | true | false
+                allowedPageSizes: [5, 10, 20, 50],
+                showPageSizeSelector: true,
+                showInfo: true,
+                showNavigationButtons: true
+            },
+
+            filterRow: { visible: false },
+            searchPanel: { visible: false, placeholder: "Hledat...", width: 220 },
+
+            editing: {
+                mode: "row",        // zatím jediný podporovaný mód
+                allowUpdating: false,
+                allowAdding: false,
+                allowDeleting: false,
+                confirmDelete: true
+            },
+
+            showBorders: true,
+            showRowLines: true,
+            showColumnLines: true,
+            rowAlternationEnabled: false,
+            wordWrapEnabled: false,
+            allowColumnResizing: false,
+            noDataText: "Žádná data k zobrazení",
+
             visible: true,
             disabled: false,
             responsive: true,
 
+            onInitialized: null,
+            onContentReady: null,
             onRowClick: null,
             onCellClick: null,
             onSelectionChanged: null,
-            onOptionChanged: null
+            onOptionChanged: null,
+            onRowInserted: null,
+            onRowUpdated: null,
+            onRowRemoved: null,
+            onEditingStart: null,
+            onRowPrepared: null,
+            onDisposing: null
         },
 
+        // ---------------------------------------------------------------
         render: function () {
+            var self = this;
             var cfg = this.config;
+
+            // zpětná kompatibilita: staré "selectionMode: 'multiple'" -> selection.mode
+            if (cfg.selectionMode && cfg.selection.mode === "none") {
+                cfg.selection.mode = cfg.selectionMode;
+            }
+            cfg.selectionMode = cfg.selection.mode;
 
             this.$container
                 .addClass("qpx-datagrid")
                 .toggleClass("qpx-hidden", !cfg.visible)
-                .toggleClass("qpx-state-disabled", !!cfg.disabled);
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-datagrid-no-borders", !cfg.showBorders)
+                .toggleClass("qpx-datagrid-no-row-lines", !cfg.showRowLines)
+                .toggleClass("qpx-datagrid-no-column-lines", !cfg.showColumnLines)
+                .toggleClass("qpx-datagrid-alternation", !!cfg.rowAlternationEnabled)
+                .toggleClass("qpx-datagrid-wordwrap", !!cfg.wordWrapEnabled);
 
-            if (cfg.onRowClick) this.on("rowClick", cfg.onRowClick);
-            if (cfg.onCellClick) this.on("cellClick", cfg.onCellClick);
-            if (cfg.onSelectionChanged) this.on("selectionChanged", cfg.onSelectionChanged);
-            if (cfg.onOptionChanged) this.on("optionChanged", cfg.onOptionChanged);
+            if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
+            if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
+            if (cfg.onRowClick) { this.on("rowClick", cfg.onRowClick); }
+            if (cfg.onCellClick) { this.on("cellClick", cfg.onCellClick); }
+            if (cfg.onSelectionChanged) { this.on("selectionChanged", cfg.onSelectionChanged); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+            if (cfg.onRowInserted) { this.on("rowInserted", cfg.onRowInserted); }
+            if (cfg.onRowUpdated) { this.on("rowUpdated", cfg.onRowUpdated); }
+            if (cfg.onRowRemoved) { this.on("rowRemoved", cfg.onRowRemoved); }
+            if (cfg.onEditingStart) { this.on("editingStart", cfg.onEditingStart); }
+            if (cfg.onRowPrepared) { this.on("rowPrepared", cfg.onRowPrepared); }
+            if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
 
             this._selectedKeys = [];
-            this._sortState = []; // [{ dataField, desc }]
+            this._sortState = [];           // [{ dataField, desc }]
             this._adaptiveOpenRowKey = null;
+            this._pageIndex = 0;
+            this._searchText = "";
+            this._filterValues = {};        // { dataField: text }
+            this._editRowKey = null;
+            this._editRowData = null;
+            this._isNewRow = false;
 
             this._buildStructure();
             this._bindResize();
             this._bindKeyboard();
-            this._renderHeader();
-            this._renderBody();
-            this._doAdaptiveLayout();
+            this._renderAll();
+
+            setTimeout(function () { self.trigger("contentReady", { component: self }); }, 0);
         },
 
+        // ---------------------------------------------------------------
+        // Kostra DOM: toolbar (search), scroll wrapper + tabulka, pager
+        // ---------------------------------------------------------------
         _buildStructure: function () {
+            var self = this;
+            var cfg = this.config;
+
+            this.$toolbar = $("<div class='qpx-datagrid-toolbar'></div>");
+
+            this.$searchWrap = $("<div class='qpx-datagrid-search'></div>");
+            this.$searchInput = $("<input type='text' class='qpx-datagrid-search-input'>")
+                .attr("placeholder", cfg.searchPanel.placeholder || "Hledat...");
+            if (cfg.searchPanel.width) { this.$searchWrap.css("width", qpx.toPx(cfg.searchPanel.width)); }
+            this.$searchWrap.append($("<span class='qpx-icon qpx-datagrid-search-icon'></span>"), this.$searchInput);
+            this.$toolbar.append(this.$searchWrap);
+
+            var searchTimer = null;
+            this.$searchInput.on("input.qpxDataGrid", function () {
+                var val = this.value;
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(function () {
+                    self._searchText = val;
+                    self._pageIndex = 0;
+                    self._renderBody();
+                    self._renderPager();
+                }, 200);
+            });
+
+            this.$scroll = $("<div class='qpx-datagrid-scroll'></div>");
             this.$table = $("<table class='qpx-datagrid-table'></table>");
+            this.$colgroup = $("<colgroup></colgroup>");
             this.$thead = $("<thead></thead>");
             this.$tbody = $("<tbody></tbody>");
-            this.$table.append(this.$thead, this.$tbody);
-            this.$container.empty().append(this.$table);
+            this.$table.append(this.$colgroup, this.$thead, this.$tbody);
+            this.$scroll.append(this.$table);
+
+            this.$pager = $("<div class='qpx-datagrid-pager'></div>");
+
+            this.$container.empty().append(this.$toolbar, this.$scroll, this.$pager);
         },
+
+        _renderAll: function () {
+            this._computeAdaptiveLayout();
+            this._renderHeader();
+            this._renderBody();
+            this._renderPager();
+            this.$toolbar.toggle(!!this.config.searchPanel.visible);
+        },
+
+        // znovu-vykreslení "na povel" (dx: refresh()/repaint())
+        refresh: function () { this._renderAll(); return this; },
+        repaint: function () { this._renderAll(); return this; },
 
         _bindResize: function () {
             var self = this;
@@ -1924,33 +2920,61 @@
 
         _scheduleAdaptiveLayout: function () {
             var self = this;
-            if (this._adaptiveRaf) return;
+            if (this._adaptiveRaf) { return; }
             this._adaptiveRaf = (window.requestAnimationFrame || window.setTimeout)(function () {
                 self._adaptiveRaf = null;
-                self._doAdaptiveLayout();
+                self._refreshAdaptiveLayout();
             });
         },
 
+        // přepočítá adaptivní sloupce a — pokud se skutečně změnily — znovu
+        // vykreslí hlavičku a tělo (tzn. správně přepočítá i <colgroup>,
+        // místo pouhého skrývání buněk přes CSS)
+        _refreshAdaptiveLayout: function () {
+            if (!this.config.responsive) { return; }
+            var before = this._adaptiveSignature();
+            this._computeAdaptiveLayout();
+            var after = this._adaptiveSignature();
+            if (before !== after) {
+                this._renderHeader();
+                this._renderBody();
+            }
+        },
+
+        _adaptiveSignature: function () {
+            return this._configuredColumns().map(function (c) {
+                return c.dataField + ":" + (c.adaptiveHidden ? 1 : 0);
+            }).join("|");
+        },
+
+        // ---------------------------------------------------------------
+        // Klávesová navigace (zachováno z původní implementace + ochrana
+        // proti zachytávání kláves při psaní do editačních inputů)
+        // ---------------------------------------------------------------
         _bindKeyboard: function () {
             var self = this;
 
             this.$container.attr("tabindex", "0");
 
             this.$container.on("keydown.qpxDataGrid", function (e) {
+                if ($(e.target).is("input, select, textarea")) { return; }
+
                 var rows = self.$tbody.find(".qpx-datagrid-row");
-                if (!rows.length) return;
+                if (!rows.length) { return; }
 
                 var selectedKey = self._selectedKeys[0];
                 var index = selectedKey ? rows.index(self.$tbody.find("[data-key='" + selectedKey + "']")) : -1;
 
                 function selectRowByIndex(i) {
-                    if (i < 0) i = 0;
-                    if (i >= rows.length) i = rows.length - 1;
+                    if (i < 0) { i = 0; }
+                    if (i >= rows.length) { i = rows.length - 1; }
                     var $row = $(rows[i]);
                     var key = $row.data("key");
                     self._selectedKeys = [key];
                     rows.removeClass("qpx-state-selected");
                     $row.addClass("qpx-state-selected");
+                    self.$tbody.find(".qpx-datagrid-select-checkbox").prop("checked", false);
+                    $row.find(".qpx-datagrid-select-checkbox").prop("checked", true);
                     self.trigger("selectionChanged", {
                         selectedRowKeys: self._selectedKeys.slice(),
                         previousRowKeys: [],
@@ -1960,35 +2984,12 @@
                 }
 
                 switch (e.key) {
-                    case "ArrowDown":
-                        e.preventDefault();
-                        selectRowByIndex(index + 1);
-                        break;
-
-                    case "ArrowUp":
-                        e.preventDefault();
-                        selectRowByIndex(index - 1);
-                        break;
-
-                    case "Home":
-                        e.preventDefault();
-                        selectRowByIndex(0);
-                        break;
-
-                    case "End":
-                        e.preventDefault();
-                        selectRowByIndex(rows.length - 1);
-                        break;
-
-                    case "PageDown":
-                        e.preventDefault();
-                        selectRowByIndex(index + 10);
-                        break;
-
-                    case "PageUp":
-                        e.preventDefault();
-                        selectRowByIndex(index - 10);
-                        break;
+                    case "ArrowDown": e.preventDefault(); selectRowByIndex(index + 1); break;
+                    case "ArrowUp": e.preventDefault(); selectRowByIndex(index - 1); break;
+                    case "Home": e.preventDefault(); selectRowByIndex(0); break;
+                    case "End": e.preventDefault(); selectRowByIndex(rows.length - 1); break;
+                    case "PageDown": e.preventDefault(); selectRowByIndex(index + 10); break;
+                    case "PageUp": e.preventDefault(); selectRowByIndex(index - 10); break;
 
                     case "Enter":
                         e.preventDefault();
@@ -1996,108 +2997,425 @@
                             var $row = $(rows[index]);
                             var key = $row.data("key");
                             var rowData = self.config.dataSource.filter(function (r) { return r[self.config.keyExpr] === key; })[0];
-                            self.trigger("rowClick", { key: key, data: rowData, component: self });
+                            self.trigger("rowClick", { key: key, data: rowData, component: self, rowElement: $row[0] });
                         }
                         break;
-					case "Escape":
-					    e.preventDefault();
-					    self._closeAdaptiveAccordion();
-					    break;
 
+                    case "Escape":
+                        e.preventDefault();
+                        self._closeAdaptiveAccordion();
+                        break;
                 }
             });
         },
 
+        // ---------------------------------------------------------------
+        // Sloupce
+        // ---------------------------------------------------------------
+        // sloupce, které se skutečně mají vykreslit jako <th>/<td> v tabulce
+        // (bez sloupců schovaných uživatelem i bez těch dočasně skrytých
+        // adaptivním layoutem)
+        _visibleColumns: function () {
+            return (this.config.columns || []).filter(function (c) {
+                return c.visible !== false && !c.adaptiveHidden;
+            });
+        },
+
+        // všechny nakonfigurované (uživatelsky neskryté) sloupce — používá
+        // se pro výpočet adaptivního layoutu, globální hledání a obsah
+        // akordeonu, kde potřebujeme počítat i se sloupci, které jsou
+        // aktuálně mimo tabulku kvůli adaptivnímu zalamování
+        _configuredColumns: function () {
+            return (this.config.columns || []).filter(function (c) { return c.visible !== false; });
+        },
+
+        _columnAlign: function (col) {
+            if (col.alignment) { return col.alignment; }
+            return (col.dataType === "number") ? "right" : "left";
+        },
+
+        _isMultipleSelection: function () { return this.config.selection.mode === "multiple"; },
+        _isSingleSelection: function () { return this.config.selection.mode === "single"; },
+        _showCheckBoxes: function () { return this.config.selection.showCheckBoxesMode !== "none"; },
+        _editingEnabled: function () {
+            var e = this.config.editing;
+            return !!(e && (e.allowUpdating || e.allowAdding || e.allowDeleting));
+        },
+
+        // ---------------------------------------------------------------
+        // Hlavička (+ volitelný filter row)
+        // ---------------------------------------------------------------
         _renderHeader: function () {
             var self = this;
             var cfg = this.config;
             this.$thead.empty();
+            this.$colgroup.empty();
 
             var $tr = $("<tr class='qpx-datagrid-header-row'></tr>");
 
-            cfg.columns.forEach(function (col) {
-                if (col.visible === false) return;
+            if (this._isMultipleSelection() && this._showCheckBoxes()) {
+                var $thSel = $("<th class='qpx-datagrid-header-cell qpx-datagrid-cell-select'></th>");
+                var $selectAll = $("<input type='checkbox' class='qpx-datagrid-select-all'>");
+                $selectAll.on("change.qpxDataGrid", function () { self._handleSelectAll(this.checked); });
+                $thSel.append($selectAll);
+                $tr.append($thSel);
+                this.$colgroup.append("<col class='qpx-datagrid-col-select'>");
+                this._$selectAllCheckbox = $selectAll;
+            }
 
+            this._visibleColumns().forEach(function (col) {
                 var $th = $("<th class='qpx-datagrid-header-cell'></th>")
                     .attr("data-field", col.dataField)
-                    .text(col.caption || col.dataField);
+                    .css("text-align", self._columnAlign(col));
 
-                if (col.width) {
-                    $th.css("width", qpx.toPx(col.width));
-                }
+                $th.append($("<span class='qpx-datagrid-header-caption'></span>").text(col.caption || col.dataField));
 
-                if (cfg.sorting && cfg.sorting.mode !== "none") {
+                var allowSort = (col.allowSorting !== false) && cfg.sorting && cfg.sorting.mode !== "none";
+                if (allowSort) {
                     $th.addClass("qpx-datagrid-sortable");
-                    $th.on("click.qpxDataGrid", function () {
-                        self._toggleSort(col.dataField);
+                    var info = self._sortInfo(col.dataField);
+                    if (info) {
+                        $th.addClass("qpx-datagrid-sort-" + (info.desc ? "desc" : "asc"));
+                        $th.append("<span class='qpx-datagrid-sort-indicator'></span>");
+                        if (cfg.sorting.mode === "multiple" && self._sortState.length > 1) {
+                            $th.append($("<span class='qpx-datagrid-sort-order'></span>").text(info.order + 1));
+                        }
+                    }
+                    $th.on("click.qpxDataGrid", function (e) {
+                        self._toggleSort(col.dataField, e.shiftKey);
                     });
                 }
 
+                if (col.width) { $th.css("width", qpx.toPx(col.width)); }
+                $tr.append($th);
+
+                var $col = $("<col>");
+                if (col.width) { $col.css("width", qpx.toPx(col.width)); }
+                self.$colgroup.append($col);
+
+                if (cfg.allowColumnResizing && col.allowResizing !== false) {
+                    var $handle = $("<span class='qpx-datagrid-resize-handle'></span>");
+                    $th.append($handle);
+                    self._bindColumnResize($handle, col, $th);
+                }
+            });
+
+            this.$container.toggleClass("qpx-datagrid-adaptive", !!this._adaptiveActive);
+
+            if (this._adaptiveActive) {
+                $tr.append("<th class='qpx-datagrid-header-cell qpx-datagrid-cell-adaptive'></th>");
+                this.$colgroup.append("<col class='qpx-datagrid-col-adaptive'>");
+            }
+
+            if (this._editingEnabled()) {
+                var $thCmd = $("<th class='qpx-datagrid-header-cell qpx-datagrid-cell-command'></th>");
+                if (cfg.editing.allowAdding) {
+                    var $addBtn = $("<span class='qpx-datagrid-cmd-btn qpx-datagrid-add-btn' tabindex='0' role='button' title='Přidat řádek'>+</span>");
+                    $addBtn.on("click.qpxDataGrid", function () { self.addRow(); });
+                    $thCmd.append($addBtn);
+                }
+                $tr.append($thCmd);
+                this.$colgroup.append("<col class='qpx-datagrid-col-command'>");
+            }
+
+            this.$thead.append($tr);
+
+            if (cfg.filterRow && cfg.filterRow.visible) { this._renderFilterRow(); }
+        },
+
+        _renderFilterRow: function () {
+            var self = this;
+            var cfg = this.config;
+            var $tr = $("<tr class='qpx-datagrid-filter-row'></tr>");
+
+            if (this._isMultipleSelection() && this._showCheckBoxes()) {
+                $tr.append("<th class='qpx-datagrid-header-cell qpx-datagrid-cell-select'></th>");
+            }
+
+            this._visibleColumns().forEach(function (col) {
+                var $th = $("<th class='qpx-datagrid-header-cell'></th>");
+                if (col.allowFiltering !== false) {
+                    var $input = $("<input type='text' class='qpx-datagrid-filter-input'>")
+                        .attr("placeholder", "Filtr...")
+                        .val(self._filterValues[col.dataField] || "");
+
+                    var timer = null;
+                    $input.on("input.qpxDataGrid", function () {
+                        var val = this.value;
+                        clearTimeout(timer);
+                        timer = setTimeout(function () {
+                            self._filterValues[col.dataField] = val;
+                            self._pageIndex = 0;
+                            self._renderBody();
+                            self._renderPager();
+                        }, 200);
+                    });
+                    $th.append($input);
+                }
                 $tr.append($th);
             });
+
+            if (this._adaptiveActive) { $tr.append("<th class='qpx-datagrid-header-cell qpx-datagrid-cell-adaptive'></th>"); }
+            if (this._editingEnabled()) { $tr.append("<th class='qpx-datagrid-header-cell qpx-datagrid-cell-command'></th>"); }
 
             this.$thead.append($tr);
         },
 
+        _bindColumnResize: function ($handle, col, $th) {
+            var self = this;
+            $handle.on("mousedown.qpxDataGrid", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var startX = e.pageX;
+                var startWidth = $th.outerWidth();
+
+                function onMove(ev) {
+                    var newWidth = Math.max(30, startWidth + (ev.pageX - startX));
+                    $th.css("width", newWidth + "px");
+                    col.width = newWidth;
+                }
+                function onUp() {
+                    $(document).off(".qpxDataGridResize");
+                    self._computeAdaptiveLayout();
+                    self._renderHeader();
+                    self._renderBody();
+                }
+
+                $(document).on("mousemove.qpxDataGridResize", onMove);
+                $(document).on("mouseup.qpxDataGridResize", onUp);
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Tělo tabulky
+        // ---------------------------------------------------------------
         _renderBody: function () {
             var self = this;
             var cfg = this.config;
             this.$tbody.empty();
             this._closeAdaptiveAccordion();
 
-            var data = this._getSortedData();
+            var pageData = this._getPagedData();
 
-            data.forEach(function (row) {
-                var key = row[cfg.keyExpr];
-                var selected = self._selectedKeys.indexOf(key) !== -1;
+            if (this._isNewRow) {
+                this._renderRow(this._editRowData, true, -1);
+            }
 
-                var $tr = $("<tr class='qpx-datagrid-row'></tr>")
-                    .attr("data-key", key)
-                    .toggleClass("qpx-state-selected", selected);
+            if (!pageData.length && !this._isNewRow) {
+                var colCount = this.$thead.find("tr").first().find("th").length || 1;
+                this.$tbody.append(
+                    $("<tr class='qpx-datagrid-no-data-row'></tr>").append(
+                        $("<td class='qpx-datagrid-no-data-cell'></td>")
+                            .attr("colspan", colCount)
+                            .text(cfg.noDataText)
+                    )
+                );
+                return;
+            }
 
-                cfg.columns.forEach(function (col) {
-                    if (col.visible === false) return;
+            pageData.forEach(function (row, idx) {
+                self._renderRow(row, false, idx);
+            });
+        },
 
-                    var value = row[col.dataField];
-                    var text = self._formatCellValue(value, col);
+        _renderRow: function (row, isEditBuffer, rowIndex) {
+            var self = this;
+            var cfg = this.config;
+            var key = row[cfg.keyExpr];
+            var isEditing = isEditBuffer || (key === this._editRowKey);
+            var selected = !isEditBuffer && this._selectedKeys.indexOf(key) !== -1;
 
-                    var $td = $("<td class='qpx-datagrid-cell'></td>")
-                        .attr("data-field", col.dataField)
-                        .text(text);
+            var $tr = $("<tr class='qpx-datagrid-row'></tr>")
+                .attr("data-key", key)
+                .toggleClass("qpx-state-selected", selected)
+                .toggleClass("qpx-datagrid-row-edit", isEditing)
+                .toggleClass("qpx-datagrid-row-alt", cfg.rowAlternationEnabled && rowIndex >= 0 && rowIndex % 2 === 1);
+
+            if (this._isMultipleSelection() && this._showCheckBoxes() && !isEditBuffer) {
+                var $tdSel = $("<td class='qpx-datagrid-cell qpx-datagrid-cell-select'></td>");
+                var $cb = $("<input type='checkbox' class='qpx-datagrid-select-checkbox'>").prop("checked", selected);
+                $cb.on("click.qpxDataGrid", function (e) {
+                    e.stopPropagation();
+                    self._handleRowClick(row, $tr);
+                });
+                $tdSel.append($cb);
+                $tr.append($tdSel);
+            } else if (this._isMultipleSelection() && this._showCheckBoxes() && isEditBuffer) {
+                $tr.append("<td class='qpx-datagrid-cell qpx-datagrid-cell-select'></td>");
+            }
+
+            this._visibleColumns().forEach(function (col) {
+                var $td = $("<td class='qpx-datagrid-cell'></td>")
+                    .attr("data-field", col.dataField)
+                    .css("text-align", self._columnAlign(col));
+
+                if (isEditing) {
+                    self._renderEditCell($td, col, row);
+                } else {
+                    var rawValue = qpx.isFunction(col.calculateCellValue) ? col.calculateCellValue(row) : row[col.dataField];
+
+                    if (qpx.isFunction(col.cellTemplate)) {
+                        var result = col.cellTemplate.call(self, $td[0], { value: rawValue, data: row, column: col, rowIndex: rowIndex });
+                        if (result !== undefined && result !== null) { $td.append(result); }
+                    } else {
+                        $td.text(self._formatCellValue(rawValue, col));
+                    }
 
                     $td.on("click.qpxDataGrid", function () {
                         self._handleCellClick(row, col, $td);
                     });
+                }
 
-                    $tr.append($td);
-                });
-				// Adaptive button cell (always visible when responsive)
-				if (self.config.responsive) {
-				    var $adaptiveCell = $("<td class='qpx-datagrid-cell qpx-datagrid-cell-adaptive'></td>");
-				    var $btn = $("<span class='qpx-datagrid-adaptive-btn' tabindex='0' role='button'>⋯</span>");
+                $tr.append($td);
+            });
 
-				    $btn.on("click.qpxDataGrid", function (e) {
-				        e.stopPropagation();
-				        self._toggleAdaptiveAccordion(key, row, $tr);
-				    });
+            // adaptivní "⋯" sloupec
+            if (this._adaptiveActive) {
+                var $adaptiveCell = $("<td class='qpx-datagrid-cell qpx-datagrid-cell-adaptive'></td>");
+                if (!isEditing) {
+                    var $btn = $("<span class='qpx-datagrid-adaptive-btn' tabindex='0' role='button'>⋯</span>");
+                    $btn.on("click.qpxDataGrid", function (e) {
+                        e.stopPropagation();
+                        self._toggleAdaptiveAccordion(key, row, $tr);
+                    });
+                    $adaptiveCell.append($btn);
+                }
+                $tr.append($adaptiveCell);
+            }
 
-				    $adaptiveCell.append($btn);
-				    $tr.append($adaptiveCell);
-				}
+            // editační příkazový sloupec
+            if (this._editingEnabled()) {
+                $tr.append(this._buildCommandCell(row, key, isEditing, isEditBuffer));
+            }
 
+            if (!isEditing) {
                 $tr.on("click.qpxDataGrid", function () {
                     self._handleRowClick(row, $tr);
                 });
+            }
 
-                self.$tbody.append($tr);
-            });
+            this.$tbody.append($tr);
+            this.trigger("rowPrepared", { rowElement: $tr[0], key: key, data: row, rowIndex: rowIndex, component: this });
+        },
+
+        _renderEditCell: function ($td, col, row) {
+            var self = this;
+            var value = this._editRowData[col.dataField];
+            var $input;
+
+            if (col.dataType === "boolean") {
+                $input = $("<input type='checkbox' class='qpx-datagrid-edit-input'>").prop("checked", !!value);
+                $input.on("change.qpxDataGrid", function () { self._editRowData[col.dataField] = this.checked; });
+            } else if (col.dataType === "number") {
+                $input = $("<input type='number' class='qpx-datagrid-edit-input'>").val(value == null ? "" : value);
+                $input.on("input.qpxDataGrid", function () { self._editRowData[col.dataField] = this.value === "" ? null : Number(this.value); });
+            } else if (col.dataType === "date") {
+                var dv = value instanceof Date ? value.toISOString().slice(0, 10) : (value || "");
+                $input = $("<input type='date' class='qpx-datagrid-edit-input'>").val(dv);
+                $input.on("input.qpxDataGrid", function () { self._editRowData[col.dataField] = this.value; });
+            } else {
+                $input = $("<input type='text' class='qpx-datagrid-edit-input'>").val(value == null ? "" : value);
+                $input.on("input.qpxDataGrid", function () { self._editRowData[col.dataField] = this.value; });
+            }
+
+            $input.on("click.qpxDataGrid", function (e) { e.stopPropagation(); });
+            $td.append($input);
+        },
+
+        _buildCommandCell: function (row, key, isEditing, isEditBuffer) {
+            var self = this;
+            var cfg = this.config;
+            var $td = $("<td class='qpx-datagrid-cell qpx-datagrid-cell-command'></td>");
+
+            if (isEditing) {
+                var $save = $("<span class='qpx-datagrid-cmd-btn qpx-datagrid-save-btn' tabindex='0' role='button' title='Uložit'>✓</span>");
+                var $cancel = $("<span class='qpx-datagrid-cmd-btn qpx-datagrid-cancel-btn' tabindex='0' role='button' title='Zrušit'>✕</span>");
+                $save.on("click.qpxDataGrid", function (e) { e.stopPropagation(); self.saveEditData(); });
+                $cancel.on("click.qpxDataGrid", function (e) { e.stopPropagation(); self.cancelEditData(); });
+                $td.append($save, $cancel);
+            } else {
+                if (cfg.editing.allowUpdating) {
+                    var $edit = $("<span class='qpx-datagrid-cmd-btn qpx-datagrid-edit-btn' tabindex='0' role='button' title='Upravit'>✎</span>");
+                    $edit.on("click.qpxDataGrid", function (e) { e.stopPropagation(); self.editRow(key); });
+                    $td.append($edit);
+                }
+                if (cfg.editing.allowDeleting) {
+                    var $del = $("<span class='qpx-datagrid-cmd-btn qpx-datagrid-delete-btn' tabindex='0' role='button' title='Smazat'>🗑</span>");
+                    $del.on("click.qpxDataGrid", function (e) { e.stopPropagation(); self.deleteRow(key); });
+                    $td.append($del);
+                }
+            }
+
+            return $td;
+        },
+
+        _formatCellValue: function (value, col) {
+            col = col || {};
+            if (value === null || value === undefined) { return ""; }
+            if (qpx.isFunction(col.format)) { return col.format(value); }
+
+            if (col.format === "date" || col.format === "shortDate" || col.dataType === "date") {
+                var d = (value instanceof Date) ? value : new Date(value);
+                return isNaN(d.getTime()) ? String(value) : d.toLocaleDateString();
+            }
+            if (col.format === "fixedPoint" || col.dataType === "number") {
+                var n = Number(value);
+                if (isNaN(n)) { return String(value); }
+                return col.precision !== undefined ? n.toFixed(col.precision) : String(n);
+            }
+            if (col.format === "percent") {
+                var p = Number(value);
+                if (isNaN(p)) { return String(value); }
+                return (p * 100).toFixed(col.precision !== undefined ? col.precision : 0) + "%";
+            }
+            if (col.format === "currency") {
+                var c = Number(value);
+                if (isNaN(c)) { return String(value); }
+                return c.toLocaleString(undefined, { style: "currency", currency: col.currency || "CZK" });
+            }
+            if (col.dataType === "boolean") { return value ? "✓" : "✗"; }
+
+            return String(value);
+        },
+
+        // ---------------------------------------------------------------
+        // Filtrování / hledání / řazení / stránkování
+        // ---------------------------------------------------------------
+        _rowMatchesFilters: function (row) {
+            var self = this;
+            var cfg = this.config;
+
+            for (var field in this._filterValues) {
+                var needle = (this._filterValues[field] || "").toLowerCase();
+                if (!needle) { continue; }
+                var col = cfg.columns.filter(function (c) { return c.dataField === field; })[0] || {};
+                var val = qpx.isFunction(col.calculateCellValue) ? col.calculateCellValue(row) : row[field];
+                var text = self._formatCellValue(val, col).toLowerCase();
+                if (text.indexOf(needle) === -1) { return false; }
+            }
+
+            if (this._searchText) {
+                var needle2 = this._searchText.toLowerCase();
+                var found = this._configuredColumns().some(function (col) {
+                    var val2 = qpx.isFunction(col.calculateCellValue) ? col.calculateCellValue(row) : row[col.dataField];
+                    var text2 = self._formatCellValue(val2, col).toLowerCase();
+                    return text2.indexOf(needle2) !== -1;
+                });
+                if (!found) { return false; }
+            }
+
+            return true;
+        },
+
+        _getFilteredData: function () {
+            var self = this;
+            return (this.config.dataSource || []).filter(function (row) { return self._rowMatchesFilters(row); });
         },
 
         _getSortedData: function () {
-            var data = (this.config.dataSource || []).slice();
+            var data = this._getFilteredData();
             var sortState = this._sortState.slice();
-
-            if (!sortState.length) return data;
+            if (!sortState.length) { return data; }
 
             data.sort(function (a, b) {
                 for (var i = 0; i < sortState.length; i++) {
@@ -2105,10 +3423,10 @@
                     var av = a[s.dataField];
                     var bv = b[s.dataField];
 
-                    if (av == null && bv != null) return s.desc ? 1 : -1;
-                    if (av != null && bv == null) return s.desc ? -1 : 1;
-                    if (av < bv) return s.desc ? 1 : -1;
-                    if (av > bv) return s.desc ? -1 : 1;
+                    if (av == null && bv != null) { return s.desc ? 1 : -1; }
+                    if (av != null && bv == null) { return s.desc ? -1 : 1; }
+                    if (av < bv) { return s.desc ? 1 : -1; }
+                    if (av > bv) { return s.desc ? -1 : 1; }
                 }
                 return 0;
             });
@@ -2116,14 +3434,39 @@
             return data;
         },
 
-        _toggleSort: function (dataField) {
-            var mode = this.config.sorting && this.config.sorting.mode;
-            if (!mode || mode === "none") return;
+        _getPagedData: function () {
+            var data = this._getSortedData();
+            var cfg = this.config;
+            if (!cfg.paging || !cfg.paging.enabled) { return data; }
 
+            var size = cfg.paging.pageSize || data.length || 1;
+            var count = Math.max(1, Math.ceil(data.length / size));
+            if (this._pageIndex >= count) { this._pageIndex = count - 1; }
+            if (this._pageIndex < 0) { this._pageIndex = 0; }
+
+            var start = this._pageIndex * size;
+            return data.slice(start, start + size);
+        },
+
+        _sortInfo: function (dataField) {
+            for (var i = 0; i < this._sortState.length; i++) {
+                if (this._sortState[i].dataField === dataField) { return { desc: this._sortState[i].desc, order: i }; }
+            }
+            return null;
+        },
+
+        _toggleSort: function (dataField, appendMode) {
+            var mode = this.config.sorting && this.config.sorting.mode;
+            if (!mode || mode === "none") { return; }
+
+            var multiple = (mode === "multiple") && appendMode;
             var existing = this._sortState.filter(function (s) { return s.dataField === dataField; })[0];
 
+            if (!multiple) {
+                this._sortState = existing ? [existing] : [];
+            }
+
             if (!existing) {
-                if (mode === "single") this._sortState = [];
                 this._sortState.push({ dataField: dataField, desc: false });
             } else if (!existing.desc) {
                 existing.desc = true;
@@ -2131,24 +3474,100 @@
                 this._sortState = this._sortState.filter(function (s) { return s.dataField !== dataField; });
             }
 
+            this._pageIndex = 0;
+            this._computeAdaptiveLayout();
             this._renderHeader();
             this._renderBody();
-            this._doAdaptiveLayout();
+            this._renderPager();
         },
-		_toggleAdaptiveAccordion: function (key, row, $row) {
-		    if (this._adaptiveOpenRowKey === key) {
-		        this._closeAdaptiveAccordion();
-		        return;
-		    }
-		    this._openAdaptiveAccordion(key, row, $row);
-		},
 
-        _formatCellValue: function (value, col) {
-            if (value == null) return "";
-            if (col.format && qpx.isFunction(col.format)) {
-                return col.format(value);
+        // ---------------------------------------------------------------
+        // Pager
+        // ---------------------------------------------------------------
+        _renderPager: function () {
+            var self = this;
+            var cfg = this.config;
+            this.$pager.empty();
+
+            var shouldShow = cfg.paging.enabled &&
+                (cfg.pager.visible === true || (cfg.pager.visible === "auto" && this._getFilteredData().length > cfg.paging.pageSize));
+
+            this.$pager.toggle(!!shouldShow);
+            if (!shouldShow) { return; }
+
+            var total = this._getFilteredData().length;
+            var count = this.pageCount();
+
+            if (cfg.pager.showPageSizeSelector && cfg.pager.allowedPageSizes && cfg.pager.allowedPageSizes.length) {
+                var $sizes = $("<div class='qpx-datagrid-pager-sizes'></div>");
+                cfg.pager.allowedPageSizes.forEach(function (size) {
+                    var $btn = $("<span class='qpx-datagrid-pager-size'></span>")
+                        .text(size)
+                        .toggleClass("qpx-state-selected", size === cfg.paging.pageSize)
+                        .on("click.qpxDataGrid", function () { self.pageSize(size); });
+                    $sizes.append($btn);
+                });
+                this.$pager.append($sizes);
             }
-            return String(value);
+
+            if (cfg.pager.showNavigationButtons) {
+                var $nav = $("<div class='qpx-datagrid-pager-nav'></div>");
+                var mkBtn = function (label, title, disabled, handler) {
+                    var $b = $("<span class='qpx-datagrid-pager-btn'></span>")
+                        .text(label).attr("title", title)
+                        .toggleClass("qpx-state-disabled", disabled);
+                    if (!disabled) { $b.on("click.qpxDataGrid", handler); }
+                    return $b;
+                };
+
+                $nav.append(mkBtn("«", "První", this._pageIndex === 0, function () { self.pageIndex(0); }));
+                $nav.append(mkBtn("‹", "Předchozí", this._pageIndex === 0, function () { self.pageIndex(self._pageIndex - 1); }));
+
+                var $pages = $("<span class='qpx-datagrid-pager-pages'></span>");
+                for (var i = 0; i < count; i++) {
+                    (function (pageIdx) {
+                        $pages.append(
+                            $("<span class='qpx-datagrid-pager-page'></span>")
+                                .text(pageIdx + 1)
+                                .toggleClass("qpx-state-selected", pageIdx === self._pageIndex)
+                                .on("click.qpxDataGrid", function () { self.pageIndex(pageIdx); })
+                        );
+                    })(i);
+                }
+                $nav.append($pages);
+
+                $nav.append(mkBtn("›", "Další", this._pageIndex >= count - 1, function () { self.pageIndex(self._pageIndex + 1); }));
+                $nav.append(mkBtn("»", "Poslední", this._pageIndex >= count - 1, function () { self.pageIndex(count - 1); }));
+
+                this.$pager.append($nav);
+            }
+
+            if (cfg.pager.showInfo) {
+                var from = total === 0 ? 0 : this._pageIndex * cfg.paging.pageSize + 1;
+                var to = Math.min(total, (this._pageIndex + 1) * cfg.paging.pageSize);
+                this.$pager.append($("<div class='qpx-datagrid-pager-info'></div>").text(from + "-" + to + " z " + total));
+            }
+        },
+
+        // ---------------------------------------------------------------
+        // Výběr řádků
+        // ---------------------------------------------------------------
+        _handleSelectAll: function (checked) {
+            var self = this;
+            var prev = this._selectedKeys.slice();
+
+            if (checked) {
+                this._selectedKeys = this._getFilteredData().map(function (r) { return r[self.config.keyExpr]; });
+            } else {
+                this._selectedKeys = [];
+            }
+
+            this._renderBody();
+            this.trigger("selectionChanged", {
+                selectedRowKeys: this._selectedKeys.slice(),
+                previousRowKeys: prev,
+                component: this
+            });
         },
 
         _handleRowClick: function (row, $tr) {
@@ -2156,27 +3575,31 @@
             var key = row[cfg.keyExpr];
             var prev = this._selectedKeys.slice();
 
-            if (cfg.selectionMode === "single") {
+            if (cfg.selection.mode === "single") {
                 this._selectedKeys = [key];
-            } else if (cfg.selectionMode === "multiple") {
+            } else if (cfg.selection.mode === "multiple") {
                 var idx = this._selectedKeys.indexOf(key);
-                if (idx === -1) this._selectedKeys.push(key);
-                else this._selectedKeys.splice(idx, 1);
+                if (idx === -1) { this._selectedKeys.push(key); }
+                else { this._selectedKeys.splice(idx, 1); }
             }
 
             this.$tbody.find(".qpx-datagrid-row").removeClass("qpx-state-selected");
+            this.$tbody.find(".qpx-datagrid-select-checkbox").prop("checked", false);
             this._selectedKeys.forEach(function (k) {
-                this.$tbody.find("[data-key='" + k + "']").addClass("qpx-state-selected");
+                var $row = this.$tbody.find("[data-key='" + k + "']");
+                $row.addClass("qpx-state-selected");
+                $row.find(".qpx-datagrid-select-checkbox").prop("checked", true);
             }.bind(this));
 
-            this.trigger("rowClick", {
-                data: row,
-                key: key,
-                component: this,
-                rowElement: $tr[0]
-            });
+            if (this._$selectAllCheckbox) {
+                var allKeys = this._getFilteredData().map(function (r) { return r[cfg.keyExpr]; });
+                var allSelected = allKeys.length > 0 && allKeys.every(function (k) { return this._selectedKeys.indexOf(k) !== -1; }.bind(this));
+                this._$selectAllCheckbox.prop("checked", allSelected);
+            }
 
-            if (cfg.selectionMode !== "none") {
+            this.trigger("rowClick", { data: row, key: key, component: this, rowElement: $tr[0] });
+
+            if (cfg.selection.mode !== "none") {
                 this.trigger("selectionChanged", {
                     selectedRowKeys: this._selectedKeys.slice(),
                     previousRowKeys: prev,
@@ -2188,102 +3611,116 @@
         _handleCellClick: function (row, col, $td) {
             var key = row[this.config.keyExpr];
             this.trigger("cellClick", {
-                data: row,
-                key: key,
-                column: col,
-                field: col.dataField,
-                cellElement: $td[0],
-                component: this
+                data: row, key: key, column: col, field: col.dataField,
+                cellElement: $td[0], component: this
             });
         },
 
-        _doAdaptiveLayout: function () {
-            if (!this.config.responsive) return;
-            if (!this.$table || !this.$table.length) return;
+        getSelectedRowKeys: function () { return this._selectedKeys.slice(); },
+        getSelectedRowsData: function () {
+            var cfg = this.config;
+            return cfg.dataSource.filter(function (r) { return this._selectedKeys.indexOf(r[cfg.keyExpr]) !== -1; }.bind(this));
+        },
+        selectRows: function (keys, preserve) {
+            this._selectedKeys = preserve ? this._selectedKeys.concat(keys) : keys.slice();
+            this._renderBody();
+            this.trigger("selectionChanged", { selectedRowKeys: this._selectedKeys.slice(), previousRowKeys: [], component: this });
+            return this;
+        },
+        deselectRows: function (keys) {
+            this._selectedKeys = this._selectedKeys.filter(function (k) { return keys.indexOf(k) === -1; });
+            this._renderBody();
+            this.trigger("selectionChanged", { selectedRowKeys: this._selectedKeys.slice(), previousRowKeys: [], component: this });
+            return this;
+        },
+        clearSelection: function () { return this.selectRows([]); },
 
-            var availableWidth = this.$table.parent().width();
-            if (!availableWidth) return;
+        // ---------------------------------------------------------------
+        // Adaptivní (responzivní) sloupce — akordeon detail pod řádkem
+        // ---------------------------------------------------------------
+        // Spočítá, které sloupce se při aktuální šířce kontejneru nevejdou
+        // a musí se schovat do akordeonu pod řádkem. Sloupce, které se
+        // rozhodneme skrýt, se NEVYKRESLUJÍ (viz _visibleColumns) —
+        // tabulka má table-layout:fixed a pevný počet <col> v <colgroup>,
+        // takže pouhé schování <th>/<td> přes display:none (jak to dělala
+        // původní verze) rozhodí přiřazení <col> šířek ke zbývajícím
+        // buňkám a layout se rozsype. Proto se místo skrývání buněk
+        // sloupec z DOM úplně vynechá a zbylé sloupce se korektně
+        // roztáhnou přes celou šířku (stejně jako u dxDataGrid).
+        _computeAdaptiveLayout: function () {
+            var cfg = this.config;
+            var cols = this._configuredColumns();
 
-            var cols = this.config.columns;
-            var totalMinWidth = 0;
+            cols.forEach(function (col) { col.adaptiveHidden = false; });
+            this._adaptiveActive = false;
 
-            cols.forEach(function (col) {
-                if (col.visible === false) return;
-                var mw = col.minWidth || col.width || 80;
-                totalMinWidth += mw;
-            });
-
-            var needAdaptive = totalMinWidth > availableWidth;
-
-            this.$container.toggleClass("qpx-datagrid-adaptive", needAdaptive);
-
-            cols.forEach(function (col) {
-                col.adaptiveHidden = false;
-            });
-
-            if (!needAdaptive) {
-                this.$thead.find("th").show();
-                this.$tbody.find("td").show();
-                this._closeAdaptiveAccordion();
+            if (!cfg.responsive || !this.$table || !this.$table.length) {
                 return;
             }
 
-            var remaining = totalMinWidth;
+            var availableWidth = this.$table.parent().width();
+            if (!availableWidth) { return; }
+
+            // Pro odhad SKUTEČNĚ obsazené šířky musí mít přednost reálná
+            // vykreslená šířka sloupce (col.width) — tabulka je
+            // table-layout:fixed, takže se sloupec vždy vykreslí přesně
+            // na tuto šířku (na rozdíl od minWidth, které je jen pomocná
+            // hranice pro rozhodování, které sloupce schovat dřív/později).
+            // Použití minWidth jako prioritního odhadu způsobovalo, že se
+            // adaptivní skrývání spustilo pozdě a tabulka mezitím reálně
+            // přetékala (dole se objevil vodorovný scrollbar).
+            function colWidth(col) { return col.width || col.minWidth || 80; }
+
+            // rezervovaná šířka sloupců, které nejsou v `cols` (výběr,
+            // editační příkazy, "⋯" pro akordeon) — musí se také vejít
+            var reservedWidth = 0;
+            if (this._isMultipleSelection() && this._showCheckBoxes()) { reservedWidth += 36; }
+            if (this._editingEnabled()) { reservedWidth += 76; }
+            reservedWidth += 40; // sloupec "⋯", se kterým je nutno počítat i než se zjistí, že je potřeba
+
+            var totalWidth = reservedWidth;
+            cols.forEach(function (col) { totalWidth += colWidth(col); });
+
+            var needAdaptive = totalWidth > availableWidth;
+            if (!needAdaptive) { return; }
+
+            var remaining = totalWidth;
             cols.slice().reverse().forEach(function (col) {
-                if (remaining <= availableWidth) return;
-                if (col.visible === false) return;
-
+                if (remaining <= availableWidth) { return; }
                 col.adaptiveHidden = true;
-                remaining -= (col.minWidth || col.width || 80);
+                remaining -= colWidth(col);
             });
 
-            this.$thead.find(".qpx-datagrid-header-cell").each(function () {
-                var field = $(this).attr("data-field");
-                if (!field) return;
-                var col = cols.filter(function (c) { return c.dataField === field; })[0];
-                if (!col) return;
-                $(this).toggle(!col.adaptiveHidden);
-            });
-
-            this.$tbody.find(".qpx-datagrid-row").each(function () {
-                var $row = $(this);
-                $row.find(".qpx-datagrid-cell").each(function () {
-                    var field = $(this).attr("data-field");
-                    if (!field) return;
-                    var col = cols.filter(function (c) { return c.dataField === field; })[0];
-                    if (!col) return;
-                    $(this).toggle(!col.adaptiveHidden);
-                });
-            });
+            this._adaptiveActive = cols.some(function (c) { return c.adaptiveHidden; });
         },
 
         _openAdaptiveAccordion: function (key, row, $row) {
+            var self = this;
             this._closeAdaptiveAccordion();
 
-            var cols = this.config.columns.filter(function (c) {
-                return c.visible !== false && c.adaptiveHidden;
-            });
+            var cols = this.config.columns.filter(function (c) { return c.visible !== false && c.adaptiveHidden; });
+            if (!cols.length) { return; }
 
-            if (!cols.length) return;
-
-            var colspan = this.config.columns.filter(function (c) { return c.visible !== false; }).length;
+            var colspan = this.$thead.find("tr").first().find("th").length;
 
             var $detail = $("<tr class='qpx-datagrid-detail-row'></tr>");
-            var $td = $("<td class='qpx-datagrid-detail-cell' colspan='" + colspan + "'></td>");
-
+            var $td = $("<td class='qpx-datagrid-detail-cell'></td>").attr("colspan", colspan);
             var $acc = $("<div class='qpx-datagrid-accordion'></div>");
 
             cols.forEach(function (col) {
-                var value = row[col.dataField];
-                var text = (value == null ? "" : value);
+                var rawValue = qpx.isFunction(col.calculateCellValue) ? col.calculateCellValue(row) : row[col.dataField];
 
                 var $item = $("<div class='qpx-datagrid-accordion-item'></div>");
                 var $header = $("<div class='qpx-datagrid-accordion-header'></div>").text(col.caption || col.dataField);
-                var $content = $("<div class='qpx-datagrid-accordion-content'></div>").text(text);
+                // hodnota se zobrazuje rovnou, ne až po dalším kliku
+                var $content = $("<div class='qpx-datagrid-accordion-content'></div>");
 
-                $header.on("click", function () {
-                    $content.slideToggle(120);
-                });
+                if (qpx.isFunction(col.cellTemplate)) {
+                    var result = col.cellTemplate.call(self, $content[0], { value: rawValue, data: row, column: col });
+                    if (result !== undefined && result !== null) { $content.append(result); }
+                } else {
+                    $content.text(self._formatCellValue(rawValue, col));
+                }
 
                 $item.append($header, $content);
                 $acc.append($item);
@@ -2291,7 +3728,6 @@
 
             $td.append($acc);
             $detail.append($td);
-
             $row.after($detail);
             this._adaptiveOpenRowKey = key;
         },
@@ -2301,37 +3737,253 @@
             this._adaptiveOpenRowKey = null;
         },
 
+        _toggleAdaptiveAccordion: function (key, row, $row) {
+            if (this._adaptiveOpenRowKey === key) { this._closeAdaptiveAccordion(); return; }
+            this._openAdaptiveAccordion(key, row, $row);
+        },
+
+        // ---------------------------------------------------------------
+        // Editace (row mode) — add / edit / delete
+        // ---------------------------------------------------------------
+        addRow: function () {
+            var cfg = this.config;
+            var data = {};
+            cfg.columns.forEach(function (c) { data[c.dataField] = (c.dataType === "boolean") ? false : ""; });
+            data[cfg.keyExpr] = qpx.uid("new");
+
+            this._editRowData = data;
+            this._editRowKey = data[cfg.keyExpr];
+            this._isNewRow = true;
+
+            this.trigger("editingStart", { data: data, key: this._editRowKey, isNewRow: true, component: this });
+            this._renderBody();
+            return this;
+        },
+
+        editRow: function (key) {
+            var cfg = this.config;
+            var row = cfg.dataSource.filter(function (r) { return r[cfg.keyExpr] === key; })[0];
+            if (!row) { return this; }
+
+            this._editRowData = $.extend({}, row);
+            this._editRowKey = key;
+            this._isNewRow = false;
+
+            this.trigger("editingStart", { data: row, key: key, isNewRow: false, component: this });
+            this._renderBody();
+            return this;
+        },
+
+        deleteRow: function (key) {
+            var cfg = this.config;
+            if (cfg.editing.confirmDelete && !window.confirm("Opravdu smazat tento záznam?")) { return this; }
+
+            var row = cfg.dataSource.filter(function (r) { return r[cfg.keyExpr] === key; })[0];
+            cfg.dataSource = cfg.dataSource.filter(function (r) { return r[cfg.keyExpr] !== key; });
+            this.config.dataSource = cfg.dataSource;
+
+            this._selectedKeys = this._selectedKeys.filter(function (k) { return k !== key; });
+
+            this.trigger("rowRemoved", { data: row, key: key, component: this });
+            this._pageIndex = Math.min(this._pageIndex, Math.max(0, this.pageCount() - 1));
+            this._renderAll();
+            return this;
+        },
+
+        saveEditData: function () {
+            var cfg = this.config;
+            if (!this._editRowData) { return this; }
+
+            if (this._isNewRow) {
+                cfg.dataSource.push($.extend({}, this._editRowData));
+                this.trigger("rowInserted", { data: this._editRowData, key: this._editRowKey, component: this });
+            } else {
+                var idx = -1;
+                for (var i = 0; i < cfg.dataSource.length; i++) {
+                    if (cfg.dataSource[i][cfg.keyExpr] === this._editRowKey) { idx = i; break; }
+                }
+                if (idx > -1) {
+                    $.extend(cfg.dataSource[idx], this._editRowData);
+                    this.trigger("rowUpdated", { data: cfg.dataSource[idx], key: this._editRowKey, component: this });
+                }
+            }
+
+            this._editRowKey = null;
+            this._editRowData = null;
+            this._isNewRow = false;
+
+            this._renderAll();
+            return this;
+        },
+
+        cancelEditData: function () {
+            this._editRowKey = null;
+            this._editRowData = null;
+            this._isNewRow = false;
+            this._renderBody();
+            return this;
+        },
+
+        hasEditData: function () { return this._editRowData !== null; },
+
+        // ---------------------------------------------------------------
+        // Stránkování / hledání / filtr — veřejné API
+        // ---------------------------------------------------------------
+        pageIndex: function (idx) {
+            if (idx === undefined) { return this._pageIndex; }
+            var count = this.pageCount();
+            this._pageIndex = Math.max(0, Math.min(idx, count - 1));
+            this._renderBody();
+            this._renderPager();
+            return this;
+        },
+
+        pageSize: function (size) {
+            if (size === undefined) { return this.config.paging.pageSize; }
+            this.config.paging.pageSize = size;
+            this._pageIndex = 0;
+            this._renderBody();
+            this._renderPager();
+            return this;
+        },
+
+        pageCount: function () {
+            var total = this._getFilteredData().length;
+            var size = this.config.paging.pageSize || total || 1;
+            return Math.max(1, Math.ceil(total / size));
+        },
+
+        searchByText: function (text) {
+            this._searchText = text || "";
+            this.$searchInput.val(this._searchText);
+            this._pageIndex = 0;
+            this._renderBody();
+            this._renderPager();
+            return this;
+        },
+
+        clearFilter: function () {
+            this._filterValues = {};
+            this._searchText = "";
+            this.$searchInput.val("");
+            this.$thead.find(".qpx-datagrid-filter-input").val("");
+            this._pageIndex = 0;
+            this._renderBody();
+            this._renderPager();
+            return this;
+        },
+
+        // ---------------------------------------------------------------
+        // Ostatní veřejné API
+        // ---------------------------------------------------------------
+        getDataSource: function () { return this.config.dataSource; },
+
+        getRowElement: function (key) {
+            var el = this.$tbody.find("[data-key='" + key + "']");
+            return el.length ? el[0] : undefined;
+        },
+
+        columnOption: function (dataField, optionName, value) {
+            var col = this.config.columns.filter(function (c) { return c.dataField === dataField; })[0];
+            if (!col) { return undefined; }
+            if (value === undefined) { return col[optionName]; }
+            col[optionName] = value;
+            this._renderAll();
+            return this;
+        },
+
+        // ---------------------------------------------------------------
+        // option() — vč. podpory tečkové cesty, např. "paging.pageSize"
+        // ---------------------------------------------------------------
         option: function (name, value) {
-            if (arguments.length === 0) return this.config;
+            if (arguments.length === 0) { return this.config; }
             if (qpx.isObject(name)) {
                 var self = this;
                 $.each(name, function (k, v) { self.option(k, v); });
                 return this;
             }
-            if (arguments.length === 1) return this.config[name];
+            if (arguments.length === 1) { return qpx.resolve(this.config, name); }
 
-            var prev = this.config[name];
-            if (prev === value) return this;
+            var rootName = String(name).split(".")[0];
 
-            this.config[name] = value;
-
-            if (name === "dataSource" || name === "columns") {
-                this._renderHeader();
-                this._renderBody();
-                this._doAdaptiveLayout();
-            } else if (name === "visible") {
-                this.$container.toggleClass("qpx-hidden", !value);
-            } else if (name === "disabled") {
-                this.$container.toggleClass("qpx-state-disabled", !!value);
+            if (name.indexOf(".") > -1) {
+                var parts = name.split(".");
+                var obj = this.config;
+                for (var i = 0; i < parts.length - 1; i++) {
+                    obj[parts[i]] = obj[parts[i]] || {};
+                    obj = obj[parts[i]];
+                }
+                obj[parts[parts.length - 1]] = value;
+            } else {
+                if (this.config[name] === value) { return this; }
+                this.config[name] = value;
             }
 
-            this.trigger("optionChanged", { name: name, value: value, previousValue: prev });
+            this._applyOption(rootName);
+            this.trigger("optionChanged", { name: name, value: value, component: this });
             return this;
         },
 
+        _applyOption: function (rootName) {
+            var cfg = this.config;
+
+            switch (rootName) {
+                case "dataSource":
+                case "columns":
+                    this._pageIndex = 0;
+                    this._renderAll();
+                    break;
+
+                case "selectionMode":
+                    cfg.selection.mode = cfg.selectionMode;
+                    this._selectedKeys = [];
+                    this._renderAll();
+                    break;
+
+                case "selection":
+                case "sorting":
+                case "paging":
+                case "pager":
+                case "filterRow":
+                case "searchPanel":
+                case "editing":
+                case "responsive":
+                case "noDataText":
+                    this._renderAll();
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !cfg.visible);
+                    break;
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!cfg.disabled);
+                    break;
+                case "rowAlternationEnabled":
+                    this.$container.toggleClass("qpx-datagrid-alternation", !!cfg.rowAlternationEnabled);
+                    this._renderBody();
+                    break;
+                case "showBorders":
+                    this.$container.toggleClass("qpx-datagrid-no-borders", !cfg.showBorders);
+                    break;
+                case "showRowLines":
+                    this.$container.toggleClass("qpx-datagrid-no-row-lines", !cfg.showRowLines);
+                    break;
+                case "showColumnLines":
+                    this.$container.toggleClass("qpx-datagrid-no-column-lines", !cfg.showColumnLines);
+                    break;
+                case "wordWrapEnabled":
+                    this.$container.toggleClass("qpx-datagrid-wordwrap", !!cfg.wordWrapEnabled);
+                    break;
+                case "allowColumnResizing":
+                    this._renderHeader();
+                    break;
+            }
+        },
+
         destroy: function () {
-            if (this._resizeObserver) this._resizeObserver.disconnect();
+            if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
             $(window).off(".qpxDataGrid" + this.id);
+            $(document).off(".qpxDataGridResize");
             this.$container.off(".qpxDataGrid");
             this._super();
         }

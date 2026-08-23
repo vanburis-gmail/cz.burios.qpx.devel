@@ -54,8 +54,9 @@ public class TestController {
 			java.util.Date now = new java.util.Date();
 			LocalDateTime ldtNow = LocalDateTime.now();
 			String timeNo = ldtNow.format(DateTimeFormatter.ofPattern("yyyyMMdd.HHmmssSSS"));
-			System.out.println("timeNo: " + timeNo);
+			// System.out.println("timeNo: " + timeNo);
 			view.addObject("timeNo", DateFormatUtils.format(now, "yyyyMMdd.HHmmssSSS"));
+			view.addObject("appTitle", "Buriosca.cz - QPX Devel");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -9,8 +9,8 @@ System.out.println("/devel/button.jsp");
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
-		<title>qpx — button</title>
-
+		<title>${appTitle}</title>
+		
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 

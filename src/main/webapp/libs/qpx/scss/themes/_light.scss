@@ -29,4 +29,7 @@
     --qpx-danger-contrast:  #ffffff;
     --qpx-warning:          #e0a72b;
     --qpx-warning-contrast: #2a2a2a;
+
+    // Na světlém pozadí se má hover checkboxu (qpTreeView) ztmavit
+    --qpx-checkbox-hover-filter: brightness(0.9);
 }

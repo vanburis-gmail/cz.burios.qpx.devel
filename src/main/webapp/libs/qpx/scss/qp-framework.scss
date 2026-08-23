@@ -28,8 +28,11 @@
 @use "widgets/buttongroup";
 @use "widgets/popup-list";
 @use "widgets/dropdownbutton";
+@use "widgets/switch";
 @use "widgets/toolbar";
+@use "widgets/tabview";
 @use "widgets/treeview";
+@use "widgets/datagrid";
 
 .qpx-theme-generic-light { @include light.qpx-theme-vars; }
 .qpx-theme-generic-dark  { @include dark.qpx-theme-vars; }

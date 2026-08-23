@@ -1,11 +1,23 @@
-/* ---------------------------------------------------------
-   qpTreeView – LIGHT THEME (DevExtreme generic-light)
---------------------------------------------------------- */
+// =====================================================================
+// qpx - widgets/_treeview.scss
+// Styly pro komponentu "treeview" (qpTreeView).
+//
+// Stejně jako ostatní widgety (viz widgets/_button.scss,
+// widgets/_popup-list.scss) NEobsahuje samostatné bloky pro
+// .qpx-theme-generic-light / .qpx-theme-generic-dark - barvy jdou
+// přes CSS custom properties (--qpx-*) definované v
+// scss/themes/_light.scss a scss/themes/_dark.scss. Díky tomu se do
+// každého tématového buildu (light.scss / dark.scss) propíšou jen
+// hodnoty patřící danému tématu, aniž by bylo nutné pravidla
+// duplikovat.
+// =====================================================================
 
-.qpx-theme-generic-light .qpx-treeview {
+@use "../base/variables" as *;
+
+.qpx-treeview {
     font-family: "Segoe UI", sans-serif;
     font-size: 14px;
-    color: #333;
+    color: var(--qpx-text, #333333);
 }
 
 .qpx-treeview ul {
@@ -27,14 +39,14 @@
 }
 
 .qpx-tree-row:hover {
-    background: #f0f0f0;
+    background: var(--qpx-hover, #eceff1);
 }
 
 .qpx-tree-toggle {
     width: 16px;
     text-align: center;
     margin-right: 4px;
-    color: #666;
+    color: var(--qpx-text-muted, #767676);
 }
 
 .qpx-tree-toggle-empty {
@@ -53,14 +65,11 @@
     top: 0;
 }
 
-/* Light theme – checkbox hover */
-.qpx-theme-generic-light .qpx-tree-checkbox:hover:not(:disabled) {
-    filter: brightness(0.9);
-}
-
-/* Dark theme – checkbox hover */
-.qpx-theme-generic-dark .qpx-tree-checkbox:hover:not(:disabled) {
-    filter: brightness(1.2);
+/* Hover checkboxu - na světlém pozadí ho chceme ztmavit, na tmavém
+   zesvětlit, proto je i samotný filtr součástí theme proměnných
+   (viz --qpx-checkbox-hover-filter v themes/_light.scss a _dark.scss) */
+.qpx-tree-checkbox:hover:not(:disabled) {
+    filter: var(--qpx-checkbox-hover-filter, brightness(0.9));
 }
 
 /* Checkbox disabled */
@@ -69,14 +78,10 @@
     cursor: default;
 }
 
-/* Indeterminate checkbox – DevExtreme-like */
+/* Indeterminate checkbox – DevExtreme-like, barva podle akcentu tématu */
 .qpx-tree-checkbox:indeterminate {
-    background-color: #0078d4;
-    border-color: #0078d4;
-}
-.qpx-theme-generic-dark .qpx-tree-checkbox:indeterminate {
-    background-color: #9fc5ff;
-    border-color: #9fc5ff;
+    background-color: var(--qpx-accent, #337ab7);
+    border-color: var(--qpx-accent, #337ab7);
 }
 
 .qpx-tree-icon {
@@ -88,78 +93,32 @@
 }
 
 .qpx-tree-item.qpx-state-selected > .qpx-tree-row {
-    background: #d0e6ff;
-    color: #004a9f;
+    background: var(--qpx-selected, #e3f0fb);
+    color: var(--qpx-accent, #337ab7);
 }
 
 .qpx-tree-item.qpx-state-disabled {
-    opacity: 0.5;
-    pointer-events: none;
+    @include qpx-disabled-state;
 }
 
-/* Drag & Drop vizuální stavy – light */
+/* Drag & Drop vizuální stavy */
 
 .qpx-tree-dragging > .qpx-tree-row {
     opacity: 0.4;
 }
 
 .qpx-tree-drop-target > .qpx-tree-row {
-    background: #e0f0ff;
+    background: var(--qpx-hover, #eceff1);
 }
 
 .qpx-tree-drop-above > .qpx-tree-row {
-    border-top: 2px solid #0078d4;
+    border-top: 2px solid var(--qpx-accent, #337ab7);
 }
 
 .qpx-tree-drop-below > .qpx-tree-row {
-    border-bottom: 2px solid #0078d4;
+    border-bottom: 2px solid var(--qpx-accent, #337ab7);
 }
 
 .qpx-tree-drop-inside > .qpx-tree-row {
-    background: #d0e6ff;
-}
-
-/* ---------------------------------------------------------
-   qpTreeView – DARK THEME (DevExtreme generic-dark)
---------------------------------------------------------- */
-
-.qpx-theme-generic-dark .qpx-treeview {
-    font-family: "Segoe UI", sans-serif;
-    font-size: 14px;
-    color: #eee;
-}
-
-.qpx-theme-generic-dark .qpx-tree-row:hover {
-    background: #333;
-}
-
-.qpx-theme-generic-dark .qpx-tree-item.qpx-state-selected > .qpx-tree-row {
-    background: #2a3b55;
-    color: #9fc5ff;
-}
-
-.qpx-theme-generic-dark .qpx-tree-toggle {
-    color: #aaa;
-}
-
-/* Drag & Drop vizuální stavy – dark */
-
-.qpx-theme-generic-dark .qpx-tree-dragging > .qpx-tree-row {
-    opacity: 0.4;
-}
-
-.qpx-theme-generic-dark .qpx-tree-drop-target > .qpx-tree-row {
-    background: #2a3b55;
-}
-
-.qpx-theme-generic-dark .qpx-tree-drop-above > .qpx-tree-row {
-    border-top: 2px solid #9fc5ff;
-}
-
-.qpx-theme-generic-dark .qpx-tree-drop-below > .qpx-tree-row {
-    border-bottom: 2px solid #9fc5ff;
-}
-
-.qpx-theme-generic-dark .qpx-tree-drop-inside > .qpx-tree-row {
-    background: #1f2a40;
+    background: var(--qpx-selected, #e3f0fb);
 }
