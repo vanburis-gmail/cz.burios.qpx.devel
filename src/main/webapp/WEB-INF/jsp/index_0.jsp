@@ -174,30 +174,6 @@ System.out.println("/devel/index.jsp");
 					<span class="card-desc">Booleovský přepínač (on/off) s vlastním textem stavů a stylingMode.</span>
 					<span class="card-path">/devel/test/switch</span>
 				</a>
-				<a class="card" href="/devel/test/autocomplete">
-					<span class="card-icon">🔍</span>
-					<span class="card-title">qpAutocomplete</span>
-					<span class="card-desc">Textové pole s automatickým našeptáváním, hodnotou je vždy zadaný text.</span>
-					<span class="card-path">/devel/test/autocomplete</span>
-				</a>
-				<a class="card" href="/devel/test/selectbox">
-					<span class="card-icon">🗳️</span>
-					<span class="card-title">qpSelectBox</span>
-					<span class="card-desc">Výběr jedné položky z rozbalovacího seznamu, volitelně s vyhledáváním.</span>
-					<span class="card-path">/devel/test/selectbox</span>
-				</a>
-				<a class="card" href="/devel/test/dropdownbox">
-					<span class="card-icon">📦</span>
-					<span class="card-title">qpDropDownBox</span>
-					<span class="card-desc">Pole otvírající popup s libovolným vlastním obsahem (treeview, grid...).</span>
-					<span class="card-path">/devel/test/dropdownbox</span>
-				</a>
-				<a class="card" href="/devel/test/lookup">
-					<span class="card-icon">📇</span>
-					<span class="card-title">qpLookup</span>
-					<span class="card-desc">Výběr položky přes vystředěný popup s hledáním v hlavičce, volitelně s tlačítky Hotovo/Zrušit.</span>
-					<span class="card-path">/devel/test/lookup</span>
-				</a>
 				<a class="card" href="/devel/test/tagbox">
 					<span class="card-icon">🏷️</span>
 					<span class="card-title">qpTagBox</span>

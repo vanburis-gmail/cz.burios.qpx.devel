@@ -8,6 +8,7 @@
 		<title>${appTitle}</title>
 
 		<link rel="icon" href="/devel/favicon.png">
+		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 
 		<style>
@@ -23,11 +24,12 @@
 			flex-wrap: wrap;
 			gap: 16px;
 			align-items: center;
-			padding: 12px 20px;
+			padding: 12px 64px;
 			background: #ffffff;
 			border-bottom: 1px solid #e0e0e0;
 			position: sticky;
 			top: 0;
+			left: 64px;
 			z-index: 10;
 		}
 		body.qpx-page-dark .qpx-testbar { background: #262626; border-bottom-color: #3f3f3f; }
@@ -59,9 +61,9 @@
 		.qpx-demo-note { font-size: 12px; opacity: 0.7; margin: 4px 0 12px; }
 		.qpx-back-home {
 			position: fixed;
-			top: 10px;
-			left: 10px;
-			font-size: 22px;
+			top: 8px;
+			left: 8px;
+			font-size: 20px;
 			color: #444;
 			text-decoration: none;
 			z-index: 9999;
@@ -81,9 +83,11 @@
 	</head>
 	<body>
 		<!-- návratová ikona vlevo nahoře -->
-		<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-			<span class="fa fa-home"></span>
-		</a>
+		<div>
+			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
+				<span class="fa fa-home"></span>
+			</a>
+		</div>
 		<div class="qpx-testbar">
 			<strong>QPX qpDataGrid – test</strong>
 			<label>Téma:

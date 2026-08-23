@@ -1152,6 +1152,2231 @@
 })(window.qpx, jQuery);
 
 /*!
+ * qpx - qpTagBox
+ * Vícenásobný výběr položek zobrazený jako "tagy" v poli, koncepčně
+ * i vzhledově co nejblíže DevExtreme dxTagBox (kombinace textového
+ * pole s vyhledáváním + rozbalovacího seznamu položek s možností
+ * vícenásobného výběru).
+ *
+ * options:
+ *   items / dataSource, valueExpr, displayExpr, value (pole hodnot),
+ *   placeholder, searchEnabled, searchTimeout, minSearchLength, noDataText,
+ *   multiline, maxDisplayedTags, showMultiTagOnly,
+ *   showSelectionControls, hideSelectedItems, acceptCustomValue,
+ *   showClearButton, stylingMode ("outlined"|"filled"|"underlined"),
+ *   disabled, readOnly, visible, tagTemplate, itemTemplate, dropDownOptions
+ *
+ * events:
+ *   onInitialized, onContentReady, onValueChanged, onSelectionChanged,
+ *   onOpened, onClosed, onCustomItemCreating, onOptionChanged, onDisposing
+ *
+ * methods:
+ *   option(name[, value]), value([val]), open(), close(),
+ *   getSelectedItems(), getDataSource(), reset(), focus(),
+ *   enable(), disable(), destroy()
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var openInstance = null; // aktuálně otevřená instance (jen jedna najednou)
+
+    var TagBox = qpx.Widget.extend({
+
+        defaults: {
+            dataSource: null,
+            items: [],
+            valueExpr: null,      // null = "this" (celá položka je hodnota)
+            displayExpr: null,    // null = item.text, nebo JSON.stringify
+
+            value: [],
+
+            placeholder: "Vyberte...",
+            searchEnabled: true,
+            searchTimeout: 200,
+            minSearchLength: 0,
+            noDataText: "Žádné položky",
+
+            multiline: true,           // false = jeden řádek se scrollem místo zalamování tagů
+            maxDisplayedTags: undefined,
+            showMultiTagOnly: false,   // true = místo jednotlivých tagů jen "N vybráno"
+
+            showSelectionControls: false, // "Vybrat vše" / "Zrušit výběr" v popupu
+            hideSelectedItems: false,
+            acceptCustomValue: false,
+
+            showClearButton: false,
+            stylingMode: "outlined",  // outlined | filled | underlined
+
+            disabled: false,
+            readOnly: false,
+            visible: true,
+
+            tagTemplate: null,   // function(tagData:{value,item}, tagIndex, tagElement)
+            itemTemplate: null,  // function(itemData, itemIndex, itemElement)
+            dropDownOptions: {}, // { width, maxHeight }
+
+            onValueChanged: null,
+            onSelectionChanged: null,
+            onOpened: null,
+            onClosed: null,
+            onCustomItemCreating: null,
+            onOptionChanged: null,
+            onInitialized: null,
+            onContentReady: null,
+            onDisposing: null
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+            var self = this;
+
+            cfg.items = (cfg.items && cfg.items.length) ? cfg.items : (cfg.dataSource || []);
+            cfg.value = cfg.value || [];
+
+            this.$container
+                .addClass("qpx-tagbox")
+                .addClass("qpx-tagbox-mode-" + cfg.stylingMode)
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-state-readonly", !!cfg.readOnly)
+                .attr("role", "combobox")
+                .attr("aria-expanded", "false")
+                .attr("aria-multiselectable", "true");
+
+            if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
+            if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
+            if (cfg.onValueChanged) { this.on("valueChanged", cfg.onValueChanged); }
+            if (cfg.onSelectionChanged) { this.on("selectionChanged", cfg.onSelectionChanged); }
+            if (cfg.onOpened) { this.on("opened", cfg.onOpened); }
+            if (cfg.onClosed) { this.on("closed", cfg.onClosed); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+            if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
+
+            this._isOpen = false;
+            this._searchText = "";
+            this._highlightIndex = -1;
+
+            this._buildDom();
+            this._bindEvents();
+
+            setTimeout(function () { self.trigger("contentReady", { component: self }); }, 0);
+        },
+
+        // ---------------------------------------------------------------
+        // DOM
+        // ---------------------------------------------------------------
+        _buildDom: function () {
+            var cfg = this.config;
+            this.$container.empty();
+
+            this.$field = $("<div class='qpx-tagbox-field'></div>");
+            this.$searchInput = $("<input type='text' class='qpx-tagbox-search' autocomplete='off'>")
+                .prop("disabled", !!cfg.disabled)
+                .prop("readOnly", !!cfg.readOnly || !cfg.searchEnabled);
+
+            this.$clearBtn = $("<span class='qpx-tagbox-clear' tabindex='-1' title='Vymazat výběr'>✕</span>").hide();
+            this.$arrow = $("<span class='qpx-tagbox-arrow'>▾</span>");
+
+            this.$container.append(this.$field, this.$clearBtn, this.$arrow);
+
+            this.$dropdown = $("<div class='qpx-popup-list qpx-tagbox-dropdown'></div>").appendTo(document.body).hide();
+            this.$list = $("<div class='qpx-tagbox-list'></div>");
+            this.$dropdown.append(this.$list);
+
+            if (cfg.dropDownOptions && cfg.dropDownOptions.width) { this.$dropdown.css("width", qpx.toPx(cfg.dropDownOptions.width)); }
+            if (cfg.dropDownOptions && cfg.dropDownOptions.maxHeight) { this.$list.css("max-height", qpx.toPx(cfg.dropDownOptions.maxHeight)); }
+
+            this._renderField();
+            this._renderDropdownItems();
+        },
+
+        _bindEvents: function () {
+            var self = this;
+            var cfg = this.config;
+
+            this.$container.on("click.qpxTagBox", function (e) {
+                if (cfg.disabled) { return; }
+                if ($(e.target).closest(".qpx-tagbox-tag-remove, .qpx-tagbox-clear").length) { return; }
+                self.$searchInput.trigger("focus");
+                if (!cfg.readOnly) { self.open(); }
+            });
+
+            this.$searchInput.on("focus.qpxTagBox", function () {
+                if (!cfg.disabled && !cfg.readOnly) { self.open(); }
+            });
+
+            var searchTimer = null;
+            this.$searchInput.on("input.qpxTagBox", function () {
+                var val = this.value;
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(function () {
+                    self._searchText = (val.length >= (cfg.minSearchLength || 0)) ? val : "";
+                    self._highlightIndex = -1;
+                    self._renderDropdownItems();
+                    if (!self._isOpen) { self.open(); }
+                }, cfg.searchTimeout);
+            });
+
+            this.$searchInput.on("keydown.qpxTagBox", function (e) {
+                if (cfg.disabled || cfg.readOnly) { return; }
+                var items = self._filteredItems();
+
+                switch (e.key) {
+                    case "ArrowDown":
+                        e.preventDefault();
+                        if (!self._isOpen) { self.open(); }
+                        self._highlightIndex = Math.min(items.length - 1, self._highlightIndex + 1);
+                        self._renderDropdownItems();
+                        break;
+
+                    case "ArrowUp":
+                        e.preventDefault();
+                        self._highlightIndex = Math.max(0, self._highlightIndex - 1);
+                        self._renderDropdownItems();
+                        break;
+
+                    case "Enter":
+                        e.preventDefault();
+                        if (self._highlightIndex > -1 && items[self._highlightIndex]) {
+                            self._toggleItem(items[self._highlightIndex]);
+                        } else if (cfg.acceptCustomValue && this.value.trim()) {
+                            self._handleCustomItemCreating(this.value.trim());
+                        }
+                        break;
+
+                    case "Escape":
+                        e.preventDefault();
+                        self.close();
+                        break;
+
+                    case "Backspace":
+                        if (!this.value && cfg.value.length) {
+                            e.preventDefault();
+                            self._removeValue(cfg.value[cfg.value.length - 1]);
+                        }
+                        break;
+                }
+            });
+
+            this.$arrow.on("click.qpxTagBox", function (e) {
+                e.stopPropagation();
+                if (cfg.disabled || cfg.readOnly) { return; }
+                if (self._isOpen) { self.close(); } else { self.$searchInput.trigger("focus"); self.open(); }
+            });
+
+            this.$clearBtn.on("click.qpxTagBox", function (e) {
+                e.stopPropagation();
+                if (cfg.disabled || cfg.readOnly) { return; }
+                self.option("value", []);
+            });
+
+            $(document).on("mousedown.qpxTagBox" + this.id, function (e) {
+                if (!self._isOpen) { return; }
+                if ($(e.target).closest(self.$dropdown).length || $(e.target).closest(self.$container).length) { return; }
+                self.close();
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Vykreslení pole s tagy
+        // ---------------------------------------------------------------
+        _renderField: function () {
+            var self = this;
+            var cfg = this.config;
+            this.$field.empty();
+
+            var values = cfg.value || [];
+            var useMultiTagOnly = cfg.showMultiTagOnly && values.length > 0;
+            var limit = (cfg.maxDisplayedTags !== undefined && cfg.maxDisplayedTags !== null) ? cfg.maxDisplayedTags : values.length;
+
+            if (useMultiTagOnly) {
+                this._appendSummaryTag(values.length + " vybráno");
+            } else {
+                values.slice(0, limit).forEach(function (val) { self._appendTag(val); });
+                if (values.length > limit) { this._appendSummaryTag("+" + (values.length - limit)); }
+            }
+
+            this.$field.toggleClass("qpx-tagbox-field-multiline", !!cfg.multiline);
+            this.$searchInput.attr("placeholder", values.length ? "" : cfg.placeholder);
+            this.$field.append(this.$searchInput);
+
+            this.$clearBtn.toggle(!!cfg.showClearButton && values.length > 0 && !cfg.disabled && !cfg.readOnly);
+        },
+
+        _appendTag: function (val) {
+            var self = this;
+            var cfg = this.config;
+            var item = this._itemForValue(val);
+            var $tag = $("<span class='qpx-tagbox-tag'></span>");
+
+            if (qpx.isFunction(cfg.tagTemplate)) {
+                var result = cfg.tagTemplate.call(this, { value: val, item: item }, 0, $tag[0]);
+                if (result !== undefined && result !== null) { $tag.append(result); }
+            } else {
+                $tag.append($("<span class='qpx-tagbox-tag-text'></span>").text(item !== undefined ? this._displayOf(item) : String(val)));
+                if (!cfg.disabled && !cfg.readOnly) {
+                    var $remove = $("<span class='qpx-tagbox-tag-remove' tabindex='-1'>✕</span>");
+                    $remove.on("click.qpxTagBox", function (e) { e.stopPropagation(); self._removeValue(val); });
+                    $tag.append($remove);
+                }
+            }
+
+            this.$field.append($tag);
+        },
+
+        _appendSummaryTag: function (text) {
+            this.$field.append($("<span class='qpx-tagbox-tag qpx-tagbox-tag-summary'></span>").text(text));
+        },
+
+        // ---------------------------------------------------------------
+        // Rozbalovací seznam položek
+        // ---------------------------------------------------------------
+        _renderDropdownItems: function () {
+            var self = this;
+            var cfg = this.config;
+            this.$list.empty();
+
+            if (cfg.showSelectionControls) {
+                var $ctrl = $("<div class='qpx-tagbox-selection-controls'></div>");
+                $ctrl.append(
+                    $("<span class='qpx-tagbox-select-all'></span>").text("Vybrat vše")
+                        .on("click.qpxTagBox", function (e) { e.stopPropagation(); self._selectAllFiltered(); }),
+                    $("<span class='qpx-tagbox-clear-all'></span>").text("Zrušit výběr")
+                        .on("click.qpxTagBox", function (e) { e.stopPropagation(); self.option("value", []); })
+                );
+                this.$list.append($ctrl);
+            }
+
+            var items = this._filteredItems();
+
+            if (!items.length) {
+                this.$list.append($("<div class='qpx-tagbox-nodata'></div>").text(cfg.noDataText));
+                return;
+            }
+
+            items.forEach(function (item, idx) {
+                var val = self._valueOf(item);
+                var selected = self._indexOfValue(val) !== -1;
+
+                var $row = $("<div class='qpx-popup-list-item qpx-tagbox-item'></div>")
+                    .toggleClass("qpx-state-selected", selected)
+                    .toggleClass("qpx-state-highlighted", idx === self._highlightIndex);
+
+                $row.append($("<span class='qpx-tagbox-item-check'></span>"));
+
+                if (qpx.isFunction(cfg.itemTemplate)) {
+                    var res = cfg.itemTemplate.call(self, item, idx, $row[0]);
+                    if (res !== undefined && res !== null) { $row.append(res); }
+                } else {
+                    $row.append($("<span class='qpx-tagbox-item-text'></span>").text(self._displayOf(item)));
+                }
+
+                $row.on("click.qpxTagBox", function (e) {
+                    e.stopPropagation();
+                    self._toggleItem(item);
+                    self.$searchInput.trigger("focus");
+                });
+
+                self.$list.append($row);
+            });
+        },
+
+        _filteredItems: function () {
+            var self = this;
+            var cfg = this.config;
+            var text = (this._searchText || "").toLowerCase();
+
+            return (cfg.items || []).filter(function (item) {
+                if (cfg.hideSelectedItems && self._indexOfValue(self._valueOf(item)) !== -1) { return false; }
+                if (!text) { return true; }
+                return self._displayOf(item).toLowerCase().indexOf(text) !== -1;
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Popup otevřít/zavřít
+        // ---------------------------------------------------------------
+        open: function () {
+            if (this.config.disabled || this._isOpen) { return this; }
+            if (openInstance && openInstance !== this) { openInstance.close(); }
+
+            this._renderDropdownItems();
+
+            var off = this.$container.offset();
+            this.$dropdown.css({
+                top: off.top + this.$container.outerHeight(),
+                left: off.left,
+                minWidth: this.$container.outerWidth()
+            }).show();
+
+            this._isOpen = true;
+            this.$container.attr("aria-expanded", "true");
+            openInstance = this;
+            this.trigger("opened", { component: this });
+            return this;
+        },
+
+        close: function () {
+            if (!this._isOpen) { return this; }
+            this.$dropdown.hide();
+            this._isOpen = false;
+            this._highlightIndex = -1;
+            this.$container.attr("aria-expanded", "false");
+            if (openInstance === this) { openInstance = null; }
+            this.trigger("closed", { component: this });
+            return this;
+        },
+
+        // ---------------------------------------------------------------
+        // Práce s hodnotami / výběrem
+        // ---------------------------------------------------------------
+        _valueOf: function (item) {
+            if (this.config.valueExpr && this.config.valueExpr !== "this") {
+                return qpx.resolve(item, this.config.valueExpr);
+            }
+            return item;
+        },
+
+        _displayOf: function (item) {
+            if (this.config.displayExpr) {
+                var v = qpx.resolve(item, this.config.displayExpr);
+                return (v === undefined || v === null) ? "" : String(v);
+            }
+            if (qpx.isObject(item)) { return item.text !== undefined ? String(item.text) : JSON.stringify(item); }
+            return String(item);
+        },
+
+        _itemForValue: function (val) {
+            var self = this;
+            return (this.config.items || []).filter(function (it) { return self._valueOf(it) === val; })[0];
+        },
+
+        _itemsForValues: function (values) {
+            var self = this;
+            return values.map(function (v) {
+                var found = self._itemForValue(v);
+                return found !== undefined ? found : v;
+            });
+        },
+
+        _indexOfValue: function (val) {
+            var arr = this.config.value || [];
+            for (var i = 0; i < arr.length; i++) { if (arr[i] === val) { return i; } }
+            return -1;
+        },
+
+        _toggleItem: function (item) {
+            var val = this._valueOf(item);
+            var arr = (this.config.value || []).slice();
+            var idx = arr.indexOf(val);
+            if (idx === -1) { arr.push(val); } else { arr.splice(idx, 1); }
+            this.option("value", arr);
+        },
+
+        _removeValue: function (val) {
+            var arr = (this.config.value || []).slice();
+            var idx = arr.indexOf(val);
+            if (idx === -1) { return; }
+            arr.splice(idx, 1);
+            this.option("value", arr);
+        },
+
+        _selectAllFiltered: function () {
+            var self = this;
+            var arr = (this.config.value || []).slice();
+            this._filteredItems().forEach(function (item) {
+                var val = self._valueOf(item);
+                if (arr.indexOf(val) === -1) { arr.push(val); }
+            });
+            this.option("value", arr);
+        },
+
+        _handleCustomItemCreating: function (text) {
+            var cfg = this.config;
+            if (!text) { return; }
+
+            var createdItem;
+            if (qpx.isFunction(cfg.onCustomItemCreating)) {
+                var args = { text: text, component: this, customItem: undefined };
+                var ret = cfg.onCustomItemCreating(args);
+                createdItem = (args.customItem !== undefined) ? args.customItem : ret;
+            }
+            if (createdItem === undefined || createdItem === null) {
+                if (!cfg.acceptCustomValue) { return; }
+                createdItem = text;
+            }
+
+            if (cfg.items.indexOf(createdItem) === -1) { cfg.items.push(createdItem); }
+            this._toggleItem(createdItem);
+
+            this.$searchInput.val("");
+            this._searchText = "";
+            this._renderDropdownItems();
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        // value() -> čtení pole vybraných hodnot; value(pole) -> zápis (zkratka za option("value", ...))
+        value: function (val) {
+            if (arguments.length === 0) { return (this.config.value || []).slice(); }
+            return this.option("value", val);
+        },
+
+        getSelectedItems: function () { return this._itemsForValues((this.config.value || []).slice()); },
+        getDataSource: function () { return this.config.items; },
+        reset: function () { return this.option("value", []); },
+        focus: function () { this.$searchInput.trigger("focus"); return this; },
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "value": {
+                    var prevArr = (prev || []).slice();
+                    var newArr = value || [];
+                    this.config.value = newArr;
+                    this._renderField();
+                    this._renderDropdownItems();
+
+                    this.trigger("valueChanged", { value: newArr.slice(), previousValue: prevArr, component: this, element: this.getNode() });
+
+                    var added = newArr.filter(function (v) { return prevArr.indexOf(v) === -1; });
+                    var removed = prevArr.filter(function (v) { return newArr.indexOf(v) === -1; });
+                    if (added.length || removed.length) {
+                        this.trigger("selectionChanged", { addedItems: this._itemsForValues(added), removedItems: this._itemsForValues(removed), component: this });
+                    }
+                    break;
+                }
+
+                case "items":
+                case "dataSource":
+                    this.config.items = value || [];
+                    this._renderField();
+                    this._renderDropdownItems();
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    this.$searchInput.prop("disabled", !!value);
+                    if (value) { this.close(); }
+                    this._renderField();
+                    break;
+
+                case "readOnly":
+                    this.$container.toggleClass("qpx-state-readonly", !!value);
+                    this.$searchInput.prop("readOnly", !!value || !this.config.searchEnabled);
+                    this._renderField();
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "stylingMode":
+                    this.$container.removeClass("qpx-tagbox-mode-" + prev).addClass("qpx-tagbox-mode-" + value);
+                    break;
+
+                case "searchEnabled":
+                    this.$searchInput.prop("readOnly", !value || !!this.config.readOnly);
+                    break;
+
+                case "placeholder":
+                case "maxDisplayedTags":
+                case "showMultiTagOnly":
+                case "showClearButton":
+                case "multiline":
+                    this._renderField();
+                    break;
+
+                case "hideSelectedItems":
+                case "showSelectionControls":
+                case "noDataText":
+                    this._renderDropdownItems();
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        destroy: function () {
+            this.$container.off(".qpxTagBox");
+            if (this.$searchInput) { this.$searchInput.off(".qpxTagBox"); }
+            $(document).off(".qpxTagBox" + this.id);
+            if (this.$dropdown) { this.$dropdown.remove(); }
+            if (openInstance === this) { openInstance = null; }
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpTagBox", TagBox);
+    qpx.qpTagBox = TagBox;
+
+})(window.qpx, jQuery);
+
+/*!
+ * qpx - qpAutocomplete
+ * Textové pole s automatickým našeptáváním položek podle psaného textu,
+ * koncepčně i vzhledově co nejblíže DevExtreme dxAutocomplete. Na rozdíl
+ * od qpSelectBox/qpLookup NENÍ výběr z nabídky vynucen — hodnotou je
+ * vždy zadaný text, položka z nabídky jen text doplní.
+ *
+ * options:
+ *   items / dataSource, displayExpr, value (text),
+ *   placeholder, minSearchLength, searchTimeout, maxItemCount, noDataText,
+ *   showClearButton, stylingMode ("outlined"|"filled"|"underlined"),
+ *   disabled, readOnly, visible, itemTemplate, dropDownOptions
+ *
+ * events:
+ *   onInitialized, onContentReady, onValueChanged, onSelectionChanged,
+ *   onOpened, onClosed, onEnterKey, onOptionChanged, onDisposing
+ *
+ * methods:
+ *   option(name[, value]), value([val]), open(), close(),
+ *   getDataSource(), reset(), focus(), enable(), disable(), destroy()
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var openInstance = null; // aktuálně otevřená instance (jen jedna najednou)
+
+    var Autocomplete = qpx.Widget.extend({
+
+        defaults: {
+            dataSource: null,
+            items: [],
+            displayExpr: null,   // null = item.text, nebo přímo řetězec
+
+            value: "",
+
+            placeholder: "Zadejte text...",
+            minSearchLength: 1,
+            searchTimeout: 200,
+            maxItemCount: undefined,
+            noDataText: "Žádné položky",
+
+            showClearButton: false,
+            stylingMode: "outlined",  // outlined | filled | underlined
+
+            disabled: false,
+            readOnly: false,
+            visible: true,
+
+            itemTemplate: null,  // function(itemData, itemIndex, itemElement)
+            dropDownOptions: {}, // { width, maxHeight }
+
+            onValueChanged: null,
+            onSelectionChanged: null,
+            onOpened: null,
+            onClosed: null,
+            onEnterKey: null,
+            onOptionChanged: null,
+            onInitialized: null,
+            onContentReady: null,
+            onDisposing: null
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+            var self = this;
+
+            cfg.items = (cfg.items && cfg.items.length) ? cfg.items : (cfg.dataSource || []);
+            cfg.value = cfg.value || "";
+
+            this.$container
+                .addClass("qpx-autocomplete")
+                .addClass("qpx-autocomplete-mode-" + cfg.stylingMode)
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-state-readonly", !!cfg.readOnly)
+                .attr("role", "combobox")
+                .attr("aria-expanded", "false")
+                .attr("aria-autocomplete", "list");
+
+            if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
+            if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
+            if (cfg.onValueChanged) { this.on("valueChanged", cfg.onValueChanged); }
+            if (cfg.onSelectionChanged) { this.on("selectionChanged", cfg.onSelectionChanged); }
+            if (cfg.onOpened) { this.on("opened", cfg.onOpened); }
+            if (cfg.onClosed) { this.on("closed", cfg.onClosed); }
+            if (cfg.onEnterKey) { this.on("enterKey", cfg.onEnterKey); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+            if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
+
+            this._isOpen = false;
+            this._searchText = cfg.value;
+            this._highlightIndex = -1;
+
+            this._buildDom();
+            this._bindEvents();
+
+            setTimeout(function () { self.trigger("contentReady", { component: self }); }, 0);
+        },
+
+        // ---------------------------------------------------------------
+        // DOM
+        // ---------------------------------------------------------------
+        _buildDom: function () {
+            var cfg = this.config;
+            this.$container.empty();
+
+            this.$input = $("<input type='text' class='qpx-autocomplete-input' autocomplete='off'>")
+                .val(cfg.value)
+                .attr("placeholder", cfg.placeholder)
+                .prop("disabled", !!cfg.disabled)
+                .prop("readOnly", !!cfg.readOnly);
+
+            this.$clearBtn = $("<span class='qpx-autocomplete-clear' tabindex='-1' title='Vymazat'>✕</span>").hide();
+
+            this.$container.append(this.$input, this.$clearBtn);
+
+            this.$dropdown = $("<div class='qpx-popup-list qpx-autocomplete-dropdown'></div>").appendTo(document.body).hide();
+            this.$list = $("<div class='qpx-autocomplete-list'></div>");
+            this.$dropdown.append(this.$list);
+
+            if (cfg.dropDownOptions && cfg.dropDownOptions.width) { this.$dropdown.css("width", qpx.toPx(cfg.dropDownOptions.width)); }
+            if (cfg.dropDownOptions && cfg.dropDownOptions.maxHeight) { this.$list.css("max-height", qpx.toPx(cfg.dropDownOptions.maxHeight)); }
+
+            this._renderField();
+        },
+
+        _bindEvents: function () {
+            var self = this;
+            var cfg = this.config;
+            var searchTimer = null;
+
+            this.$input.on("focus.qpxAutocomplete", function () {
+                if (cfg.disabled || cfg.readOnly) { return; }
+                self._searchText = self.$input.val();
+                self._renderDropdownItems();
+                self.open();
+            });
+
+            this.$input.on("input.qpxAutocomplete", function () {
+                var val = this.value;
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(function () {
+                    self._searchText = val;
+                    self._highlightIndex = -1;
+                    self._renderDropdownItems();
+                    if (!self._isOpen) { self.open(); }
+                    self.$clearBtn.toggle(!!cfg.showClearButton && val.length > 0);
+                }, cfg.searchTimeout);
+            });
+
+            this.$input.on("keydown.qpxAutocomplete", function (e) {
+                if (cfg.disabled || cfg.readOnly) { return; }
+                var items = self._filteredItems();
+
+                switch (e.key) {
+                    case "ArrowDown":
+                        e.preventDefault();
+                        if (!self._isOpen) { self.open(); }
+                        self._highlightIndex = Math.min(items.length - 1, self._highlightIndex + 1);
+                        self._renderDropdownItems();
+                        break;
+
+                    case "ArrowUp":
+                        e.preventDefault();
+                        self._highlightIndex = Math.max(0, self._highlightIndex - 1);
+                        self._renderDropdownItems();
+                        break;
+
+                    case "Enter":
+                        if (self._highlightIndex > -1 && items[self._highlightIndex]) {
+                            self._selectItem(items[self._highlightIndex]);
+                        } else {
+                            self._commitTypedValue();
+                        }
+                        self.trigger("enterKey", { component: self, event: e });
+                        break;
+
+                    case "Escape":
+                        e.preventDefault();
+                        self.close();
+                        break;
+                }
+            });
+
+            this.$input.on("blur.qpxAutocomplete", function () {
+                // commit se řeší v mousedown handleru dokumentu (aby fungoval i klik na položku)
+            });
+
+            this.$clearBtn.on("click.qpxAutocomplete", function (e) {
+                e.stopPropagation();
+                if (cfg.disabled || cfg.readOnly) { return; }
+                self.option("value", "");
+                self.$input.trigger("focus");
+            });
+
+            $(document).on("mousedown.qpxAutocomplete" + this.id, function (e) {
+                if (!self._isOpen) { return; }
+                if ($(e.target).closest(self.$dropdown).length || $(e.target).closest(self.$container).length) { return; }
+                self._commitTypedValue();
+                self.close();
+            });
+        },
+
+        _renderField: function () {
+            var cfg = this.config;
+            this.$input.val(cfg.value || "");
+            this.$clearBtn.toggle(!!cfg.showClearButton && !!cfg.value);
+        },
+
+        // ---------------------------------------------------------------
+        // Rozbalovací seznam návrhů
+        // ---------------------------------------------------------------
+        _renderDropdownItems: function () {
+            var self = this;
+            var cfg = this.config;
+            this.$list.empty();
+
+            var items = this._filteredItems();
+
+            if (!items.length) {
+                this.$list.append($("<div class='qpx-autocomplete-nodata'></div>").text(cfg.noDataText));
+                return;
+            }
+
+            items.forEach(function (item, idx) {
+                var $row = $("<div class='qpx-popup-list-item qpx-autocomplete-item'></div>")
+                    .toggleClass("qpx-state-highlighted", idx === self._highlightIndex);
+
+                if (qpx.isFunction(cfg.itemTemplate)) {
+                    var res = cfg.itemTemplate.call(self, item, idx, $row[0]);
+                    if (res !== undefined && res !== null) { $row.append(res); }
+                } else {
+                    $row.append($("<span class='qpx-autocomplete-item-text'></span>").text(self._displayOf(item)));
+                }
+
+                $row.on("mousedown.qpxAutocomplete", function (e) {
+                    // mousedown místo click, aby předešlo blur/mousedown handleru dokumentu
+                    e.preventDefault();
+                    e.stopPropagation();
+                    self._selectItem(item);
+                });
+
+                self.$list.append($row);
+            });
+        },
+
+        _filteredItems: function () {
+            var self = this;
+            var cfg = this.config;
+            var text = (this._searchText || "");
+
+            if (text.length < (cfg.minSearchLength || 0)) { return []; }
+
+            var lower = text.toLowerCase();
+            var result = (cfg.items || []).filter(function (item) {
+                if (!lower) { return true; }
+                return self._displayOf(item).toLowerCase().indexOf(lower) !== -1;
+            });
+
+            if (cfg.maxItemCount) { result = result.slice(0, cfg.maxItemCount); }
+            return result;
+        },
+
+        _displayOf: function (item) {
+            if (this.config.displayExpr) {
+                var v = qpx.resolve(item, this.config.displayExpr);
+                return (v === undefined || v === null) ? "" : String(v);
+            }
+            if (qpx.isObject(item)) { return item.text !== undefined ? String(item.text) : JSON.stringify(item); }
+            return String(item);
+        },
+
+        _selectItem: function (item) {
+            var text = this._displayOf(item);
+            this.option("value", text);
+            this.trigger("selectionChanged", { item: item, component: this });
+            this.close();
+            this.$input.trigger("focus");
+        },
+
+        _commitTypedValue: function () {
+            var text = this.$input.val();
+            if (text !== this.config.value) { this.option("value", text); }
+        },
+
+        // ---------------------------------------------------------------
+        // Popup otevřít/zavřít
+        // ---------------------------------------------------------------
+        open: function () {
+            if (this.config.disabled || this.config.readOnly || this._isOpen) { return this; }
+            if (openInstance && openInstance !== this) { openInstance.close(); }
+
+            this._renderDropdownItems();
+
+            var off = this.$container.offset();
+            this.$dropdown.css({
+                top: off.top + this.$container.outerHeight(),
+                left: off.left,
+                minWidth: this.$container.outerWidth()
+            }).show();
+
+            this._isOpen = true;
+            this.$container.attr("aria-expanded", "true");
+            openInstance = this;
+            this.trigger("opened", { component: this });
+            return this;
+        },
+
+        close: function () {
+            if (!this._isOpen) { return this; }
+            this.$dropdown.hide();
+            this._isOpen = false;
+            this._highlightIndex = -1;
+            this.$container.attr("aria-expanded", "false");
+            if (openInstance === this) { openInstance = null; }
+            this.trigger("closed", { component: this });
+            return this;
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        value: function (val) {
+            if (arguments.length === 0) { return this.config.value; }
+            return this.option("value", val);
+        },
+
+        getDataSource: function () { return this.config.items; },
+        reset: function () { return this.option("value", ""); },
+        focus: function () { this.$input.trigger("focus"); return this; },
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "value":
+                    this._searchText = value || "";
+                    this._renderField();
+                    this.trigger("valueChanged", { value: value, previousValue: prev, component: this, element: this.getNode() });
+                    break;
+
+                case "items":
+                case "dataSource":
+                    this.config.items = value || [];
+                    if (this._isOpen) { this._renderDropdownItems(); }
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    this.$input.prop("disabled", !!value);
+                    if (value) { this.close(); }
+                    break;
+
+                case "readOnly":
+                    this.$container.toggleClass("qpx-state-readonly", !!value);
+                    this.$input.prop("readOnly", !!value);
+                    if (value) { this.close(); }
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "stylingMode":
+                    this.$container.removeClass("qpx-autocomplete-mode-" + prev).addClass("qpx-autocomplete-mode-" + value);
+                    break;
+
+                case "placeholder":
+                    this.$input.attr("placeholder", value);
+                    break;
+
+                case "showClearButton":
+                    this._renderField();
+                    break;
+
+                case "minSearchLength":
+                case "maxItemCount":
+                case "noDataText":
+                    if (this._isOpen) { this._renderDropdownItems(); }
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        destroy: function () {
+            this.$container.off(".qpxAutocomplete");
+            if (this.$input) { this.$input.off(".qpxAutocomplete"); }
+            $(document).off(".qpxAutocomplete" + this.id);
+            if (this.$dropdown) { this.$dropdown.remove(); }
+            if (openInstance === this) { openInstance = null; }
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpAutocomplete", Autocomplete);
+    qpx.qpAutocomplete = Autocomplete;
+
+})(window.qpx, jQuery);
+
+/*!
+ * qpx - qpSelectBox
+ * Výběr jedné položky z rozbalovacího seznamu, koncepčně i vzhledově
+ * co nejblíže DevExtreme dxSelectBox. Na rozdíl od qpAutocomplete je
+ * hodnotou vždy položka ze seznamu (resp. valueExpr z ní) — volný text
+ * je povolen jen při acceptCustomValue: true.
+ *
+ * options:
+ *   items / dataSource, valueExpr, displayExpr, value,
+ *   placeholder, searchEnabled, searchTimeout, minSearchLength, noDataText,
+ *   acceptCustomValue, showClearButton, stylingMode ("outlined"|"filled"|"underlined"),
+ *   disabled, readOnly, visible, itemTemplate, dropDownOptions
+ *
+ * events:
+ *   onInitialized, onContentReady, onValueChanged, onSelectionChanged,
+ *   onOpened, onClosed, onCustomItemCreating, onOptionChanged, onDisposing
+ *
+ * methods:
+ *   option(name[, value]), value([val]), open(), close(),
+ *   getSelectedItem(), getDataSource(), reset(), focus(),
+ *   enable(), disable(), destroy()
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var openInstance = null; // aktuálně otevřená instance (jen jedna najednou)
+
+    var SelectBox = qpx.Widget.extend({
+
+        defaults: {
+            dataSource: null,
+            items: [],
+            valueExpr: null,      // null = "this" (celá položka je hodnota)
+            displayExpr: null,    // null = item.text, nebo JSON.stringify
+
+            value: null,
+
+            placeholder: "Vyberte...",
+            searchEnabled: false,
+            searchTimeout: 200,
+            minSearchLength: 0,
+            noDataText: "Žádné položky",
+
+            acceptCustomValue: false,
+            showClearButton: false,
+            stylingMode: "outlined",  // outlined | filled | underlined
+
+            disabled: false,
+            readOnly: false,
+            visible: true,
+
+            itemTemplate: null,  // function(itemData, itemIndex, itemElement)
+            dropDownOptions: {}, // { width, maxHeight }
+
+            onValueChanged: null,
+            onSelectionChanged: null,
+            onOpened: null,
+            onClosed: null,
+            onCustomItemCreating: null,
+            onOptionChanged: null,
+            onInitialized: null,
+            onContentReady: null,
+            onDisposing: null
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+            var self = this;
+
+            cfg.items = (cfg.items && cfg.items.length) ? cfg.items : (cfg.dataSource || []);
+
+            this.$container
+                .addClass("qpx-selectbox")
+                .addClass("qpx-selectbox-mode-" + cfg.stylingMode)
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-state-readonly", !!cfg.readOnly)
+                .attr("role", "combobox")
+                .attr("aria-expanded", "false");
+
+            if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
+            if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
+            if (cfg.onValueChanged) { this.on("valueChanged", cfg.onValueChanged); }
+            if (cfg.onSelectionChanged) { this.on("selectionChanged", cfg.onSelectionChanged); }
+            if (cfg.onOpened) { this.on("opened", cfg.onOpened); }
+            if (cfg.onClosed) { this.on("closed", cfg.onClosed); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+            if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
+
+            this._isOpen = false;
+            this._searchText = "";
+            this._highlightIndex = -1;
+
+            this._buildDom();
+            this._bindEvents();
+
+            setTimeout(function () { self.trigger("contentReady", { component: self }); }, 0);
+        },
+
+        // ---------------------------------------------------------------
+        // DOM
+        // ---------------------------------------------------------------
+        _buildDom: function () {
+            var cfg = this.config;
+            this.$container.empty();
+
+            this.$input = $("<input type='text' class='qpx-selectbox-input' autocomplete='off'>")
+                .prop("disabled", !!cfg.disabled)
+                .prop("readOnly", !cfg.searchEnabled || !!cfg.readOnly);
+
+            this.$clearBtn = $("<span class='qpx-selectbox-clear' tabindex='-1' title='Vymazat výběr'>✕</span>").hide();
+            this.$arrow = $("<span class='qpx-selectbox-arrow'>▾</span>");
+
+            this.$container.append(this.$input, this.$clearBtn, this.$arrow);
+
+            this.$dropdown = $("<div class='qpx-popup-list qpx-selectbox-dropdown'></div>").appendTo(document.body).hide();
+            this.$list = $("<div class='qpx-selectbox-list'></div>");
+            this.$dropdown.append(this.$list);
+
+            if (cfg.dropDownOptions && cfg.dropDownOptions.width) { this.$dropdown.css("width", qpx.toPx(cfg.dropDownOptions.width)); }
+            if (cfg.dropDownOptions && cfg.dropDownOptions.maxHeight) { this.$list.css("max-height", qpx.toPx(cfg.dropDownOptions.maxHeight)); }
+
+            this._renderField();
+        },
+
+        _bindEvents: function () {
+            var self = this;
+            var cfg = this.config;
+
+            this.$container.on("click.qpxSelectBox", function (e) {
+                if (cfg.disabled || cfg.readOnly) { return; }
+                if ($(e.target).closest(".qpx-selectbox-clear").length) { return; }
+                self.$input.trigger("focus");
+                if (self._isOpen) { self.close(); } else { self.open(); }
+            });
+
+            this.$input.on("focus.qpxSelectBox", function () {
+                if (cfg.disabled || cfg.readOnly) { return; }
+                if (cfg.searchEnabled) { self.$input.val(""); self._searchText = ""; self._renderDropdownItems(); }
+            });
+
+            var searchTimer = null;
+            this.$input.on("input.qpxSelectBox", function () {
+                if (!cfg.searchEnabled) { return; }
+                var val = this.value;
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(function () {
+                    self._searchText = (val.length >= (cfg.minSearchLength || 0)) ? val : "";
+                    self._highlightIndex = -1;
+                    self._renderDropdownItems();
+                    if (!self._isOpen) { self.open(); }
+                }, cfg.searchTimeout);
+            });
+
+            this.$input.on("keydown.qpxSelectBox", function (e) {
+                if (cfg.disabled || cfg.readOnly) { return; }
+                var items = self._filteredItems();
+
+                switch (e.key) {
+                    case "ArrowDown":
+                        e.preventDefault();
+                        if (!self._isOpen) { self.open(); }
+                        self._highlightIndex = Math.min(items.length - 1, self._highlightIndex + 1);
+                        self._renderDropdownItems();
+                        break;
+
+                    case "ArrowUp":
+                        e.preventDefault();
+                        self._highlightIndex = Math.max(0, self._highlightIndex - 1);
+                        self._renderDropdownItems();
+                        break;
+
+                    case "Enter":
+                        e.preventDefault();
+                        if (self._highlightIndex > -1 && items[self._highlightIndex]) {
+                            self._selectItem(items[self._highlightIndex]);
+                        } else if (cfg.acceptCustomValue && this.value.trim()) {
+                            self._handleCustomItemCreating(this.value.trim());
+                        }
+                        break;
+
+                    case "Escape":
+                        e.preventDefault();
+                        self._renderField();
+                        self.close();
+                        break;
+                }
+            });
+
+            this.$arrow.on("click.qpxSelectBox", function (e) {
+                e.stopPropagation();
+                if (cfg.disabled || cfg.readOnly) { return; }
+                if (self._isOpen) { self.close(); } else { self.$input.trigger("focus"); self.open(); }
+            });
+
+            this.$clearBtn.on("click.qpxSelectBox", function (e) {
+                e.stopPropagation();
+                if (cfg.disabled || cfg.readOnly) { return; }
+                self.option("value", null);
+            });
+
+            $(document).on("mousedown.qpxSelectBox" + this.id, function (e) {
+                if (!self._isOpen) { return; }
+                if ($(e.target).closest(self.$dropdown).length || $(e.target).closest(self.$container).length) { return; }
+                self._renderField();
+                self.close();
+            });
+        },
+
+        // ---------------------------------------------------------------
+        _renderField: function () {
+            var cfg = this.config;
+            var item = this._itemForValue(cfg.value);
+            var text = (cfg.value !== null && cfg.value !== undefined)
+                ? (item !== undefined ? this._displayOf(item) : String(cfg.value))
+                : "";
+
+            this.$input.val(text).attr("placeholder", cfg.placeholder);
+            this.$clearBtn.toggle(!!cfg.showClearButton && cfg.value !== null && cfg.value !== undefined && !cfg.disabled && !cfg.readOnly);
+        },
+
+        // ---------------------------------------------------------------
+        // Rozbalovací seznam položek
+        // ---------------------------------------------------------------
+        _renderDropdownItems: function () {
+            var self = this;
+            var cfg = this.config;
+            this.$list.empty();
+
+            var items = this._filteredItems();
+
+            if (!items.length) {
+                this.$list.append($("<div class='qpx-selectbox-nodata'></div>").text(cfg.noDataText));
+                return;
+            }
+
+            items.forEach(function (item, idx) {
+                var val = self._valueOf(item);
+                var selected = self._valuesEqual(val, cfg.value);
+
+                var $row = $("<div class='qpx-popup-list-item qpx-selectbox-item'></div>")
+                    .toggleClass("qpx-state-selected", selected)
+                    .toggleClass("qpx-state-highlighted", idx === self._highlightIndex);
+
+                if (qpx.isFunction(cfg.itemTemplate)) {
+                    var res = cfg.itemTemplate.call(self, item, idx, $row[0]);
+                    if (res !== undefined && res !== null) { $row.append(res); }
+                } else {
+                    $row.append($("<span class='qpx-selectbox-item-text'></span>").text(self._displayOf(item)));
+                }
+
+                $row.on("mousedown.qpxSelectBox", function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    self._selectItem(item);
+                });
+
+                self.$list.append($row);
+            });
+        },
+
+        _filteredItems: function () {
+            var self = this;
+            var cfg = this.config;
+            var text = (this._searchText || "").toLowerCase();
+
+            return (cfg.items || []).filter(function (item) {
+                if (!text) { return true; }
+                return self._displayOf(item).toLowerCase().indexOf(text) !== -1;
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Práce s hodnotou
+        // ---------------------------------------------------------------
+        _valueOf: function (item) {
+            if (this.config.valueExpr && this.config.valueExpr !== "this") {
+                return qpx.resolve(item, this.config.valueExpr);
+            }
+            return item;
+        },
+
+        _displayOf: function (item) {
+            if (this.config.displayExpr) {
+                var v = qpx.resolve(item, this.config.displayExpr);
+                return (v === undefined || v === null) ? "" : String(v);
+            }
+            if (qpx.isObject(item)) { return item.text !== undefined ? String(item.text) : JSON.stringify(item); }
+            return String(item);
+        },
+
+        _itemForValue: function (val) {
+            var self = this;
+            return (this.config.items || []).filter(function (it) { return self._valuesEqual(self._valueOf(it), val); })[0];
+        },
+
+        _valuesEqual: function (a, b) { return a === b; },
+
+        _selectItem: function (item) {
+            var val = this._valueOf(item);
+            this.option("value", val);
+            this.trigger("selectionChanged", { selectedItem: item, component: this });
+            this.close();
+            this.$input.trigger("focus");
+        },
+
+        _handleCustomItemCreating: function (text) {
+            var cfg = this.config;
+            if (!text) { return; }
+
+            var createdItem;
+            if (qpx.isFunction(cfg.onCustomItemCreating)) {
+                var args = { text: text, component: this, customItem: undefined };
+                var ret = cfg.onCustomItemCreating(args);
+                createdItem = (args.customItem !== undefined) ? args.customItem : ret;
+            }
+            if (createdItem === undefined || createdItem === null) {
+                if (!cfg.acceptCustomValue) { return; }
+                createdItem = text;
+            }
+
+            if (cfg.items.indexOf(createdItem) === -1) { cfg.items.push(createdItem); }
+            this._selectItem(createdItem);
+        },
+
+        // ---------------------------------------------------------------
+        // Popup otevřít/zavřít
+        // ---------------------------------------------------------------
+        open: function () {
+            if (this.config.disabled || this.config.readOnly || this._isOpen) { return this; }
+            if (openInstance && openInstance !== this) { openInstance.close(); }
+
+            this._renderDropdownItems();
+
+            var off = this.$container.offset();
+            this.$dropdown.css({
+                top: off.top + this.$container.outerHeight(),
+                left: off.left,
+                minWidth: this.$container.outerWidth()
+            }).show();
+
+            this._isOpen = true;
+            this.$container.attr("aria-expanded", "true");
+            openInstance = this;
+            this.trigger("opened", { component: this });
+            return this;
+        },
+
+        close: function () {
+            if (!this._isOpen) { return this; }
+            this.$dropdown.hide();
+            this._isOpen = false;
+            this._highlightIndex = -1;
+            this.$container.attr("aria-expanded", "false");
+            if (openInstance === this) { openInstance = null; }
+            this.trigger("closed", { component: this });
+            return this;
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        value: function (val) {
+            if (arguments.length === 0) { return this.config.value; }
+            return this.option("value", val);
+        },
+
+        getSelectedItem: function () { return this._itemForValue(this.config.value); },
+        getDataSource: function () { return this.config.items; },
+        reset: function () { return this.option("value", null); },
+        focus: function () { this.$input.trigger("focus"); return this; },
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "value": {
+                    this._renderField();
+                    this.trigger("valueChanged", { value: value, previousValue: prev, component: this, element: this.getNode() });
+                    break;
+                }
+
+                case "items":
+                case "dataSource":
+                    this.config.items = value || [];
+                    this._renderField();
+                    if (this._isOpen) { this._renderDropdownItems(); }
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    this.$input.prop("disabled", !!value);
+                    if (value) { this.close(); }
+                    this._renderField();
+                    break;
+
+                case "readOnly":
+                    this.$container.toggleClass("qpx-state-readonly", !!value);
+                    this.$input.prop("readOnly", !!value || !this.config.searchEnabled);
+                    if (value) { this.close(); }
+                    this._renderField();
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "stylingMode":
+                    this.$container.removeClass("qpx-selectbox-mode-" + prev).addClass("qpx-selectbox-mode-" + value);
+                    break;
+
+                case "searchEnabled":
+                    this.$input.prop("readOnly", !value || !!this.config.readOnly);
+                    break;
+
+                case "placeholder":
+                case "showClearButton":
+                    this._renderField();
+                    break;
+
+                case "noDataText":
+                    if (this._isOpen) { this._renderDropdownItems(); }
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        destroy: function () {
+            this.$container.off(".qpxSelectBox");
+            if (this.$input) { this.$input.off(".qpxSelectBox"); }
+            $(document).off(".qpxSelectBox" + this.id);
+            if (this.$dropdown) { this.$dropdown.remove(); }
+            if (openInstance === this) { openInstance = null; }
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpSelectBox", SelectBox);
+    qpx.qpSelectBox = SelectBox;
+
+})(window.qpx, jQuery);
+
+/*!
+ * qpx - qpDropDownBox
+ * Pole zobrazující aktuální hodnotu (přes displayExpr/dataSource), po
+ * kliknutí rozbalí POPUP S LIBOVOLNÝM VLASTNÍM OBSAHEM (contentTemplate)
+ * — např. qpTreeView, qpDataGrid nebo jinou kombinaci qpx komponent.
+ * Koncepčně i vzhledově co nejblíže DevExtreme dxDropDownBox.
+ *
+ * Narozdíl od qpSelectBox/qpLookup si qpDropDownBox sám nespravuje
+ * seznam položek — jen poskytuje "rám" (pole + popup) a řízení hodnoty;
+ * o samotný výběr uvnitř popupu se stará obsah vložený přes contentTemplate,
+ * který dostane odkaz na komponentu (component.option("value", ...), component.close()).
+ *
+ * options:
+ *   items / dataSource, valueExpr, displayExpr, value,
+ *   contentTemplate(e, contentElement), deferRendering,
+ *   placeholder, showClearButton, stylingMode ("outlined"|"filled"|"underlined"),
+ *   disabled, readOnly, visible, dropDownOptions
+ *
+ * events:
+ *   onInitialized, onContentReady, onValueChanged,
+ *   onOpened, onClosed, onOptionChanged, onDisposing
+ *
+ * methods:
+ *   option(name[, value]), value([val]), open(), close(),
+ *   content(), reset(), focus(), enable(), disable(), destroy()
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var openInstance = null; // aktuálně otevřená instance (jen jedna najednou)
+
+    var DropDownBox = qpx.Widget.extend({
+
+        defaults: {
+            dataSource: null,
+            items: [],
+            valueExpr: null,
+            displayExpr: null,
+
+            value: null,
+
+            contentTemplate: null, // function(e:{component, value}, contentElement)
+            deferRendering: true,  // true = obsah popupu se vykreslí až při prvním otevření
+
+            placeholder: "Vyberte...",
+            showClearButton: false,
+            stylingMode: "outlined",  // outlined | filled | underlined
+
+            disabled: false,
+            readOnly: false,
+            visible: true,
+
+            dropDownOptions: {}, // { width, height, maxHeight }
+
+            onValueChanged: null,
+            onOpened: null,
+            onClosed: null,
+            onOptionChanged: null,
+            onInitialized: null,
+            onContentReady: null,
+            onDisposing: null
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+            var self = this;
+
+            cfg.items = (cfg.items && cfg.items.length) ? cfg.items : (cfg.dataSource || []);
+
+            this.$container
+                .addClass("qpx-dropdownbox")
+                .addClass("qpx-dropdownbox-mode-" + cfg.stylingMode)
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-state-readonly", !!cfg.readOnly)
+                .attr("role", "combobox")
+                .attr("aria-expanded", "false");
+
+            if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
+            if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
+            if (cfg.onValueChanged) { this.on("valueChanged", cfg.onValueChanged); }
+            if (cfg.onOpened) { this.on("opened", cfg.onOpened); }
+            if (cfg.onClosed) { this.on("closed", cfg.onClosed); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+            if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
+
+            this._isOpen = false;
+            this._contentRendered = false;
+
+            this._buildDom();
+            this._bindEvents();
+
+            if (!cfg.deferRendering) { this._ensureContent(); }
+
+            setTimeout(function () { self.trigger("contentReady", { component: self }); }, 0);
+        },
+
+        // ---------------------------------------------------------------
+        // DOM
+        // ---------------------------------------------------------------
+        _buildDom: function () {
+            var cfg = this.config;
+            this.$container.empty();
+
+            this.$input = $("<input type='text' class='qpx-dropdownbox-input' autocomplete='off' readonly>")
+                .prop("disabled", !!cfg.disabled);
+
+            this.$clearBtn = $("<span class='qpx-dropdownbox-clear' tabindex='-1' title='Vymazat výběr'>✕</span>").hide();
+            this.$arrow = $("<span class='qpx-dropdownbox-arrow'>▾</span>");
+
+            this.$container.append(this.$input, this.$clearBtn, this.$arrow);
+
+            this.$dropdown = $("<div class='qpx-popup-surface qpx-dropdownbox-popup'></div>").appendTo(document.body).hide();
+            this.$content = $("<div class='qpx-dropdownbox-content'></div>");
+            this.$dropdown.append(this.$content);
+
+            if (cfg.dropDownOptions && cfg.dropDownOptions.width) { this.$dropdown.css("width", qpx.toPx(cfg.dropDownOptions.width)); }
+            if (cfg.dropDownOptions && cfg.dropDownOptions.height) { this.$content.css("height", qpx.toPx(cfg.dropDownOptions.height)); }
+            if (cfg.dropDownOptions && cfg.dropDownOptions.maxHeight) { this.$content.css("max-height", qpx.toPx(cfg.dropDownOptions.maxHeight)); }
+
+            this._renderField();
+        },
+
+        _bindEvents: function () {
+            var self = this;
+            var cfg = this.config;
+
+            this.$container.on("click.qpxDropDownBox", function (e) {
+                if (cfg.disabled || cfg.readOnly) { return; }
+                if ($(e.target).closest(".qpx-dropdownbox-clear").length) { return; }
+                if (self._isOpen) { self.close(); } else { self.open(); }
+            });
+
+            this.$clearBtn.on("click.qpxDropDownBox", function (e) {
+                e.stopPropagation();
+                if (cfg.disabled || cfg.readOnly) { return; }
+                self.option("value", null);
+            });
+
+            $(document).on("mousedown.qpxDropDownBox" + this.id, function (e) {
+                if (!self._isOpen) { return; }
+                if ($(e.target).closest(self.$dropdown).length || $(e.target).closest(self.$container).length) { return; }
+                self.close();
+            });
+
+            $(document).on("keydown.qpxDropDownBox" + this.id, function (e) {
+                if (self._isOpen && e.key === "Escape") { self.close(); }
+            });
+        },
+
+        _renderField: function () {
+            var cfg = this.config;
+            this.$input.val(this._resolveDisplayText()).attr("placeholder", cfg.placeholder);
+            this.$clearBtn.toggle(!!cfg.showClearButton && cfg.value !== null && cfg.value !== undefined && !cfg.disabled && !cfg.readOnly);
+        },
+
+        _resolveDisplayText: function () {
+            var cfg = this.config;
+            if (cfg.value === null || cfg.value === undefined || cfg.value === "") { return ""; }
+
+            if (cfg.displayExpr || cfg.valueExpr) {
+                var self = this;
+                var item = (cfg.items || []).filter(function (it) {
+                    var v = cfg.valueExpr ? qpx.resolve(it, cfg.valueExpr) : it;
+                    return v === cfg.value;
+                })[0];
+                if (item !== undefined) {
+                    if (cfg.displayExpr) {
+                        var d = qpx.resolve(item, cfg.displayExpr);
+                        return (d === undefined || d === null) ? "" : String(d);
+                    }
+                    return qpx.isObject(item) ? JSON.stringify(item) : String(item);
+                }
+            }
+            return String(cfg.value);
+        },
+
+        // ---------------------------------------------------------------
+        // Obsah popupu
+        // ---------------------------------------------------------------
+        _ensureContent: function () {
+            var cfg = this.config;
+            if (this._contentRendered) { return; }
+            this._contentRendered = true;
+
+            this.$content.empty();
+            if (qpx.isFunction(cfg.contentTemplate)) {
+                var res = cfg.contentTemplate.call(this, { component: this, value: cfg.value }, this.$content[0]);
+                if (res !== undefined && res !== null) { this.$content.append(res); }
+            } else {
+                this.$content.append($("<div class='qpx-dropdownbox-nocontent'></div>").text("contentTemplate není nastaven."));
+            }
+        },
+
+        content: function () { return this.$content; },
+
+        // ---------------------------------------------------------------
+        // Popup otevřít/zavřít
+        // ---------------------------------------------------------------
+        open: function () {
+            if (this.config.disabled || this.config.readOnly || this._isOpen) { return this; }
+            if (openInstance && openInstance !== this) { openInstance.close(); }
+
+            this._ensureContent();
+
+            var off = this.$container.offset();
+            this.$dropdown.css({
+                top: off.top + this.$container.outerHeight(),
+                left: off.left,
+                minWidth: this.$container.outerWidth()
+            }).show();
+
+            this._isOpen = true;
+            this.$container.attr("aria-expanded", "true");
+            openInstance = this;
+            this.trigger("opened", { component: this });
+            return this;
+        },
+
+        close: function () {
+            if (!this._isOpen) { return this; }
+            this.$dropdown.hide();
+            this._isOpen = false;
+            this.$container.attr("aria-expanded", "false");
+            if (openInstance === this) { openInstance = null; }
+            this.trigger("closed", { component: this });
+            return this;
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        value: function (val) {
+            if (arguments.length === 0) { return this.config.value; }
+            return this.option("value", val);
+        },
+
+        getDataSource: function () { return this.config.items; },
+        reset: function () { return this.option("value", null); },
+        focus: function () { this.$input.trigger("focus"); return this; },
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "value":
+                    this._renderField();
+                    this.trigger("valueChanged", { value: value, previousValue: prev, component: this, element: this.getNode() });
+                    break;
+
+                case "items":
+                case "dataSource":
+                    this.config.items = value || [];
+                    this._renderField();
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    this.$input.prop("disabled", !!value);
+                    if (value) { this.close(); }
+                    this._renderField();
+                    break;
+
+                case "readOnly":
+                    this.$container.toggleClass("qpx-state-readonly", !!value);
+                    if (value) { this.close(); }
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "stylingMode":
+                    this.$container.removeClass("qpx-dropdownbox-mode-" + prev).addClass("qpx-dropdownbox-mode-" + value);
+                    break;
+
+                case "placeholder":
+                case "showClearButton":
+                    this._renderField();
+                    break;
+
+                case "contentTemplate":
+                    this._contentRendered = false;
+                    if (this._isOpen) { this._ensureContent(); }
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        destroy: function () {
+            this.$container.off(".qpxDropDownBox");
+            $(document).off(".qpxDropDownBox" + this.id);
+            if (this.$dropdown) { this.$dropdown.remove(); }
+            if (openInstance === this) { openInstance = null; }
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpDropDownBox", DropDownBox);
+    qpx.qpDropDownBox = DropDownBox;
+
+})(window.qpx, jQuery);
+
+/*!
+ * qpx - qpLookup
+ * Výběr jedné položky ze seznamu, koncepčně i vzhledově co nejblíže
+ * DevExtreme dxLookup. Na rozdíl od qpSelectBox se nabídka neotvírá
+ * jako úzký dropdown pod polem, ale jako VYSTŘEDĚNÝ POPUP s titulkem,
+ * vlastním vyhledávacím polem v hlavičce a (volitelně) tlačítky
+ * Hotovo/Zrušit dole (applyValueMode: "useButtons").
+ *
+ * options:
+ *   items / dataSource, valueExpr, displayExpr, value,
+ *   placeholder, title, searchEnabled, searchTimeout, minSearchLength,
+ *   searchPlaceholder, noDataText, applyValueMode ("instantly"|"useButtons"),
+ *   cancelText, doneText, showClearButton,
+ *   stylingMode ("outlined"|"filled"|"underlined"),
+ *   disabled, readOnly, visible, itemTemplate, dropDownOptions
+ *
+ * events:
+ *   onInitialized, onContentReady, onValueChanged, onSelectionChanged,
+ *   onOpened, onClosed, onOptionChanged, onDisposing
+ *
+ * methods:
+ *   option(name[, value]), value([val]), open(), close(),
+ *   getSelectedItem(), getDataSource(), reset(), focus(),
+ *   enable(), disable(), destroy()
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var openInstance = null; // aktuálně otevřená instance (jen jedna najednou)
+
+    var Lookup = qpx.Widget.extend({
+
+        defaults: {
+            dataSource: null,
+            items: [],
+            valueExpr: null,
+            displayExpr: null,
+
+            value: null,
+
+            placeholder: "Vyberte...",
+            title: "Vyberte položku",
+
+            searchEnabled: true,
+            searchTimeout: 200,
+            minSearchLength: 0,
+            searchPlaceholder: "Hledat...",
+            noDataText: "Žádné položky",
+
+            applyValueMode: "instantly", // instantly | useButtons
+            cancelText: "Zrušit",
+            doneText: "Hotovo",
+
+            showClearButton: false,
+            stylingMode: "outlined",  // outlined | filled | underlined
+
+            disabled: false,
+            readOnly: false,
+            visible: true,
+
+            itemTemplate: null,  // function(itemData, itemIndex, itemElement)
+            dropDownOptions: {}, // { width, height }
+
+            onValueChanged: null,
+            onSelectionChanged: null,
+            onOpened: null,
+            onClosed: null,
+            onOptionChanged: null,
+            onInitialized: null,
+            onContentReady: null,
+            onDisposing: null
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+            var self = this;
+
+            cfg.items = (cfg.items && cfg.items.length) ? cfg.items : (cfg.dataSource || []);
+
+            this.$container
+                .addClass("qpx-lookup")
+                .addClass("qpx-lookup-mode-" + cfg.stylingMode)
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-state-readonly", !!cfg.readOnly)
+                .attr("role", "button")
+                .attr("aria-expanded", "false");
+
+            if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
+            if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
+            if (cfg.onValueChanged) { this.on("valueChanged", cfg.onValueChanged); }
+            if (cfg.onSelectionChanged) { this.on("selectionChanged", cfg.onSelectionChanged); }
+            if (cfg.onOpened) { this.on("opened", cfg.onOpened); }
+            if (cfg.onClosed) { this.on("closed", cfg.onClosed); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+            if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
+
+            this._isOpen = false;
+            this._searchText = "";
+            this._highlightIndex = -1;
+            this._pendingValue = cfg.value; // rozpracovaný výběr v režimu "useButtons"
+
+            this._buildDom();
+            this._bindEvents();
+
+            setTimeout(function () { self.trigger("contentReady", { component: self }); }, 0);
+        },
+
+        // ---------------------------------------------------------------
+        // DOM — pole v řádku stránky
+        // ---------------------------------------------------------------
+        _buildDom: function () {
+            var cfg = this.config;
+            this.$container.empty();
+
+            this.$input = $("<input type='text' class='qpx-lookup-input' readonly autocomplete='off'>")
+                .prop("disabled", !!cfg.disabled);
+
+            this.$clearBtn = $("<span class='qpx-lookup-clear' tabindex='-1' title='Vymazat výběr'>✕</span>").hide();
+            this.$arrow = $("<span class='qpx-lookup-arrow'>▾</span>");
+
+            this.$container.append(this.$input, this.$clearBtn, this.$arrow);
+
+            this._buildPopup();
+            this._renderField();
+        },
+
+        // DOM — vystředěný popup (overlay + hlavička s titulkem/hledáním + seznam + patička)
+        _buildPopup: function () {
+            var cfg = this.config;
+
+            this.$overlay = $("<div class='qpx-lookup-overlay'></div>").appendTo(document.body).hide();
+            this.$popup = $("<div class='qpx-popup-surface qpx-lookup-popup'></div>").appendTo(this.$overlay);
+
+            if (cfg.dropDownOptions && cfg.dropDownOptions.width) { this.$popup.css("width", qpx.toPx(cfg.dropDownOptions.width)); }
+            if (cfg.dropDownOptions && cfg.dropDownOptions.height) { this.$popup.css("height", qpx.toPx(cfg.dropDownOptions.height)); }
+
+            this.$header = $("<div class='qpx-lookup-header'></div>");
+            this.$title = $("<div class='qpx-lookup-title'></div>").text(cfg.title);
+            this.$closeIcon = $("<span class='qpx-lookup-close' title='Zavřít'>✕</span>");
+            this.$header.append(this.$title, this.$closeIcon);
+
+            this.$searchWrap = $("<div class='qpx-lookup-search-wrap'></div>");
+            this.$searchInput = $("<input type='text' class='qpx-lookup-search' autocomplete='off'>")
+                .attr("placeholder", cfg.searchPlaceholder);
+            this.$searchWrap.append(this.$searchInput);
+
+            this.$list = $("<div class='qpx-lookup-list'></div>");
+
+            this.$footer = $("<div class='qpx-lookup-footer'></div>");
+            this.$cancelBtn = $("<button type='button' class='qpx-lookup-btn qpx-lookup-btn-cancel'></button>").text(cfg.cancelText);
+            this.$doneBtn = $("<button type='button' class='qpx-lookup-btn qpx-lookup-btn-done'></button>").text(cfg.doneText);
+            this.$footer.append(this.$cancelBtn, this.$doneBtn);
+
+            this.$popup.append(this.$header, this.$searchWrap, this.$list, this.$footer);
+
+            this.$searchWrap.toggle(!!cfg.searchEnabled);
+            this.$footer.toggle(cfg.applyValueMode === "useButtons");
+        },
+
+        _bindEvents: function () {
+            var self = this;
+            var cfg = this.config;
+
+            this.$container.on("click.qpxLookup", function (e) {
+                if (cfg.disabled || cfg.readOnly) { return; }
+                if ($(e.target).closest(".qpx-lookup-clear").length) { return; }
+                self.open();
+            });
+
+            this.$clearBtn.on("click.qpxLookup", function (e) {
+                e.stopPropagation();
+                if (cfg.disabled || cfg.readOnly) { return; }
+                self.option("value", null);
+            });
+
+            var searchTimer = null;
+            this.$searchInput.on("input.qpxLookup", function () {
+                var val = this.value;
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(function () {
+                    self._searchText = (val.length >= (cfg.minSearchLength || 0)) ? val : "";
+                    self._highlightIndex = -1;
+                    self._renderList();
+                }, cfg.searchTimeout);
+            });
+
+            this.$searchInput.on("keydown.qpxLookup", function (e) {
+                if (e.key === "Escape") { self.close(); }
+            });
+
+            this.$closeIcon.on("click.qpxLookup", function () { self.close(); });
+
+            this.$overlay.on("mousedown.qpxLookup", function (e) {
+                if ($(e.target).is(self.$overlay)) { self.close(); }
+            });
+
+            this.$cancelBtn.on("click.qpxLookup", function () {
+                self._pendingValue = self.config.value;
+                self.close();
+            });
+
+            this.$doneBtn.on("click.qpxLookup", function () {
+                self.option("value", self._pendingValue);
+                self.close();
+            });
+
+            $(document).on("keydown.qpxLookup" + this.id, function (e) {
+                if (self._isOpen && e.key === "Escape") { self.close(); }
+            });
+        },
+
+        _renderField: function () {
+            var cfg = this.config;
+            var item = this._itemForValue(cfg.value);
+            var text = (cfg.value !== null && cfg.value !== undefined)
+                ? (item !== undefined ? this._displayOf(item) : String(cfg.value))
+                : "";
+
+            this.$input.val(text).attr("placeholder", cfg.placeholder);
+            this.$clearBtn.toggle(!!cfg.showClearButton && cfg.value !== null && cfg.value !== undefined && !cfg.disabled && !cfg.readOnly);
+        },
+
+        // ---------------------------------------------------------------
+        // Seznam položek v popupu
+        // ---------------------------------------------------------------
+        _renderList: function () {
+            var self = this;
+            var cfg = this.config;
+            this.$list.empty();
+
+            var items = this._filteredItems();
+            var activeValue = (cfg.applyValueMode === "useButtons") ? this._pendingValue : cfg.value;
+
+            if (!items.length) {
+                this.$list.append($("<div class='qpx-lookup-nodata'></div>").text(cfg.noDataText));
+                return;
+            }
+
+            items.forEach(function (item, idx) {
+                var val = self._valueOf(item);
+                var selected = val === activeValue;
+
+                var $row = $("<div class='qpx-popup-list-item qpx-lookup-item'></div>")
+                    .toggleClass("qpx-state-selected", selected)
+                    .toggleClass("qpx-state-highlighted", idx === self._highlightIndex);
+
+                if (qpx.isFunction(cfg.itemTemplate)) {
+                    var res = cfg.itemTemplate.call(self, item, idx, $row[0]);
+                    if (res !== undefined && res !== null) { $row.append(res); }
+                } else {
+                    $row.append($("<span class='qpx-lookup-item-text'></span>").text(self._displayOf(item)));
+                }
+
+                $row.on("click.qpxLookup", function () { self._chooseItem(item); });
+
+                self.$list.append($row);
+            });
+        },
+
+        _filteredItems: function () {
+            var self = this;
+            var cfg = this.config;
+            var text = (this._searchText || "").toLowerCase();
+
+            return (cfg.items || []).filter(function (item) {
+                if (!text) { return true; }
+                return self._displayOf(item).toLowerCase().indexOf(text) !== -1;
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Práce s hodnotou
+        // ---------------------------------------------------------------
+        _valueOf: function (item) {
+            if (this.config.valueExpr && this.config.valueExpr !== "this") {
+                return qpx.resolve(item, this.config.valueExpr);
+            }
+            return item;
+        },
+
+        _displayOf: function (item) {
+            if (this.config.displayExpr) {
+                var v = qpx.resolve(item, this.config.displayExpr);
+                return (v === undefined || v === null) ? "" : String(v);
+            }
+            if (qpx.isObject(item)) { return item.text !== undefined ? String(item.text) : JSON.stringify(item); }
+            return String(item);
+        },
+
+        _itemForValue: function (val) {
+            var self = this;
+            return (this.config.items || []).filter(function (it) { return self._valueOf(it) === val; })[0];
+        },
+
+        _chooseItem: function (item) {
+            var val = this._valueOf(item);
+            var cfg = this.config;
+
+            if (cfg.applyValueMode === "useButtons") {
+                this._pendingValue = val;
+                this.trigger("selectionChanged", { selectedItem: item, component: this });
+                this._renderList();
+            } else {
+                this.option("value", val);
+                this.trigger("selectionChanged", { selectedItem: item, component: this });
+                this.close();
+            }
+        },
+
+        // ---------------------------------------------------------------
+        // Popup otevřít/zavřít
+        // ---------------------------------------------------------------
+        open: function () {
+            if (this.config.disabled || this.config.readOnly || this._isOpen) { return this; }
+            if (openInstance && openInstance !== this) { openInstance.close(); }
+
+            this._pendingValue = this.config.value;
+            this._searchText = "";
+            this.$searchInput.val("");
+            this._renderList();
+
+            this.$overlay.show();
+            this._isOpen = true;
+            this.$container.attr("aria-expanded", "true");
+            openInstance = this;
+
+            if (this.config.searchEnabled) { this.$searchInput.trigger("focus"); }
+
+            this.trigger("opened", { component: this });
+            return this;
+        },
+
+        close: function () {
+            if (!this._isOpen) { return this; }
+            this.$overlay.hide();
+            this._isOpen = false;
+            this._highlightIndex = -1;
+            this.$container.attr("aria-expanded", "false");
+            if (openInstance === this) { openInstance = null; }
+            this.trigger("closed", { component: this });
+            return this;
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        value: function (val) {
+            if (arguments.length === 0) { return this.config.value; }
+            return this.option("value", val);
+        },
+
+        getSelectedItem: function () { return this._itemForValue(this.config.value); },
+        getDataSource: function () { return this.config.items; },
+        reset: function () { return this.option("value", null); },
+        focus: function () { this.$input.trigger("focus"); return this; },
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "value":
+                    this._pendingValue = value;
+                    this._renderField();
+                    this.trigger("valueChanged", { value: value, previousValue: prev, component: this, element: this.getNode() });
+                    break;
+
+                case "items":
+                case "dataSource":
+                    this.config.items = value || [];
+                    this._renderField();
+                    if (this._isOpen) { this._renderList(); }
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    this.$input.prop("disabled", !!value);
+                    if (value) { this.close(); }
+                    this._renderField();
+                    break;
+
+                case "readOnly":
+                    this.$container.toggleClass("qpx-state-readonly", !!value);
+                    if (value) { this.close(); }
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "stylingMode":
+                    this.$container.removeClass("qpx-lookup-mode-" + prev).addClass("qpx-lookup-mode-" + value);
+                    break;
+
+                case "placeholder":
+                case "showClearButton":
+                    this._renderField();
+                    break;
+
+                case "title":
+                    this.$title.text(value);
+                    break;
+
+                case "searchEnabled":
+                    this.$searchWrap.toggle(!!value);
+                    break;
+
+                case "searchPlaceholder":
+                    this.$searchInput.attr("placeholder", value);
+                    break;
+
+                case "applyValueMode":
+                    this.$footer.toggle(value === "useButtons");
+                    break;
+
+                case "cancelText":
+                    this.$cancelBtn.text(value);
+                    break;
+
+                case "doneText":
+                    this.$doneBtn.text(value);
+                    break;
+
+                case "noDataText":
+                    if (this._isOpen) { this._renderList(); }
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        destroy: function () {
+            this.$container.off(".qpxLookup");
+            $(document).off(".qpxLookup" + this.id);
+            if (this.$overlay) { this.$overlay.remove(); }
+            if (openInstance === this) { openInstance = null; }
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpLookup", Lookup);
+    qpx.qpLookup = Lookup;
+
+})(window.qpx, jQuery);
+
+/*!
  * qpx - qpToolBar (refactored)
  * Panel nástrojů koncipovaný stejně jako DevExtreme dxToolBar:
  *  - items rozdělené do "before" / "center" / "after"
