@@ -1313,6 +1313,320 @@
   cursor: default;
 }
 
+.qpx-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  color: var(--qpx-text, #333);
+  font-size: 13px;
+}
+.qpx-checkbox.qpx-hidden {
+  display: none;
+}
+.qpx-checkbox.qpx-checkbox-hoverable:hover .qpx-checkbox-icon {
+  border-color: var(--qpx-accent, #337ab7);
+}
+.qpx-checkbox {
+  outline: none;
+}
+.qpx-checkbox:focus-visible {
+  box-shadow: 0 0 0 2px var(--qpx-accent, #337ab7) inset;
+}
+.qpx-checkbox:focus-visible .qpx-checkbox-icon {
+  box-shadow: 0 0 0 2px var(--qpx-accent, #337ab7);
+}
+
+.qpx-checkbox-icon {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--qpx-border, #ccc);
+  border-radius: 3px;
+  background: var(--qpx-bg, #fff);
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.qpx-checkbox-mark {
+  position: relative;
+  display: block;
+  width: 62%;
+  height: 62%;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.qpx-checkbox-mark::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  top: 38%;
+  width: 60%;
+  height: 30%;
+  border-left: 2px solid var(--qpx-accent-contrast, #fff);
+  border-bottom: 2px solid var(--qpx-accent-contrast, #fff);
+  transform: rotate(-45deg);
+  transform-origin: left bottom;
+}
+
+.qpx-checkbox-text {
+  line-height: 1.2;
+}
+
+.qpx-checkbox.qpx-state-checked .qpx-checkbox-icon {
+  background: var(--qpx-accent, #337ab7);
+  border-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-checkbox.qpx-state-checked .qpx-checkbox-mark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.qpx-checkbox.qpx-state-indeterminate .qpx-checkbox-icon {
+  background: var(--qpx-accent, #337ab7);
+  border-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-checkbox.qpx-state-indeterminate .qpx-checkbox-mark {
+  opacity: 1;
+  transform: scale(1);
+}
+.qpx-checkbox.qpx-state-indeterminate .qpx-checkbox-mark::before {
+  border-left: none;
+  border-bottom: 2px solid var(--qpx-accent-contrast, #fff);
+  left: 18%;
+  top: 44%;
+  width: 64%;
+  height: 0;
+  transform: none;
+}
+
+.qpx-checkbox.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.qpx-checkbox.qpx-state-readonly {
+  cursor: default;
+}
+
+.qpx-numberbox {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-height: 34px;
+  font-size: 13px;
+  border-radius: 4px;
+  background: var(--qpx-bg, #fff);
+  color: var(--qpx-text, #333);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  outline: none;
+}
+.qpx-numberbox.qpx-hidden {
+  display: none;
+}
+.qpx-numberbox:focus-within {
+  box-shadow: 0 0 0 2px var(--qpx-accent, #337ab7) inset;
+}
+.qpx-numberbox.qpx-numberbox-mode-outlined {
+  border: 1px solid var(--qpx-border, #ccc);
+}
+.qpx-numberbox.qpx-numberbox-mode-outlined:hover {
+  border-color: var(--qpx-accent, #337ab7);
+}
+.qpx-numberbox.qpx-numberbox-mode-filled {
+  border: 1px solid transparent;
+  background: var(--qpx-surface, #f0f0f0);
+}
+.qpx-numberbox.qpx-numberbox-mode-filled:hover {
+  background: var(--qpx-hover, #e6e6e6);
+}
+.qpx-numberbox.qpx-numberbox-mode-filled .qpx-numberbox-spins {
+  border-left-color: var(--qpx-border, #ccc);
+}
+.qpx-numberbox.qpx-numberbox-mode-underlined {
+  border: none;
+  border-bottom: 1px solid var(--qpx-border, #ccc);
+  border-radius: 0;
+  background: transparent;
+}
+.qpx-numberbox.qpx-numberbox-mode-underlined:hover {
+  border-bottom-color: var(--qpx-accent, #337ab7);
+}
+.qpx-numberbox.qpx-numberbox-mode-underlined .qpx-numberbox-spins {
+  border-left-color: transparent;
+}
+
+.qpx-numberbox-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 4px 6px;
+}
+.qpx-numberbox-input::placeholder {
+  color: var(--qpx-text-muted, #767676);
+}
+.qpx-numberbox-input[readonly] {
+  cursor: default;
+}
+
+.qpx-numberbox-clear {
+  flex: 0 0 auto;
+  align-self: center;
+  cursor: pointer;
+  color: var(--qpx-text-muted, #767676);
+  line-height: 1;
+  padding: 2px 4px;
+  user-select: none;
+}
+.qpx-numberbox-clear:hover {
+  color: var(--qpx-text, #333);
+}
+
+.qpx-numberbox-spins {
+  display: none;
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: 20px;
+  border-left: 1px solid var(--qpx-border, #ccc);
+}
+
+.qpx-numberbox.qpx-numberbox-spins-visible .qpx-numberbox-spins {
+  display: flex;
+}
+
+.qpx-numberbox-spin {
+  flex: 1 1 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 9px;
+  line-height: 1;
+  color: var(--qpx-text-muted, #767676);
+  user-select: none;
+}
+.qpx-numberbox-spin:hover {
+  color: var(--qpx-text, #333);
+  background: var(--qpx-hover, #eceff1);
+}
+
+.qpx-numberbox-spin-up {
+  border-bottom: 1px solid var(--qpx-border, #ccc);
+  border-top-right-radius: 4px;
+}
+
+.qpx-numberbox-spin-down {
+  border-bottom-right-radius: 4px;
+}
+
+.qpx-numberbox.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.qpx-numberbox.qpx-state-readonly .qpx-numberbox-input {
+  cursor: default;
+}
+.qpx-numberbox.qpx-state-readonly .qpx-numberbox-spins {
+  display: none;
+}
+
+.qpx-textbox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 4px 6px;
+  font-size: 13px;
+  border-radius: 4px;
+  background: var(--qpx-bg, #fff);
+  color: var(--qpx-text, #333);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  outline: none;
+}
+.qpx-textbox.qpx-hidden {
+  display: none;
+}
+.qpx-textbox:focus-within {
+  box-shadow: 0 0 0 2px var(--qpx-accent, #337ab7) inset;
+}
+.qpx-textbox.qpx-textbox-mode-outlined {
+  border: 1px solid var(--qpx-border, #ccc);
+}
+.qpx-textbox.qpx-textbox-mode-outlined:hover {
+  border-color: var(--qpx-accent, #337ab7);
+}
+.qpx-textbox.qpx-textbox-mode-filled {
+  border: 1px solid transparent;
+  background: var(--qpx-surface, #f0f0f0);
+}
+.qpx-textbox.qpx-textbox-mode-filled:hover {
+  background: var(--qpx-hover, #e6e6e6);
+}
+.qpx-textbox.qpx-textbox-mode-underlined {
+  border: none;
+  border-bottom: 1px solid var(--qpx-border, #ccc);
+  border-radius: 0;
+  background: transparent;
+}
+.qpx-textbox.qpx-textbox-mode-underlined:hover {
+  border-bottom-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-textbox-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 2px 2px;
+}
+.qpx-textbox-input::placeholder {
+  color: var(--qpx-text-muted, #767676);
+}
+.qpx-textbox-input[readonly] {
+  cursor: default;
+}
+
+.qpx-textbox-clear {
+  flex: 0 0 auto;
+  cursor: pointer;
+  color: var(--qpx-text-muted, #767676);
+  line-height: 1;
+  padding: 2px 4px;
+  user-select: none;
+}
+.qpx-textbox-clear:hover {
+  color: var(--qpx-text, #333);
+}
+
+.qpx-textbox.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.qpx-textbox.qpx-state-readonly .qpx-textbox-input {
+  cursor: default;
+}
+
 .qpx-toolbar {
   display: flex;
   align-items: center;
