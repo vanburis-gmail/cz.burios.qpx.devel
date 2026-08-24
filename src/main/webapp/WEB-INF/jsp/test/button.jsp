@@ -12,6 +12,7 @@ System.out.println("/devel/button.jsp");
 		<title>${appTitle}</title>
 		
 		<link rel="icon" href="/devel/favicon.png">
+		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 
 		<style type="text/css">
@@ -22,43 +23,61 @@ System.out.println("/devel/button.jsp");
 			.row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
 			.log { margin-top:10px; padding:8px 12px; background:#1e1e1e; color:#9cdcfe; font-family:monospace; font-size:12px; min-height:20px; border-radius:4px; }
 			code.inline { background:#eef1f4; padding:1px 5px; border-radius:3px; }
+			main { padding: 8px 24px 60px; max-width: 760px; }
+			.qpx-back-home {
+				font-size: 20px;
+				text-decoration: none;
+				padding: 6px 10px;
+			}
+			.qpx-back-home:hover {
+				background: #fff;
+				color: #000;
+			}		
 		</style>
-
+	
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
 	</head>
-	<body data-theme="light">
-
-		<h1>qpx.Button — testovací stránka</h1>
-
-		<!-- ============================================================ -->
-		<h2>1) Základní varianty (type / stylingMode)</h2>
-		<section>
-			<div id="basicRow" class="row"></div>
-			<div id="log1" class="log">Klikni na tlačítko...</div>
-		</section>
-
-		<!-- ============================================================ -->
-		<h2>2) Ikona, hint, disabled/enabled přepínání</h2>
-		<section>
-			<div id="iconRow" class="row"></div>
-			<div class="row">
-				<button id="toggleDisabled" type="button">option("disabled", !disabled)</button>
-				<button id="toggleText" type="button">option("text", ...)</button>
-			</div>
-		</section>
-
-		<!-- ============================================================ -->
-		<h2>3) Vlastní <code class="inline">template</code></h2>
-		<section>
-			<div id="templateRow" class="row"></div>
-		</section>
-
-		<!-- ============================================================ -->
-		<h2>4) Deklarativně přes data-qpx-* atributy</h2>
-		<section>
-			<div data-qpx-view="button" data-qpx-text="Deklarativní tlačítko" data-qpx-type="default"></div>
-		</section>
+	<body class="qpx-view">
+		<!-- návratová ikona vlevo nahoře -->
+		<div style="height: 36px; position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid &dedede;">
+			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
+				<span class="fa fa-home"></span>
+			</a>
+		</div>
+		<div style="min-height: 320px; position: absolute; top: 36px; left: 0; right: 0; border: 0; border: 0px solid red;">
+			<h1>qpx.Button - testovací stránka</h1>
+			<main>
+				<!-- ============================================================ -->
+				<h2>1) Základní varianty (type / stylingMode)</h2>
+				<section>
+					<div id="basicRow" class="row"></div>
+					<div id="log1" class="log">Klikni na tlačítko...</div>
+				</section>
+		
+				<!-- ============================================================ -->
+				<h2>2) Ikona, hint, disabled/enabled přepínání</h2>
+				<section>
+					<div id="iconRow" class="row"></div>
+					<div class="row">
+						<button id="toggleDisabled" type="button">option("disabled", !disabled)</button>
+						<button id="toggleText" type="button">option("text", ...)</button>
+					</div>
+				</section>
+		
+				<!-- ============================================================ -->
+				<h2>3) Vlastní <code class="inline">template</code></h2>
+				<section>
+					<div id="templateRow" class="row"></div>
+				</section>
+		
+				<!-- ============================================================ -->
+				<h2>4) Deklarativně přes data-qpx-* atributy</h2>
+				<section>
+					<div data-qpx-view="button" data-qpx-text="Deklarativní tlačítko" data-qpx-type="default"></div>
+				</section>
+			</main>
+		</div>
 
 		<script>
 		$(function () {

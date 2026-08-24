@@ -34,7 +34,7 @@
 .qpx-view a {
   color: var(--qpx-accent, #337ab7);
 }
-.qpx-view button, .qpx-view input, .qpx-view select, .qpx-view textarea {
+.qpx-view button, .qpx-view input, .qpx-view select, .qpx-view textarea, .qpx-view optgroup {
   font: inherit;
   color: inherit;
   margin: 0;
@@ -52,6 +52,122 @@
 }
 .qpx-view .qpx-popup-list, .qpx-view .qpx-toolbar-menu {
   list-style: none;
+}
+
+.qpx-view main {
+  display: block;
+}
+.qpx-view hr {
+  height: 0;
+  overflow: visible;
+}
+.qpx-view pre {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+.qpx-view a {
+  background-color: transparent;
+}
+.qpx-view abbr[title] {
+  border-bottom: none;
+  text-decoration: underline;
+  text-decoration: underline dotted;
+}
+.qpx-view b, .qpx-view strong {
+  font-weight: bolder;
+}
+.qpx-view code, .qpx-view kbd, .qpx-view samp {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+.qpx-view small {
+  font-size: 80%;
+}
+.qpx-view sub, .qpx-view sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+.qpx-view sub {
+  bottom: -0.25em;
+}
+.qpx-view sup {
+  top: -0.5em;
+}
+.qpx-view img {
+  border-style: none;
+}
+.qpx-view button, .qpx-view input {
+  overflow: visible;
+}
+.qpx-view button, .qpx-view select {
+  text-transform: none;
+}
+.qpx-view button,
+.qpx-view [type=button],
+.qpx-view [type=reset],
+.qpx-view [type=submit] {
+  -webkit-appearance: button;
+}
+.qpx-view button::-moz-focus-inner,
+.qpx-view [type=button]::-moz-focus-inner,
+.qpx-view [type=reset]::-moz-focus-inner,
+.qpx-view [type=submit]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+.qpx-view button:-moz-focusring,
+.qpx-view [type=button]:-moz-focusring,
+.qpx-view [type=reset]:-moz-focusring,
+.qpx-view [type=submit]:-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+.qpx-view fieldset {
+  padding: 0.35em 0.75em 0.625em;
+}
+.qpx-view legend {
+  color: inherit;
+  display: table;
+  max-width: 100%;
+  padding: 0;
+  white-space: normal;
+}
+.qpx-view progress {
+  vertical-align: baseline;
+}
+.qpx-view textarea {
+  overflow: auto;
+}
+.qpx-view [type=checkbox], .qpx-view [type=radio] {
+  padding: 0;
+}
+.qpx-view [type=number]::-webkit-inner-spin-button,
+.qpx-view [type=number]::-webkit-outer-spin-button {
+  height: auto;
+}
+.qpx-view [type=search] {
+  -webkit-appearance: textfield;
+  outline-offset: -2px;
+}
+.qpx-view [type=search]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+.qpx-view ::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
+}
+.qpx-view details {
+  display: block;
+}
+.qpx-view summary {
+  display: list-item;
+}
+.qpx-view template {
+  display: none;
+}
+.qpx-view [hidden] {
+  display: none;
 }
 
 .qpx-hidden {

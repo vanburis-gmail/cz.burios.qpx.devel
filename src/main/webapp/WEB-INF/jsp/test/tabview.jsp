@@ -8,15 +8,10 @@
 		<title>${appTitle}</title>
 
 		<link rel="icon" href="/devel/favicon.png">
+		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 
 		<style>
-			html, body {
-				margin: 0;
-				font-family: "Segoe UI", Roboto, Arial, sans-serif;
-				background: #f4f5f7;
-				color: #222;
-			}
 			body.qpx-page-dark { background: #1b1b1b; color: #eee; }
 			
 			.qpx-testbar {
@@ -69,65 +64,80 @@
 			.qpx-icon-home { -webkit-mask: radial-gradient(circle, #000 60%, transparent 61%); mask: radial-gradient(circle, #000 60%, transparent 61%); }
 			.qpx-icon-user { border-radius: 50%; }
 			.qpx-icon-settings { border-radius: 3px; transform: rotate(20deg); }
+			.qpx-back-home {
+				font-size: 20px;
+				text-decoration: none;
+				padding: 6px 10px;
+			}
+			.qpx-back-home:hover {
+				background: #fff;
+				color: #000;
+			}		
 		</style>
+	
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
-		
 	</head>
-	<body>
-
-		<div class="qpx-testbar">
+	<body class="qpx-view">
+		<!-- návratová ikona vlevo nahoře -->
+		<div style="height: 36px; position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid &dedede;">
+			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
+				<span class="fa fa-home"></span>
+			</a>
+		</div>
+		<div style="min-height: 320px; position: absolute; top: 36px; left: 0; right: 0; border: 0; border: 0px solid red;">
 			<strong>QPX qpTabView – test</strong>
-		
-			<label>Téma:
-				<select id="ctlTheme">
-					<option value="qpx-theme-generic-light">generic-light</option>
-					<option value="qpx-theme-generic-dark">generic-dark</option>
-				</select>
-			</label>
-		
-			<label>Styling:
-				<select id="ctlStyling">
-					<option value="primary">primary (podtržení)</option>
-					<option value="secondary">secondary (pilulky)</option>
-				</select>
-			</label>
-		
-			<label>Pozice záložek:
-				<select id="ctlPosition">
-					<option value="top">top</option>
-					<option value="bottom">bottom</option>
-					<option value="left">left</option>
-					<option value="right">right</option>
-				</select>
-			</label>
-		
-			<label><input type="checkbox" id="ctlRtl"> RTL</label>
-			<label><input type="checkbox" id="ctlDisabled"> disabled</label>
-			<label><input type="checkbox" id="ctlNavButtons" checked> nav tlačítka</label>
+			<div class="qpx-testbar">
+				<label>Téma:
+					<select id="ctlTheme">
+						<option value="qpx-theme-generic-light">generic-light</option>
+						<option value="qpx-theme-generic-dark">generic-dark</option>
+					</select>
+				</label>
 			
-			<button id="ctlAddTab" type="button">+ přidat záložku</button>
-		</div>
-
-		<div class="qpx-demo-wrap">
-
-		<h2>1) Hlavní demo (ovládané přepínačem nahoře)</h2>
-		<div id="tabviewMain"></div>
+				<label>Styling:
+					<select id="ctlStyling">
+						<option value="primary">primary (podtržení)</option>
+						<option value="secondary">secondary (pilulky)</option>
+					</select>
+				</label>
+			
+				<label>Pozice záložek:
+					<select id="ctlPosition">
+						<option value="top">top</option>
+						<option value="bottom">bottom</option>
+						<option value="left">left</option>
+						<option value="right">right</option>
+					</select>
+				</label>
+			
+				<label><input type="checkbox" id="ctlRtl"> RTL</label>
+				<label><input type="checkbox" id="ctlDisabled"> disabled</label>
+				<label><input type="checkbox" id="ctlNavButtons" checked> nav tlačítka</label>
+				
+				<button id="ctlAddTab" type="button">+ přidat záložku</button>
+			</div>
+	
+			<div class="qpx-demo-wrap">
+	
+				<h2>1) Hlavní demo (ovládané přepínačem nahoře)</h2>
+				<div id="tabviewMain"></div>
+				
+				<h2>2) Deklarativně přes data-qpx-* atributy</h2>
+				<div data-qpx-view="qpTabView"
+					data-qpx-tabs-position="top"
+					data-qpx-styling-mode="secondary"
+					data-qpx-items='[
+						{"title":"Přehled","text":"Deklarativně inicializovaná záložka č. 1."},
+						{"title":"Detail","text":"Deklarativně inicializovaná záložka č. 2."},
+						{"title":"Historie","text":"Deklarativně inicializovaná záložka č. 3.","disabled":true}
+					]'>
+				</div>
 		
-		<h2>2) Deklarativně přes data-qpx-* atributy</h2>
-		<div data-qpx-view="qpTabView"
-			data-qpx-tabs-position="top"
-			data-qpx-styling-mode="secondary"
-			data-qpx-items='[
-				{"title":"Přehled","text":"Deklarativně inicializovaná záložka č. 1."},
-				{"title":"Detail","text":"Deklarativně inicializovaná záložka č. 2."},
-				{"title":"Historie","text":"Deklarativně inicializovaná záložka č. 3.","disabled":true}
-			]'>
+				<h2>3) Vnořené qpx widgety v panelu (rows/cols layout)</h2>
+				<div id="tabviewNested"></div>
+			</div>	
 		</div>
-
-		<h2>3) Vnořené qpx widgety v panelu (rows/cols layout)</h2>
-		<div id="tabviewNested"></div>
-	</div>	
 
 		<script>
 		$(function () {

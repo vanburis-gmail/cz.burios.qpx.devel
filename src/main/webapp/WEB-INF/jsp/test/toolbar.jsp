@@ -12,46 +12,70 @@ System.out.println("/devel/toolbar.jsp");
 		<title>${appTitle}</title>
 
 		<link rel="icon" href="/devel/favicon.png">
+		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 
 		<style type="text/css">
-			html, body { font-family: "Segoe UI", Arial, sans-serif; font-size: 12px; margin: 0; background:#f4f6f8; color:#222; }
-			h1 { font-size: 20px; padding: 16px 20px 4px; }
+			header.page-head { padding: 18px 24px 6px; }
+			h1 { font-size: 18px; margin: 0 0 4px; }
+			.subtitle { color: #767676; font-size: 12px; margin: 0; }
 			h2 { font-size: 15px; margin: 24px 20px 8px; color:#555; }
-			section { margin: 0 20px 20px; background:#fff; border:1px solid #e2e6ea; border-radius:6px; overflow:hidden; }
+			main { padding: 8px 24px 60px; max-width: 1200px; }
+			section { margin: 0 0 20px; background:#fff; border:1px solid #e2e6ea; border-radius:6px; overflow:hidden; }
 			.log { margin:0 16px 16px; padding:8px 12px; background:#1e1e1e; color:#9cdcfe; font-family:monospace; font-size:12px; min-height:20px; border-radius:4px; }
+			
+			.qpx-back-home {
+				font-size: 20px;
+				text-decoration: none;
+				padding: 6px 10px;
+			}
+			.qpx-back-home:hover {
+				background: #fff;
+				color: #000;
+			}		
 		</style>
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
 	</head>
-	<body data-theme="light">
-
-		<h1>QPX qpToolBar — testovací stránka</h1>
-
-		<!-- ============================================================ -->
-		<h2>qpToolBar s položkami všech typů, responzivní přetečení do menu</h2>
-		<section style="padding:0;">
-			<div style="padding:10px 16px 0;">
-				<label><input type="checkbox" id="themeToggle"> tmavé téma (generic-dark)</label>
-				&nbsp;·&nbsp;
-				<label><input type="checkbox" id="disabledToggle"> disabled</label>
-				&nbsp;·&nbsp;
-				<label>šířka panelu: <input type="range" id="toolbarWidth" min="260" max="900" value="900" style="vertical-align:middle;"></label>
-				<span style="color:#888; font-size:12px;">(zužte panel a sledujte přesun položek do menu „⋮“)</span>
-			</div>
-			<div id="toolbarWrap" style="width:900px; max-width:100%; margin:10px 16px 16px; border:1px solid #dfe3e8;">
-				<div id="app0"></div>
-			</div>
-			<div id="toolbarLog" class="log">Klikni na položky toolbaru — události se vypíší sem...</div>
-		</section>
-
-		<!-- ============================================================ -->
-		<h2>API — getItemWidget() / repaint() / layoutChanged</h2>
-		<section style="padding:16px;">
-			<button id="btnGetWidget" type="button">getItemWidget(2).option("text", "Změněno")</button>
-			<div id="apiLog" class="log" style="margin:10px 0 0;">...</div>
-		</section>
+	<body class="qpx-view">
+		<!-- návratová ikona vlevo nahoře -->
+		<div style="height: 36px; position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid &dedede;">
+			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
+				<span class="fa fa-home"></span>
+			</a>
+		</div>
+		<div style="min-height: 320px; position: absolute; top: 36px; left: 0; right: 0; border: 0; border: 0px solid red;">
+			<header class="page-head">
+				<h1>qpToolBar - testovací stránka</h1>
+				<p class="subtitle">Pole otvírající POPUP s libovolným vlastním obsahem (contentTemplate) — analogie DevExtreme dxDropDownBox. Nespravuje si vlastní seznam, jen rám pole + popup.</p>
+			</header>
+			<main>
+				<!-- ============================================================ -->
+				<h2>qpToolBar s položkami všech typů, responzivní přetečení do menu</h2>
+				<section style="padding:0;">
+					<div style="padding:10px 16px 0;">
+						<label><input type="checkbox" id="themeToggle"> tmavé téma (generic-dark)</label>
+						&nbsp;·&nbsp;
+						<label><input type="checkbox" id="disabledToggle"> disabled</label>
+						&nbsp;·&nbsp;
+						<label>šířka panelu: <input type="range" id="toolbarWidth" min="260" max="900" value="900" style="vertical-align:middle;"></label>
+						<span style="color:#888; font-size:12px;">(zužte panel a sledujte přesun položek do menu „⋮“)</span>
+					</div>
+					<div id="toolbarWrap" style="width:900px; max-width:100%; margin:10px 16px 16px; border:1px solid #dfe3e8;">
+						<div id="app0"></div>
+					</div>
+					<div id="toolbarLog" class="log">Klikni na položky toolbaru — události se vypíší sem...</div>
+				</section>
+		
+				<!-- ============================================================ -->
+				<h2>API — getItemWidget() / repaint() / layoutChanged</h2>
+				<section style="padding:16px;">
+					<button id="btnGetWidget" type="button">getItemWidget(2).option("text", "Změněno")</button>
+					<div id="apiLog" class="log" style="margin:10px 0 0;">...</div>
+				</section>
+			</main>
+		</div>
 
 		<script>
 		$(function () {
