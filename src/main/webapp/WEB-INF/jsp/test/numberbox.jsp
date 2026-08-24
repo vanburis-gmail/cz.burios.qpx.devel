@@ -16,16 +16,16 @@
 			header.page-head { padding: 18px 24px 6px; }
 			h1 { font-size: 18px; margin: 0 0 4px; }
 			.subtitle { color: #767676; font-size: 12px; margin: 0; }
-			
+
 			.toolbar-wrap { margin: 12px 24px 4px; }
-			
+
 			main { padding: 8px 24px 60px; max-width: 760px; }
-			
+
 			.demo-block { margin: 26px 0; }
 			.demo-block h2 { font-size: 14px; margin: 0 0 4px; }
 			.demo-block .desc { font-size: 12px; color: #767676; margin: 0 0 10px; }
 			body.qpx-page-dark .demo-block .desc { color: #a3a3a3; }
-			
+
 			.value-out {
 				margin-top: 8px;
 				font-family: monospace;
@@ -48,7 +48,7 @@
 			.qpx-back-home:hover {
 				background: #fff;
 				color: #000;
-			}	
+			}
 		</style>
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
@@ -63,132 +63,119 @@
 		</div>
 		<div style="min-height: 320px; position: absolute; top: 36px; left: 0; right: 0; border: 0; border: 1px solid red;">
 			<header class="page-head">
-				<h1>qpSelectBox – test</h1>
-				<p class="subtitle">Výběr jedné položky z rozbalovacího seznamu — analogie DevExtreme dxSelectBox. Na rozdíl od qpAutocomplete hodnota vždy odpovídá položce ze seznamu.</p>
+				<h1>qpNumberBox – test</h1>
+				<p class="subtitle">Číselné vstupní pole se spin tlačítky — analogie DevExtreme dxNumberBox.</p>
 			</header>
 			<div class="toolbar-wrap">
 				<div id="pageToolbar"></div>
 			</div>
 			<main>
 				<div class="demo-block">
-					<h2>1) Základní použití — dataSource z objektů</h2>
-					<p class="desc">valueExpr: "id", displayExpr: "name", showClearButton.</p>
-					<div id="selectbox1"></div>
+					<h2>1) Základní použití — min/max/step</h2>
+					<p class="desc">min: 0, max: 100, step: 5, showSpinButtons.</p>
+					<div id="numberbox1"></div>
 					<div class="value-out" id="out1"></div>
 				</div>
 				<div class="demo-block">
-					<h2>2) searchEnabled — vyhledávání přímo v poli</h2>
-					<p class="desc">Psaní filtruje nabídku, ale výběr je vždy jen z položek seznamu.</p>
-					<div id="selectbox2"></div>
+					<h2>2) format — 2 desetinná místa</h2>
+					<p class="desc">Hodnota (např. cena) se zobrazuje vždy na 2 desetinná místa.</p>
+					<div id="numberbox2"></div>
 				</div>
 				<div class="demo-block">
-					<h2>3) acceptCustomValue — psaní vlastních položek</h2>
-					<p class="desc">Enter s textem, který v seznamu není, vytvoří novou položku (onCustomItemCreating).</p>
-					<div id="selectbox3"></div>
+					<h2>3) showClearButton, bez spin tlačítek</h2>
+					<p class="desc">showSpinButtons: false, showClearButton: true.</p>
+					<div id="numberbox3"></div>
 				</div>
 				<div class="demo-block">
 					<h2>4) disabled / readOnly</h2>
-					<div id="selectbox4"></div>
+					<div id="numberbox4"></div>
+					<div id="numberbox4b" style="margin-top: 8px;"></div>
 				</div>
 			</main>
 		</div>
 
 		<script>
 		$(function () {
-		    var countries = [
-		        { id: 1, name: "Česko" },
-		        { id: 2, name: "Slovensko" },
-		        { id: 3, name: "Rakousko" },
-		        { id: 4, name: "Německo" },
-		        { id: 5, name: "Polsko" },
-		        { id: 6, name: "Maďarsko" },
-		        { id: 7, name: "Francie" },
-		        { id: 8, name: "Itálie" },
-		        { id: 9, name: "Španělsko" },
-		        { id: 10, name: "Portugalsko" },
-		        { id: 11, name: "Nizozemsko" },
-		        { id: 12, name: "Belgie" }
-		    ];
-		
 		    // -----------------------------------------------------------------
 		    // 1) základní demo
 		    // -----------------------------------------------------------------
-		    var selectbox1 = qpx.ui({
-		        view: "qpSelectBox",
-		        width: 320,
-		        dataSource: countries,
-		        valueExpr: "id",
-		        displayExpr: "name",
-		        value: 1,
-		        placeholder: "Vyberte zemi...",
-		        showClearButton: true,
+		    var numberbox1 = qpx.ui({
+		        view: "qpNumberBox",
+		        width: 220,
+		        value: 25,
+		        min: 0,
+		        max: 100,
+		        step: 5,
+		        showSpinButtons: true,
 		        stylingMode: "outlined",
 		        onValueChanged: function (e) {
 		            $("#out1").text("value: " + JSON.stringify(e.value));
 		        }
-		    }, "#selectbox1");
-		    $("#out1").text("value: " + JSON.stringify(selectbox1.value()));
-		
+		    }, "#numberbox1");
+		    $("#out1").text("value: " + JSON.stringify(numberbox1.value()));
+
 		    // -----------------------------------------------------------------
-		    // 2) searchEnabled
+		    // 2) format s 2 desetinnými místy
 		    // -----------------------------------------------------------------
-		    var selectbox2 = qpx.ui({
-		        view: "qpSelectBox",
-		        width: 320,
-		        dataSource: countries,
-		        valueExpr: "id",
-		        displayExpr: "name",
-		        searchEnabled: true,
+		    var numberbox2 = qpx.ui({
+		        view: "qpNumberBox",
+		        width: 220,
+		        value: 199.9,
+		        min: 0,
+		        format: 2,
+		        step: 0.5,
 		        stylingMode: "filled"
-		    }, "#selectbox2");
-		
+		    }, "#numberbox2");
+
 		    // -----------------------------------------------------------------
-		    // 3) acceptCustomValue
+		    // 3) bez spin tlačítek, s clear tlačítkem
 		    // -----------------------------------------------------------------
-		    var selectbox3 = qpx.ui({
-		        view: "qpSelectBox",
-		        width: 320,
-		        dataSource: ["JavaScript", "TypeScript", "Java", "Python", "Go"],
-		        value: "JavaScript",
-		        searchEnabled: true,
-		        acceptCustomValue: true,
-		        stylingMode: "underlined",
-		        onCustomItemCreating: function (args) {
-		            args.customItem = args.text.trim();
-		        }
-		    }, "#selectbox3");
-		
+		    var numberbox3 = qpx.ui({
+		        view: "qpNumberBox",
+		        width: 220,
+		        value: null,
+		        placeholder: "Zadejte číslo...",
+		        showSpinButtons: false,
+		        showClearButton: true,
+		        stylingMode: "underlined"
+		    }, "#numberbox3");
+
 		    // -----------------------------------------------------------------
 		    // 4) disabled / readOnly
 		    // -----------------------------------------------------------------
-		    var selectbox4 = qpx.ui({
-		        view: "qpSelectBox",
-		        width: 320,
-		        dataSource: countries,
-		        valueExpr: "id",
-		        displayExpr: "name",
+		    var numberbox4 = qpx.ui({
+		        view: "qpNumberBox",
+		        width: 220,
+		        value: 42,
+		        disabled: true,
+		        stylingMode: "outlined"
+		    }, "#numberbox4");
+
+		    var numberbox4b = qpx.ui({
+		        view: "qpNumberBox",
+		        width: 220,
 		        value: 7,
 		        readOnly: true,
 		        stylingMode: "outlined"
-		    }, "#selectbox4");
-		
+		    }, "#numberbox4b");
+
 		    // -----------------------------------------------------------------
-		    // Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny 4 instance)
+		    // Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny instance)
 		    // -----------------------------------------------------------------
-		    var allSelectBoxes = [selectbox1, selectbox2, selectbox3, selectbox4];
-		
+		    var allNumberBoxes = [numberbox1, numberbox2, numberbox3, numberbox4, numberbox4b];
+
 		    function applyTheme(themeClass) {
-		        allSelectBoxes.forEach(function (sb) {
-		            sb.getContainer().removeClass("qpx-theme-generic-light qpx-theme-generic-dark").addClass(themeClass);
+		        allNumberBoxes.forEach(function (nb) {
+		            nb.getContainer().removeClass("qpx-theme-generic-light qpx-theme-generic-dark").addClass(themeClass);
 		        });
 		        toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
 		        $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
 		    }
-		
+
 		    function applyStylingMode(mode) {
-		        allSelectBoxes.forEach(function (sb) { sb.option("stylingMode", mode); });
+		        allNumberBoxes.forEach(function (nb) { nb.option("stylingMode", mode); });
 		    }
-		
+
 		    var toolbar = qpx.ui({
 		        view: "qpToolBar",
 		        theme: "generic-light",
@@ -228,7 +215,7 @@
 		            }
 		        ]
 		    }, "#pageToolbar");
-		
+
 		    applyTheme("qpx-theme-generic-light");
 		});
 		</script>

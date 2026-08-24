@@ -18,6 +18,10 @@ gulp.task('build-js', function() {
 		"src/main/webapp/libs/qpx/src/qpx.selectbox.js",
 		"src/main/webapp/libs/qpx/src/qpx.dropdownbox.js",
 		"src/main/webapp/libs/qpx/src/qpx.lookup.js",
+		"src/main/webapp/libs/qpx/src/qpx.checkbox.js",
+		"src/main/webapp/libs/qpx/src/qpx.numberbox.js",
+		"src/main/webapp/libs/qpx/src/qpx.textbox.js",
+
 		"src/main/webapp/libs/qpx/src/qpx.toolbar.js",
 		"src/main/webapp/libs/qpx/src/qpx.tabview.js",
 		"src/main/webapp/libs/qpx/src/qpx.treeview.js",

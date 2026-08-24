@@ -16,16 +16,19 @@
 			header.page-head { padding: 18px 24px 6px; }
 			h1 { font-size: 18px; margin: 0 0 4px; }
 			.subtitle { color: #767676; font-size: 12px; margin: 0; }
-			
+
 			.toolbar-wrap { margin: 12px 24px 4px; }
-			
+
 			main { padding: 8px 24px 60px; max-width: 760px; }
-			
+
 			.demo-block { margin: 26px 0; }
 			.demo-block h2 { font-size: 14px; margin: 0 0 4px; }
 			.demo-block .desc { font-size: 12px; color: #767676; margin: 0 0 10px; }
 			body.qpx-page-dark .demo-block .desc { color: #a3a3a3; }
-			
+
+			.demo-row { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+			.demo-col { display: flex; flex-direction: column; gap: 10px; }
+
 			.value-out {
 				margin-top: 8px;
 				font-family: monospace;
@@ -48,7 +51,7 @@
 			.qpx-back-home:hover {
 				background: #fff;
 				color: #000;
-			}	
+			}
 		</style>
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
@@ -63,132 +66,133 @@
 		</div>
 		<div style="min-height: 320px; position: absolute; top: 36px; left: 0; right: 0; border: 0; border: 1px solid red;">
 			<header class="page-head">
-				<h1>qpSelectBox – test</h1>
-				<p class="subtitle">Výběr jedné položky z rozbalovacího seznamu — analogie DevExtreme dxSelectBox. Na rozdíl od qpAutocomplete hodnota vždy odpovídá položce ze seznamu.</p>
+				<h1>qpCheckBox – test</h1>
+				<p class="subtitle">Zaškrtávací pole s podporou neurčitého ("indeterminate") stavu — analogie DevExtreme dxCheckBox.</p>
 			</header>
 			<div class="toolbar-wrap">
 				<div id="pageToolbar"></div>
 			</div>
 			<main>
 				<div class="demo-block">
-					<h2>1) Základní použití — dataSource z objektů</h2>
-					<p class="desc">valueExpr: "id", displayExpr: "name", showClearButton.</p>
-					<div id="selectbox1"></div>
+					<h2>1) Základní použití</h2>
+					<p class="desc">value, text, onValueChanged.</p>
+					<div id="checkbox1"></div>
 					<div class="value-out" id="out1"></div>
 				</div>
 				<div class="demo-block">
-					<h2>2) searchEnabled — vyhledávání přímo v poli</h2>
-					<p class="desc">Psaní filtruje nabídku, ale výběr je vždy jen z položek seznamu.</p>
-					<div id="selectbox2"></div>
+					<h2>2) Skupina "vybrat vše" — indeterminate stav</h2>
+					<p class="desc">Nadřazený checkbox se přepne do neurčitého stavu, pokud jsou zaškrtnuté jen některé podřízené položky.</p>
+					<div class="demo-col">
+						<div id="checkboxAll"></div>
+						<div class="demo-col" style="padding-left: 26px;">
+							<div id="checkboxChild1"></div>
+							<div id="checkboxChild2"></div>
+							<div id="checkboxChild3"></div>
+						</div>
+					</div>
 				</div>
 				<div class="demo-block">
-					<h2>3) acceptCustomValue — psaní vlastních položek</h2>
-					<p class="desc">Enter s textem, který v seznamu není, vytvoří novou položku (onCustomItemCreating).</p>
-					<div id="selectbox3"></div>
-				</div>
-				<div class="demo-block">
-					<h2>4) disabled / readOnly</h2>
-					<div id="selectbox4"></div>
+					<h2>3) disabled / readOnly</h2>
+					<div class="demo-row">
+						<div id="checkbox3a"></div>
+						<div id="checkbox3b"></div>
+					</div>
 				</div>
 			</main>
 		</div>
 
 		<script>
 		$(function () {
-		    var countries = [
-		        { id: 1, name: "Česko" },
-		        { id: 2, name: "Slovensko" },
-		        { id: 3, name: "Rakousko" },
-		        { id: 4, name: "Německo" },
-		        { id: 5, name: "Polsko" },
-		        { id: 6, name: "Maďarsko" },
-		        { id: 7, name: "Francie" },
-		        { id: 8, name: "Itálie" },
-		        { id: 9, name: "Španělsko" },
-		        { id: 10, name: "Portugalsko" },
-		        { id: 11, name: "Nizozemsko" },
-		        { id: 12, name: "Belgie" }
-		    ];
-		
 		    // -----------------------------------------------------------------
 		    // 1) základní demo
 		    // -----------------------------------------------------------------
-		    var selectbox1 = qpx.ui({
-		        view: "qpSelectBox",
-		        width: 320,
-		        dataSource: countries,
-		        valueExpr: "id",
-		        displayExpr: "name",
-		        value: 1,
-		        placeholder: "Vyberte zemi...",
-		        showClearButton: true,
-		        stylingMode: "outlined",
+		    var checkbox1 = qpx.ui({
+		        view: "qpCheckBox",
+		        value: true,
+		        text: "Souhlasím s podmínkami",
 		        onValueChanged: function (e) {
 		            $("#out1").text("value: " + JSON.stringify(e.value));
 		        }
-		    }, "#selectbox1");
-		    $("#out1").text("value: " + JSON.stringify(selectbox1.value()));
-		
+		    }, "#checkbox1");
+		    $("#out1").text("value: " + JSON.stringify(checkbox1.value()));
+
 		    // -----------------------------------------------------------------
-		    // 2) searchEnabled
+		    // 2) skupina s "vybrat vše" a indeterminate stavem
 		    // -----------------------------------------------------------------
-		    var selectbox2 = qpx.ui({
-		        view: "qpSelectBox",
-		        width: 320,
-		        dataSource: countries,
-		        valueExpr: "id",
-		        displayExpr: "name",
-		        searchEnabled: true,
-		        stylingMode: "filled"
-		    }, "#selectbox2");
-		
-		    // -----------------------------------------------------------------
-		    // 3) acceptCustomValue
-		    // -----------------------------------------------------------------
-		    var selectbox3 = qpx.ui({
-		        view: "qpSelectBox",
-		        width: 320,
-		        dataSource: ["JavaScript", "TypeScript", "Java", "Python", "Go"],
-		        value: "JavaScript",
-		        searchEnabled: true,
-		        acceptCustomValue: true,
-		        stylingMode: "underlined",
-		        onCustomItemCreating: function (args) {
-		            args.customItem = args.text.trim();
+		    var children = [];
+
+		    function refreshParentState() {
+		        var values = children.map(function (c) { return c.value(); });
+		        var allChecked = values.every(function (v) { return v === true; });
+		        var noneChecked = values.every(function (v) { return v === false; });
+
+		        checkboxAll._settingFromChildren = true;
+		        checkboxAll.option("value", allChecked ? true : (noneChecked ? false : null));
+		        checkboxAll._settingFromChildren = false;
+		    }
+
+		    var checkboxAll = qpx.ui({
+		        view: "qpCheckBox",
+		        value: true,
+		        text: "Vybrat vše",
+		        onValueChanged: function (e) {
+		            if (e.component._settingFromChildren) { return; }
+		            children.forEach(function (c) { c.option("value", !!e.value); });
 		        }
-		    }, "#selectbox3");
-		
+		    }, "#checkboxAll");
+
+		    var checkboxChild1 = qpx.ui({
+		        view: "qpCheckBox", value: true, text: "Položka 1",
+		        onValueChanged: function () { refreshParentState(); }
+		    }, "#checkboxChild1");
+
+		    var checkboxChild2 = qpx.ui({
+		        view: "qpCheckBox", value: true, text: "Položka 2",
+		        onValueChanged: function () { refreshParentState(); }
+		    }, "#checkboxChild2");
+
+		    var checkboxChild3 = qpx.ui({
+		        view: "qpCheckBox", value: false, text: "Položka 3",
+		        onValueChanged: function () { refreshParentState(); }
+		    }, "#checkboxChild3");
+
+		    children = [checkboxChild1, checkboxChild2, checkboxChild3];
+		    refreshParentState();
+
 		    // -----------------------------------------------------------------
-		    // 4) disabled / readOnly
+		    // 3) disabled / readOnly
 		    // -----------------------------------------------------------------
-		    var selectbox4 = qpx.ui({
-		        view: "qpSelectBox",
-		        width: 320,
-		        dataSource: countries,
-		        valueExpr: "id",
-		        displayExpr: "name",
-		        value: 7,
-		        readOnly: true,
-		        stylingMode: "outlined"
-		    }, "#selectbox4");
-		
+		    var checkbox3a = qpx.ui({
+		        view: "qpCheckBox",
+		        value: true,
+		        text: "disabled",
+		        disabled: true
+		    }, "#checkbox3a");
+
+		    var checkbox3b = qpx.ui({
+		        view: "qpCheckBox",
+		        value: false,
+		        text: "readOnly",
+		        readOnly: true
+		    }, "#checkbox3b");
+
 		    // -----------------------------------------------------------------
-		    // Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny 4 instance)
+		    // Horní panel: přepínač tématu + velikosti ikony (aplikuje se na všechny)
 		    // -----------------------------------------------------------------
-		    var allSelectBoxes = [selectbox1, selectbox2, selectbox3, selectbox4];
-		
+		    var allCheckBoxes = [checkbox1, checkboxAll, checkboxChild1, checkboxChild2, checkboxChild3, checkbox3a, checkbox3b];
+
 		    function applyTheme(themeClass) {
-		        allSelectBoxes.forEach(function (sb) {
-		            sb.getContainer().removeClass("qpx-theme-generic-light qpx-theme-generic-dark").addClass(themeClass);
+		        allCheckBoxes.forEach(function (cb) {
+		            cb.getContainer().removeClass("qpx-theme-generic-light qpx-theme-generic-dark").addClass(themeClass);
 		        });
 		        toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
 		        $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
 		    }
-		
-		    function applyStylingMode(mode) {
-		        allSelectBoxes.forEach(function (sb) { sb.option("stylingMode", mode); });
+
+		    function applyIconSize(size) {
+		        allCheckBoxes.forEach(function (cb) { cb.option("iconSize", size); });
 		    }
-		
+
 		    var toolbar = qpx.ui({
 		        view: "qpToolBar",
 		        theme: "generic-light",
@@ -215,20 +219,20 @@
 		                location: "after", widget: "buttonGroup",
 		                options: {
 		                    items: [
-		                        { text: "outlined", key: "outlined" },
-		                        { text: "filled", key: "filled" },
-		                        { text: "underlined", key: "underlined" }
+		                        { text: "18px", key: 18 },
+		                        { text: "22px", key: 22 },
+		                        { text: "26px", key: 26 }
 		                    ],
-		                    selectedItemKeys: ["outlined"],
+		                    selectedItemKeys: [18],
 		                    onSelectionChanged: function (e) {
-		                        var mode = e.component.getSelectedItemKeys()[0] || "outlined";
-		                        applyStylingMode(mode);
+		                        var size = e.component.getSelectedItemKeys()[0] || 18;
+		                        applyIconSize(size);
 		                    }
 		                }
 		            }
 		        ]
 		    }, "#pageToolbar");
-		
+
 		    applyTheme("qpx-theme-generic-light");
 		});
 		</script>
