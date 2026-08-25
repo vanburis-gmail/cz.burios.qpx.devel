@@ -168,24 +168,24 @@ System.out.println("/devel/index.jsp");
 					<span class="card-desc">Split tlačítko, useSelectMode, rozbalovací menu položek.</span>
 					<span class="card-path">/devel/test/dropdownbutton</span>
 				</a>
-				<a class="card" href="/devel/test/switch">
-					<span class="card-icon">🎚️</span>
-					<span class="card-title">qpSwitch</span>
-					<span class="card-desc">Booleovský přepínač (on/off) s vlastním textem stavů a stylingMode.</span>
-					<span class="card-path">/devel/test/switch</span>
-				</a>
 				<a class="card" href="/devel/test/autocomplete">
 					<span class="card-icon">🔍</span>
 					<span class="card-title">qpAutocomplete</span>
 					<span class="card-desc">Textové pole s automatickým našeptáváním, hodnotou je vždy zadaný text.</span>
 					<span class="card-path">/devel/test/autocomplete</span>
 				</a>
-				<a class="card" href="/devel/test/selectbox">
-					<span class="card-icon">🗳️</span>
-					<span class="card-title">qpSelectBox</span>
-					<span class="card-desc">Výběr jedné položky z rozbalovacího seznamu, volitelně s vyhledáváním.</span>
-					<span class="card-path">/devel/test/selectbox</span>
+				<a class="card" href="/devel/test/colorpicker">
+					<span class="card-icon">🏷️</span>
+					<span class="card-title">qpColorPicker</span>
+					<span class="card-desc">...</span>
+					<span class="card-path">/devel/test/colorpicker</span>
 				</a>
+				<a class="card" href="/devel/test/checkbox">
+					<span class="card-icon">🏷️</span>
+					<span class="card-title">qpCheckBox</span>
+					<span class="card-desc">...</span>
+					<span class="card-path">/devel/test/checkbox</span>
+				</a>				
 				<a class="card" href="/devel/test/dropdownbox">
 					<span class="card-icon">📦</span>
 					<span class="card-title">qpDropDownBox</span>
@@ -198,12 +198,37 @@ System.out.println("/devel/index.jsp");
 					<span class="card-desc">Výběr položky přes vystředěný popup s hledáním v hlavičce, volitelně s tlačítky Hotovo/Zrušit.</span>
 					<span class="card-path">/devel/test/lookup</span>
 				</a>
+				<a class="card" href="/devel/test/numberbox">
+					<span class="card-icon">🏷️</span>
+					<span class="card-title">qpNumberBox</span>
+					<span class="card-desc">...</span>
+					<span class="card-path">/devel/test/numberbox</span>
+				</a>				
+				<a class="card" href="/devel/test/selectbox">
+					<span class="card-icon">🗳️</span>
+					<span class="card-title">qpSelectBox</span>
+					<span class="card-desc">Výběr jedné položky z rozbalovacího seznamu, volitelně s vyhledáváním.</span>
+					<span class="card-path">/devel/test/selectbox</span>
+				</a>
+				<a class="card" href="/devel/test/switch">
+					<span class="card-icon">🎚️</span>
+					<span class="card-title">qpSwitch</span>
+					<span class="card-desc">Booleovský přepínač (on/off) s vlastním textem stavů a stylingMode.</span>
+					<span class="card-path">/devel/test/switch</span>
+				</a>
 				<a class="card" href="/devel/test/tagbox">
 					<span class="card-icon">🏷️</span>
 					<span class="card-title">qpTagBox</span>
 					<span class="card-desc">Vícenásobný výběr zobrazený jako tagy, hledání, vlastní hodnoty, maxDisplayedTags.</span>
 					<span class="card-path">/devel/test/tagbox</span>
 				</a>
+				<a class="card" href="/devel/test/textbox">
+					<span class="card-icon">🏷️</span>
+					<span class="card-title">qpTextBox</span>
+					<span class="card-desc">Vícenásobný výběr zobrazený jako tagy, hledání, vlastní hodnoty, maxDisplayedTags.</span>
+					<span class="card-path">/devel/test/textbox</span>
+				</a>
+				
 			</div>
 
 			<h2 class="group-title">Data</h2>

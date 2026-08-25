@@ -1313,6 +1313,326 @@
   cursor: default;
 }
 
+.qpx-colorpicker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 4px 6px;
+  font-size: 13px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: var(--qpx-bg, #fff);
+  color: var(--qpx-text, #333);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  outline: none;
+}
+.qpx-colorpicker:focus-visible {
+  box-shadow: 0 0 0 2px var(--qpx-accent, #337ab7) inset;
+}
+.qpx-colorpicker.qpx-hidden {
+  display: none;
+}
+
+.qpx-colorpicker.qpx-colorpicker-mode-outlined {
+  border: 1px solid var(--qpx-border, #ccc);
+}
+.qpx-colorpicker.qpx-colorpicker-mode-outlined:hover {
+  border-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-colorpicker.qpx-colorpicker-mode-filled {
+  border: 1px solid transparent;
+  background: var(--qpx-surface, #f0f0f0);
+}
+.qpx-colorpicker.qpx-colorpicker-mode-filled:hover {
+  background: var(--qpx-hover, #e6e6e6);
+}
+
+.qpx-colorpicker.qpx-colorpicker-mode-underlined {
+  border: none;
+  border-bottom: 1px solid var(--qpx-border, #ccc);
+  border-radius: 0;
+  background: transparent;
+}
+.qpx-colorpicker.qpx-colorpicker-mode-underlined:hover {
+  border-bottom-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-colorpicker-swatch {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: 1px solid var(--qpx-border, #ccc);
+  background-color: #337ab7;
+}
+.qpx-colorpicker-swatch.qpx-colorpicker-swatch-empty {
+  background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 6px 6px;
+  background-position: 0 0, 0 3px, 3px -3px, -3px 0;
+  background-color: transparent;
+  position: relative;
+}
+.qpx-colorpicker-swatch.qpx-colorpicker-swatch-empty::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: 50%;
+  border-top: 1px solid var(--qpx-danger, #d9534f);
+  transform: rotate(-45deg);
+}
+
+.qpx-colorpicker-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 2px 2px;
+  cursor: text;
+}
+
+.qpx-colorpicker-clear,
+.qpx-colorpicker-arrow {
+  flex: 0 0 auto;
+  cursor: pointer;
+  color: var(--qpx-text-muted, #767676);
+  line-height: 1;
+  padding: 2px 4px;
+  user-select: none;
+}
+
+.qpx-colorpicker-clear:hover,
+.qpx-colorpicker-arrow:hover {
+  color: var(--qpx-text, #333);
+}
+
+.qpx-colorpicker[aria-expanded=true] .qpx-colorpicker-arrow {
+  transform: rotate(180deg);
+}
+
+.qpx-colorpicker-popup {
+  position: absolute;
+  z-index: 2000;
+  background: var(--qpx-bg, #fff);
+  border: 1px solid var(--qpx-border, #ccc);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px var(--qpx-shadow, rgba(0, 0, 0, 0.18));
+  color: var(--qpx-text, #333);
+  font-size: 13px;
+  width: 240px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.qpx-colorpicker-palette-grid {
+  display: grid;
+  gap: 4px;
+}
+
+.qpx-colorpicker-swatch-cell {
+  aspect-ratio: 1/1;
+  border-radius: 3px;
+  border: 1px solid var(--qpx-border, #ccc);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform 0.12s ease;
+}
+.qpx-colorpicker-swatch-cell:hover {
+  transform: scale(1.12);
+}
+.qpx-colorpicker-swatch-cell.qpx-state-selected {
+  box-shadow: 0 0 0 2px var(--qpx-accent, #337ab7);
+  border-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-colorpicker-swatch-none {
+  background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 5px 5px;
+  background-position: 0 0, 0 2.5px, 2.5px -2.5px, -2.5px 0;
+  position: relative;
+}
+.qpx-colorpicker-swatch-none::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: 50%;
+  border-top: 1px solid var(--qpx-danger, #d9534f);
+  transform: rotate(-45deg);
+}
+
+.qpx-colorpicker-custom-link,
+.qpx-colorpicker-back-link {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--qpx-accent, #337ab7);
+  text-decoration: none;
+  cursor: pointer;
+}
+.qpx-colorpicker-custom-link:hover,
+.qpx-colorpicker-back-link:hover {
+  text-decoration: underline;
+}
+
+.qpx-colorpicker-back-link {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.qpx-colorpicker-gradient-view {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qpx-colorpicker-sv-area {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  border-radius: 3px;
+  cursor: crosshair;
+  user-select: none;
+}
+
+.qpx-colorpicker-sv-thumb {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), inset 0 0 1px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.qpx-colorpicker-hue-slider,
+.qpx-colorpicker-alpha-slider {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.qpx-colorpicker-hue-slider {
+  background-image: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+}
+
+.qpx-colorpicker-alpha-slider {
+  background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+}
+
+.qpx-colorpicker-alpha-gradient {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+}
+
+.qpx-colorpicker-hue-thumb,
+.qpx-colorpicker-alpha-thumb {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--qpx-border, #ccc);
+  box-shadow: 0 1px 3px var(--qpx-shadow, rgba(0, 0, 0, 0.3));
+  pointer-events: none;
+}
+
+.qpx-colorpicker-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qpx-colorpicker-preview-swatch {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  border: 1px solid var(--qpx-border, #ccc);
+  background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 6px 6px;
+  background-position: 0 0, 0 3px, 3px -3px, -3px 0;
+  background-blend-mode: normal;
+}
+
+.qpx-colorpicker-hex-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--qpx-border, #ccc);
+  border-radius: 3px;
+  padding: 5px 7px;
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+  background: var(--qpx-bg, #fff);
+  outline: none;
+}
+.qpx-colorpicker-hex-input:focus {
+  border-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-colorpicker-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--qpx-border, #ccc);
+}
+
+.qpx-colorpicker-btn {
+  border: 1px solid var(--qpx-border, #ccc);
+  border-radius: 3px;
+  background: var(--qpx-bg, #fff);
+  color: inherit;
+  font: inherit;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.qpx-colorpicker-btn:hover {
+  border-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-colorpicker-btn-apply {
+  background: var(--qpx-accent, #337ab7);
+  border-color: var(--qpx-accent, #337ab7);
+  color: var(--qpx-accent-contrast, #fff);
+}
+.qpx-colorpicker-btn-apply:hover {
+  opacity: 0.92;
+}
+
+.qpx-colorpicker.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.qpx-colorpicker.qpx-state-readonly {
+  cursor: default;
+}
+.qpx-colorpicker.qpx-state-readonly .qpx-colorpicker-input {
+  cursor: default;
+}
+
 .qpx-checkbox {
   display: inline-flex;
   align-items: center;
