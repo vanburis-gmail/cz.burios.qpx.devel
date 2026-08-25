@@ -10,58 +10,18 @@
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
-
-		<style>
-			body.qpx-page-dark { background: #1b1b1b; color: #eee; }
-			header.page-head { padding: 18px 24px 6px; }
-			h1 { font-size: 18px; margin: 0 0 4px; }
-			.subtitle { color: #767676; font-size: 12px; margin: 0; }
-
-			.toolbar-wrap { margin: 12px 24px 4px; }
-
-			main { padding: 8px 24px 60px; max-width: 760px; }
-
-			.demo-block { margin: 26px 0; }
-			.demo-block h2 { font-size: 14px; margin: 0 0 4px; }
-			.demo-block .desc { font-size: 12px; color: #767676; margin: 0 0 10px; }
-			body.qpx-page-dark .demo-block .desc { color: #a3a3a3; }
-
-			.value-out {
-				margin-top: 8px;
-				font-family: monospace;
-				font-size: 11px;
-				padding: 6px 8px;
-				border-radius: 4px;
-				background: #eef4fb;
-				color: #333;
-			}
-			body.qpx-page-dark .value-out { background: #333; color: #e6e6e6; }
-			.qpx-back-home {
-				font-size: 20px;
-				color: #444;
-				text-decoration: none;
-				z-index: 9999;
-				padding: 6px 10px;
-				background: rgba(255,255,255,0.85);
-				border-radius: 6px;
-			}
-			.qpx-back-home:hover {
-				background: #fff;
-				color: #000;
-			}
-		</style>
+		<link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
 	</head>
 	<body class="qpx-view">
-		<!-- návratová ikona vlevo nahoře -->
-		<div style="height: 32px; position: absolute; top: 0; left: 0; right: 0; border: 1px solid red;">
+		<div class="qpx-test-topbar">
 			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
 				<span class="fa fa-home"></span>
 			</a>
 		</div>
-		<div style="min-height: 320px; position: absolute; top: 36px; left: 0; right: 0; border: 0; border: 1px solid red;">
+		<div class="qpx-test-content">
 			<header class="page-head">
 				<h1>qpTextBox – test</h1>
 				<p class="subtitle">Jednořádkové textové pole — analogie DevExtreme dxTextBox.</p>
@@ -222,3 +182,5 @@
 		</script>
 	</body>
 </html>
+textbox.jsp
+prosím vytvořit samostatný soubor css do jsp doplnit pouze link
