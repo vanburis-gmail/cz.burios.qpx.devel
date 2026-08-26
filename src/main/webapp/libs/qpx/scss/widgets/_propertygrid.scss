@@ -1,0 +1,89 @@
+@use "../base/variables" as *;
+
+.qpx-propertygrid {
+    font-family: $qpx-font-family;
+    font-size: $qpx-font-size;
+    color: var(--qpx-text);
+    padding: 0;
+
+    // vnější rámeček celé gridu (Kendo style)
+    border: 1px solid var(--qpx-border);
+    border-radius: $qpx-radius;
+    background: var(--qpx-surface);
+
+    &.qpx-state-disabled {
+        @include qpx-disabled-state;
+    }
+
+    // Kategorie
+    .qpx-pg-category {
+        font-weight: 600;
+        font-size: 14px;
+        margin: 0;
+        padding: 10px;
+        background: var(--qpx-surface);
+        border-bottom: 1px solid var(--qpx-border);
+        color: var(--qpx-text-muted);
+    }
+
+    // Tabulka
+    .qpx-pg-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    // Řádek
+    .qpx-pg-row {
+        border-bottom: 1px solid var(--qpx-border);
+        transition: background-color $qpx-transition;
+
+        &:hover {
+            background: var(--qpx-hover);
+        }
+    }
+
+    // Label buňka
+    .qpx-pg-label {
+        width: 35%;
+        padding: 8px 10px;
+        border-right: 1px solid var(--qpx-border);
+        color: var(--qpx-text-muted);
+        background: var(--qpx-bg);
+        vertical-align: middle;
+    }
+
+    // Editor buňka
+    .qpx-pg-editor {
+        padding: 8px 10px;
+        vertical-align: middle;
+        background: var(--qpx-bg);
+    }
+
+    // Textové editory
+    .qpx-pg-input {
+        width: 100%;
+        padding: 4px 6px;
+        border-radius: $qpx-radius-sm;
+        border: 1px solid var(--qpx-border);
+        background: var(--qpx-bg);
+        color: var(--qpx-text);
+        transition: border-color $qpx-transition;
+
+        @include qpx-focus-ring;
+
+        &:hover {
+            border-color: var(--qpx-accent);
+        }
+    }
+
+    // Readonly
+    .qpx-pg-readonly {
+        color: var(--qpx-text-muted);
+    }
+
+    // Vnořené widgety (switch, textbox, checkbox, dropdown…)
+    .qpx-view {
+        width: 100%;
+    }
+}

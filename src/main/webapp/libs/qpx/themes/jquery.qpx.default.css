@@ -2741,6 +2741,77 @@
   background: var(--qpx-selected, #e3f0fb);
 }
 
+.qpx-propertygrid {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  color: var(--qpx-text);
+  padding: 0;
+  border: 1px solid var(--qpx-border);
+  border-radius: 4px;
+  background: var(--qpx-surface);
+}
+.qpx-propertygrid.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+.qpx-propertygrid .qpx-pg-category {
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+  padding: 10px;
+  background: var(--qpx-surface);
+  border-bottom: 1px solid var(--qpx-border);
+  color: var(--qpx-text-muted);
+}
+.qpx-propertygrid .qpx-pg-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+.qpx-propertygrid .qpx-pg-row {
+  border-bottom: 1px solid var(--qpx-border);
+  transition: background-color 0.12s ease;
+}
+.qpx-propertygrid .qpx-pg-row:hover {
+  background: var(--qpx-hover);
+}
+.qpx-propertygrid .qpx-pg-label {
+  width: 35%;
+  padding: 8px 10px;
+  border-right: 1px solid var(--qpx-border);
+  color: var(--qpx-text-muted);
+  background: var(--qpx-bg);
+  vertical-align: middle;
+}
+.qpx-propertygrid .qpx-pg-editor {
+  padding: 8px 10px;
+  vertical-align: middle;
+  background: var(--qpx-bg);
+}
+.qpx-propertygrid .qpx-pg-input {
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--qpx-border);
+  background: var(--qpx-bg);
+  color: var(--qpx-text);
+  transition: border-color 0.12s ease;
+  outline: none;
+}
+.qpx-propertygrid .qpx-pg-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--qpx-accent, #337ab7) inset;
+}
+.qpx-propertygrid .qpx-pg-input:hover {
+  border-color: var(--qpx-accent);
+}
+.qpx-propertygrid .qpx-pg-readonly {
+  color: var(--qpx-text-muted);
+}
+.qpx-propertygrid .qpx-view {
+  width: 100%;
+}
+
 /*!
  * qpx - qpDataGrid styles
  * Vzhledově se blíží DevExtreme dxDataGrid (generic-light / generic-dark).

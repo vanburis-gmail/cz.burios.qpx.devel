@@ -42,6 +42,7 @@
 @use "widgets/toolbar";
 @use "widgets/tabview";
 @use "widgets/treeview";
+@use "widgets/propertygrid";
 @use "widgets/datagrid";
 
 .qpx-theme-generic-light { @include light.qpx-theme-vars; }
