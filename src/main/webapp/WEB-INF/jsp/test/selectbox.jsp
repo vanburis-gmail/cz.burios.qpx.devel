@@ -25,47 +25,38 @@
         </a>
     </div>
 
-    <!-- Scrollovací obsah -->
     <div class="qpx-test-content">
-
         <header class="page-head">
-            <h1>qpSelectBox – test</h1>
+            <h1>qpSelectBox</h1>
             <p class="subtitle">
                 Výběr jedné položky z rozbalovacího seznamu — analogie DevExtreme dxSelectBox.
                 Na rozdíl od qpAutocomplete hodnota vždy odpovídá položce ze seznamu.
             </p>
         </header>
-
         <div class="toolbar-wrap">
             <div id="pageToolbar"></div>
         </div>
-
-        <main>
-
+		<main>
             <div class="demo-block">
                 <h2>1) Základní použití — dataSource z objektů</h2>
                 <p class="desc">valueExpr: "id", displayExpr: "name", showClearButton.</p>
                 <div id="selectbox1"></div>
                 <div class="value-out" id="out1"></div>
             </div>
-
             <div class="demo-block">
                 <h2>2) searchEnabled — vyhledávání přímo v poli</h2>
                 <p class="desc">Psaní filtruje nabídku, ale výběr je vždy jen z položek seznamu.</p>
                 <div id="selectbox2"></div>
             </div>
-
             <div class="demo-block">
                 <h2>3) acceptCustomValue — psaní vlastních položek</h2>
                 <p class="desc">Enter s textem, který v seznamu není, vytvoří novou položku (onCustomItemCreating).</p>
                 <div id="selectbox3"></div>
             </div>
-
             <div class="demo-block">
                 <h2>4) disabled / readOnly</h2>
                 <div id="selectbox4"></div>
             </div>
-
         </main>
     </div>
 

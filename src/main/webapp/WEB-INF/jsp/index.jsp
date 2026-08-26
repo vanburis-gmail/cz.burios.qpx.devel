@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ taglib prefix = "c" uri = "http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%
 System.out.println("/devel/index.jsp");
 %>
@@ -12,6 +12,8 @@ System.out.println("/devel/index.jsp");
 		<title>Buriosca.cz - Devel QPX</title>
 
 		<link rel="icon" href="/devel/favicon.png">
+
+		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<%--
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.dark.css?build=${ timeNo }" rel="stylesheet" type="text/css">
@@ -141,7 +143,7 @@ System.out.println("/devel/index.jsp");
 					<span class="card-path">/devel/test/toolbar</span>
 				</a>
 				<a class="card" href="/devel/test/tabview">
-					<span class="card-icon">🗂️</span>
+					<span class="card-icon"><i class="fa fa-folder-open" style="color: #337ab7;"></i></span>
 					<span class="card-title">qpTabView</span>
 					<span class="card-desc">Záložky s obsahem panelů, posuvný indikátor, responzivní scroll a klávesová navigace.</span>
 					<span class="card-path">/devel/test/tabview</span>
@@ -168,6 +170,10 @@ System.out.println("/devel/index.jsp");
 					<span class="card-desc">Split tlačítko, useSelectMode, rozbalovací menu položek.</span>
 					<span class="card-path">/devel/test/dropdownbutton</span>
 				</a>
+			</div>
+			
+			<h2 class="group-title">Editační prvky</h2>
+			<div class="grid" data-group="editors">
 				<a class="card" href="/devel/test/autocomplete">
 					<span class="card-icon">🔍</span>
 					<span class="card-title">qpAutocomplete</span>
@@ -185,7 +191,17 @@ System.out.println("/devel/index.jsp");
 					<span class="card-title">qpCheckBox</span>
 					<span class="card-desc">...</span>
 					<span class="card-path">/devel/test/checkbox</span>
+				</a>
+				<a class="card" href="/devel/test/datepicker">
+					<span class="card-icon"><i class="fa fa-calendar" style="color: #337ab7;"></i></span>
+					<span class="card-title">qpDatePicker</span>
+					<span class="card-desc">
+					Segmentované datumové/časové pole s popup kalendářem — klik na segment, šipky, psaní číslic,
+					popup pro datum i čas.
+					</span>
+					<span class="card-path">/devel/test/datepicker</span>
 				</a>				
+								
 				<a class="card" href="/devel/test/dropdownbox">
 					<span class="card-icon">📦</span>
 					<span class="card-title">qpDropDownBox</span>
@@ -211,7 +227,7 @@ System.out.println("/devel/index.jsp");
 					<span class="card-path">/devel/test/selectbox</span>
 				</a>
 				<a class="card" href="/devel/test/switch">
-					<span class="card-icon">🎚️</span>
+					<span class="card-icon"><i class="fa fa-toggle-on" style="color: #337ab7;"></i></span>
 					<span class="card-title">qpSwitch</span>
 					<span class="card-desc">Booleovský přepínač (on/off) s vlastním textem stavů a stylingMode.</span>
 					<span class="card-path">/devel/test/switch</span>
@@ -234,7 +250,7 @@ System.out.println("/devel/index.jsp");
 			<h2 class="group-title">Data</h2>
 			<div class="grid" data-group="data">
 				<a class="card" href="/devel/test/treeview">
-					<span class="card-icon">🌲</span>
+					<span class="card-icon"><i class="fa fa-sitemap" style="color: #337ab7;"></i></span>
 					<span class="card-title">qpTreeView</span>
 					<span class="card-desc">Stromová struktura, checkboxy, výběr, drag &amp; drop.</span>
 					<span class="card-path">/devel/test/treeview</span>
@@ -273,6 +289,7 @@ System.out.println("/devel/index.jsp");
 								{ text: "Struktura", key: "layout" },
 								{ text: "Navigace", key: "navigace" },
 								{ text: "Ovládací prvky", key: "controls" },
+								{ text: "Editační prvky", key: "editors" },
 								{ text: "Data", key: "data" }
 							],
 							selectedItemKeys: ["all"],

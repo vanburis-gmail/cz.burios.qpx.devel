@@ -1633,6 +1633,285 @@
   cursor: default;
 }
 
+.qpx-datepicker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 4px 6px;
+  font-size: 13px;
+  border-radius: 4px;
+  background: var(--qpx-bg, #fff);
+  color: var(--qpx-text, #333);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  outline: none;
+}
+.qpx-datepicker:focus-visible {
+  box-shadow: 0 0 0 2px var(--qpx-accent, #337ab7) inset;
+}
+.qpx-datepicker.qpx-hidden {
+  display: none;
+}
+
+.qpx-datepicker.qpx-datepicker-mode-outlined {
+  border: 1px solid var(--qpx-border, #ccc);
+}
+.qpx-datepicker.qpx-datepicker-mode-outlined:hover {
+  border-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-datepicker.qpx-datepicker-mode-filled {
+  border: 1px solid transparent;
+  background: var(--qpx-surface, #f0f0f0);
+}
+.qpx-datepicker.qpx-datepicker-mode-filled:hover {
+  background: var(--qpx-hover, #e6e6e6);
+}
+
+.qpx-datepicker.qpx-datepicker-mode-underlined {
+  border: none;
+  border-bottom: 1px solid var(--qpx-border, #ccc);
+  border-radius: 0;
+  background: transparent;
+}
+.qpx-datepicker.qpx-datepicker-mode-underlined:hover {
+  border-bottom-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-datepicker-segments {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  cursor: text;
+}
+
+.qpx-datepicker-literal {
+  color: var(--qpx-text-muted, #767676);
+  padding: 0 1px;
+  user-select: none;
+}
+
+.qpx-datepicker-segment {
+  padding: 1px 2px;
+  border-radius: 3px;
+  cursor: text;
+}
+.qpx-datepicker-segment.qpx-state-placeholder {
+  color: var(--qpx-text-muted, #767676);
+}
+.qpx-datepicker-segment.qpx-state-active {
+  background: var(--qpx-accent, #337ab7);
+  color: var(--qpx-accent-contrast, #fff);
+}
+
+.qpx-datepicker-clear,
+.qpx-datepicker-calendar-btn {
+  flex: 0 0 auto;
+  cursor: pointer;
+  color: var(--qpx-text-muted, #767676);
+  line-height: 1;
+  padding: 2px 4px;
+  user-select: none;
+  font-size: 13px;
+}
+
+.qpx-datepicker-clear:hover,
+.qpx-datepicker-calendar-btn:hover {
+  color: var(--qpx-text, #333);
+}
+
+.qpx-datepicker-spin {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.qpx-datepicker-spin-up,
+.qpx-datepicker-spin-down {
+  cursor: pointer;
+  font-size: 8px;
+  color: var(--qpx-text-muted, #767676);
+  padding: 1px 3px;
+  user-select: none;
+}
+.qpx-datepicker-spin-up:hover,
+.qpx-datepicker-spin-down:hover {
+  color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-datepicker-popup {
+  position: absolute;
+  z-index: 2000;
+  background: var(--qpx-bg, #fff);
+  border: 1px solid var(--qpx-border, #ccc);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px var(--qpx-shadow, rgba(0, 0, 0, 0.18));
+  color: var(--qpx-text, #333);
+  font-size: 13px;
+  width: 260px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.qpx-datepicker-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.qpx-datepicker-nav {
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 3px;
+  color: var(--qpx-text-muted, #767676);
+  user-select: none;
+}
+.qpx-datepicker-nav:hover {
+  background: var(--qpx-hover, #eceff1);
+  color: var(--qpx-text, #333);
+}
+
+.qpx-datepicker-cal-label {
+  text-transform: capitalize;
+}
+
+.qpx-datepicker-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 11px;
+  color: var(--qpx-text-muted, #767676);
+  margin-bottom: 2px;
+}
+
+.qpx-datepicker-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.qpx-datepicker-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+}
+.qpx-datepicker-day:hover {
+  background: var(--qpx-hover, #eceff1);
+}
+.qpx-datepicker-day.qpx-state-dim {
+  color: var(--qpx-text-muted, #b0b0b0);
+}
+.qpx-datepicker-day.qpx-state-today {
+  box-shadow: inset 0 0 0 1px var(--qpx-accent, #337ab7);
+  font-weight: 600;
+}
+.qpx-datepicker-day.qpx-state-selected {
+  background: var(--qpx-accent, #337ab7);
+  color: var(--qpx-accent-contrast, #fff);
+  font-weight: 600;
+}
+.qpx-datepicker-day.qpx-state-disabled {
+  color: var(--qpx-text-muted, #ccc);
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.qpx-datepicker-time-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--qpx-border, #ccc);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+}
+
+.qpx-datepicker-time-segment {
+  padding: 2px 4px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.qpx-datepicker-time-spin {
+  margin-left: 6px;
+}
+
+.qpx-datepicker-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--qpx-border, #ccc);
+}
+
+.qpx-datepicker-footer-left {
+  display: flex;
+  gap: 14px;
+}
+
+.qpx-datepicker-footer-right {
+  display: flex;
+  gap: 8px;
+}
+
+.qpx-datepicker-link {
+  font-size: 12px;
+  color: var(--qpx-accent, #337ab7);
+  text-decoration: none;
+  cursor: pointer;
+}
+.qpx-datepicker-link:hover {
+  text-decoration: underline;
+}
+
+.qpx-datepicker-btn {
+  border: 1px solid var(--qpx-border, #ccc);
+  border-radius: 3px;
+  background: var(--qpx-bg, #fff);
+  color: inherit;
+  font: inherit;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.qpx-datepicker-btn:hover {
+  border-color: var(--qpx-accent, #337ab7);
+}
+
+.qpx-datepicker-btn-apply {
+  background: var(--qpx-accent, #337ab7);
+  border-color: var(--qpx-accent, #337ab7);
+  color: var(--qpx-accent-contrast, #fff);
+}
+.qpx-datepicker-btn-apply:hover {
+  opacity: 0.92;
+}
+
+.qpx-datepicker.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.qpx-datepicker.qpx-state-readonly .qpx-datepicker-segments {
+  cursor: default;
+}
+
 .qpx-checkbox {
   display: inline-flex;
   align-items: center;
