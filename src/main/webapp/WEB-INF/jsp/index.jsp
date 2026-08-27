@@ -136,17 +136,27 @@ System.out.println("/devel/index.jsp");
 
 			<h2 class="group-title">Navigace</h2>
 			<div class="grid" data-group="navigace">
-				<a class="card" href="/devel/test/toolbar">
-					<span class="card-icon">🧰</span>
-					<span class="card-title">qpToolBar</span>
-					<span class="card-desc">Panel nástrojů s položkami before/center/after a přetečením do menu „⋮“.</span>
-					<span class="card-path">/devel/test/toolbar</span>
+				<a class="card" href="/devel/test/breadcrumb">
+					<span class="card-icon"><i class="fa fa-angle-right" style="color: #337ab7;"></i></span>
+					<span class="card-title">qpBreadcrumb</span>
+					<span class="card-desc">
+						Navigační "drobečková" stezka inspirovaná KendoUI Breadcrumb a Fluent2 Breadcrumb —
+						klikatelné položky, aktuální (poslední) položka jako nezvýrazněný text a automatické
+						sbalení prostředních položek do "..." při nedostatku místa.
+					</span>
+					<span class="card-path">/devel/test/breadcrumb</span>
 				</a>
 				<a class="card" href="/devel/test/tabview">
 					<span class="card-icon"><i class="fa fa-folder-open" style="color: #337ab7;"></i></span>
 					<span class="card-title">qpTabView</span>
 					<span class="card-desc">Záložky s obsahem panelů, posuvný indikátor, responzivní scroll a klávesová navigace.</span>
 					<span class="card-path">/devel/test/tabview</span>
+				</a>
+				<a class="card" href="/devel/test/toolbar">
+					<span class="card-icon">🧰</span>
+					<span class="card-title">qpToolBar</span>
+					<span class="card-desc">Panel nástrojů s položkami before/center/after a přetečením do menu „⋮“.</span>
+					<span class="card-path">/devel/test/toolbar</span>
 				</a>
 			</div>
 
@@ -249,17 +259,23 @@ System.out.println("/devel/index.jsp");
 
 			<h2 class="group-title">Data</h2>
 			<div class="grid" data-group="data">
+				<a class="card" href="/devel/test/datagrid">
+					<span class="card-icon"><i class="fa fa-table" style="color: #337ab7;"></i></span>
+					<span class="card-title">qpDataGrid</span>
+					<span class="card-desc">Tabulka s řazením, výběrem řádků a adaptivním accordion detailem.</span>
+					<span class="card-path">/devel/test/datagrid</span>
+				</a>
+				<a class="card" href="/devel/test/propertygrid">
+					<span class="card-icon"><i class="fa fa-table" style="color: #337ab7;"></i></span>
+					<span class="card-title">qpPropertyGrid</span>
+					<span class="card-desc">Vlastnosti seskupené do kategorií, editace přímo v mřížce pomocí odpovídajícího qpx editoru</span>
+					<span class="card-path">/devel/test/propertygrid</span>
+				</a>
 				<a class="card" href="/devel/test/treeview">
 					<span class="card-icon"><i class="fa fa-sitemap" style="color: #337ab7;"></i></span>
 					<span class="card-title">qpTreeView</span>
 					<span class="card-desc">Stromová struktura, checkboxy, výběr, drag &amp; drop.</span>
 					<span class="card-path">/devel/test/treeview</span>
-				</a>
-				<a class="card" href="/devel/test/datagrid">
-					<span class="card-icon">▤</span>
-					<span class="card-title">qpDataGrid</span>
-					<span class="card-desc">Tabulka s řazením, výběrem řádků a adaptivním accordion detailem.</span>
-					<span class="card-path">/devel/test/datagrid</span>
 				</a>
 			</div>
 		</main>

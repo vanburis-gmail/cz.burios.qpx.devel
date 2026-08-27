@@ -5696,6 +5696,409 @@
 })(window.qpx, jQuery);
 
 /*!
+ * qpx - qpBreadcrumb
+ * Navigační "drobečková" stezka (breadcrumb), inspirovaná KendoUI Breadcrumb
+ * a Fluent2 Breadcrumb:
+ *
+ *  - items: pole { id, text, icon, url, disabled }
+ *  - value: id aktuální (aktivní/poslední) položky - typicky se mění
+ *    programově při navigaci v aplikaci (option("value", id) / value(id))
+ *  - poslední (resp. aktivní) položka je vykreslena jako nezvýrazněný
+ *    text bez odkazu (aria-current="page"), ostatní jsou klikatelné
+ *  - automatické "přetečení": pokud se celá stezka nevejde do šířky
+ *    kontejneru, prostřední položky se sbalí do jednoho "..." tlačítka
+ *    s popup nabídkou (obdoba chování KendoUI / Fluent2 Breadcrumb)
+ *
+ * options:
+ *   items, value, separatorIcon, rootIcon, overflow, edgeVisibleItems,
+ *   disabled, visible
+ *
+ * events:
+ *   onItemClick, onValueChanged, onOptionChanged
+ *
+ * methods:
+ *   option(name[, value]), value([id]), items([items]),
+ *   enable(), disable(), focus()
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var Breadcrumb = qpx.Widget.extend({
+
+        defaults: {
+            items: [],              // [{ id, text, icon, url, disabled }]
+            value: null,             // id aktivní položky; null = poslední položka v poli
+            separatorIcon: "fa-angle-right",
+            rootIcon: null,          // ikona pro první položku bez textu (Fluent2 "domeček")
+            overflow: true,          // sbalování prostředních položek do "..." při nedostatku místa
+            edgeVisibleItems: 1,     // kolik posledních položek zůstává vždy viditelných
+            disabled: false,
+            visible: true,
+
+            onItemClick: null,
+            onValueChanged: null,
+            onOptionChanged: null
+        },
+
+        init: function (config, container) {
+            this._onResize = null;
+            this._popupOpen = false;
+            this._super(config, container);
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+
+            this.$container
+                .addClass("qpx-breadcrumb")
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .attr("role", "navigation")
+                .attr("aria-label", "breadcrumb");
+
+            if (cfg.onItemClick) { this.on("itemClick", cfg.onItemClick); }
+            if (cfg.onValueChanged) { this.on("valueChanged", cfg.onValueChanged); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+
+            this._normalizeItems();
+            this._renderList();
+            this._bindResize();
+        },
+
+        // ---------------------------------------------------------------
+        // Normalizace / vykreslení položek
+        // ---------------------------------------------------------------
+        _normalizeItems: function () {
+            var items = this.config.items || [];
+            items.forEach(function (item, i) {
+                if (item.id === undefined || item.id === null) { item.id = i; }
+            });
+            if (this.config.value === null || this.config.value === undefined) {
+                var last = items[items.length - 1];
+                this.config.value = last ? last.id : null;
+            }
+        },
+
+        _renderList: function () {
+            this.$container.empty();
+            this.$list = $("<ol class='qpx-breadcrumb-list'></ol>");
+            this.$container.append(this.$list);
+
+            this._renderFullList();
+            this._updateOverflow();
+        },
+
+        _renderFullList: function () {
+            var self = this;
+            var items = this.config.items || [];
+
+            this.$list.empty();
+            items.forEach(function (item, i) {
+                self.$list.append(self._buildItemNode(item, i === items.length - 1));
+                if (i < items.length - 1) { self.$list.append(self._buildSeparator()); }
+            });
+        },
+
+        _buildSeparator: function () {
+            return $("<li class='qpx-breadcrumb-separator' aria-hidden='true'></li>")
+                .append($("<i></i>").addClass("fa " + this.config.separatorIcon));
+        },
+
+        _buildItemNode: function (item, isLast) {
+            var self = this;
+            var cfg = this.config;
+            var isCurrent = item.id === cfg.value;
+            var isDisabled = !!item.disabled || !!cfg.disabled;
+            var isInteractive = !isCurrent && !isDisabled;
+            var isRootIconOnly = !item.text && (item.icon || cfg.rootIcon) && !isCurrent;
+
+            var $li = $("<li></li>")
+                .addClass("qpx-breadcrumb-item")
+                .toggleClass("qpx-breadcrumb-item-current", isCurrent)
+                .toggleClass("qpx-breadcrumb-item-disabled", isDisabled)
+                .toggleClass("qpx-breadcrumb-item-icon-only", !!isRootIconOnly)
+                .attr("data-qpx-item-id", item.id);
+
+            var tag = (isInteractive && item.url) ? "a" : "span";
+            var $inner = $("<" + tag + "></" + tag + ">").addClass("qpx-breadcrumb-link");
+
+            if (isInteractive) {
+                if (item.url) {
+                    $inner.attr("href", item.url);
+                } else {
+                    $inner.attr("role", "link");
+                }
+                $inner.attr("tabindex", "0");
+            } else {
+                $inner.attr("tabindex", "-1");
+                if (isDisabled) { $inner.attr("aria-disabled", "true"); }
+            }
+            if (isCurrent) { $inner.attr("aria-current", "page"); }
+            if (isLast && !isCurrent) { $li.attr("data-qpx-last", "true"); }
+
+            var icon = item.icon || (isRootIconOnly ? cfg.rootIcon : null);
+            if (icon) {
+                $inner.append($("<i></i>").addClass("fa " + icon + " qpx-breadcrumb-icon"));
+            }
+            if (item.text) {
+                $inner.append($("<span class='qpx-breadcrumb-text'></span>").text(item.text));
+                $inner.attr("title", item.text);
+            }
+
+            $li.append($inner);
+
+            if (isInteractive) {
+                $inner.on("click.qpxBreadcrumb", function (e) {
+                    if (!item.url) { e.preventDefault(); }
+                    self._selectItem(item);
+                });
+                $inner.on("keydown.qpxBreadcrumb", function (e) {
+                    if (e.key === "Enter" || e.key === " ") {
+                        if (!item.url) { e.preventDefault(); }
+                        self._selectItem(item);
+                    }
+                });
+            }
+
+            return $li;
+        },
+
+        _selectItem: function (item) {
+            this.trigger("itemClick", { item: item, component: this, element: this.getNode() });
+            if (item.id !== this.config.value) {
+                this.option("value", item.id);
+            }
+        },
+
+        // ---------------------------------------------------------------
+        // Přetečení - sbalení prostředních položek do "..." s popup nabídkou,
+        // pokud se celá stezka nevejde do šířky kontejneru (obdoba chování
+        // KendoUI Breadcrumb / Fluent2 Breadcrumb).
+        // ---------------------------------------------------------------
+        _updateOverflow: function () {
+            var self = this;
+            if (!this.config.overflow) { return; }
+
+            // měření šířky má smysl až po vložení do DOM
+            setTimeout(function () {
+                var node = self.getNode();
+                if (!self.$list || !node || !node.isConnected) { return; }
+                self._collapseToFit();
+            }, 0);
+        },
+
+        _collapseToFit: function () {
+            var cfg = this.config;
+            var items = cfg.items || [];
+            if (items.length <= cfg.edgeVisibleItems + 2) { return; } // nemá smysl sbalovat
+
+            this._renderFullList();
+            var containerWidth = this.$container.width();
+            if (!containerWidth || this.$list[0].scrollWidth <= containerWidth) { return; } // vejde se celé
+
+            var hiddenStart = 1; // první položka zůstává vždy viditelná
+            var hiddenEnd = items.length - cfg.edgeVisibleItems; // poslední(ch) N zůstává vždy
+            if (hiddenEnd <= hiddenStart) { return; }
+
+            this._renderCollapsedList(hiddenStart, hiddenEnd);
+
+            var guard = 0;
+            while (this.$list[0].scrollWidth > containerWidth &&
+                   hiddenEnd > hiddenStart + 1 && guard < items.length) {
+                hiddenEnd -= 1;
+                this._renderCollapsedList(hiddenStart, hiddenEnd);
+                guard += 1;
+            }
+        },
+
+        _renderCollapsedList: function (hiddenStart, hiddenEnd) {
+            var self = this;
+            var items = this.config.items || [];
+            var hiddenItems = items.slice(hiddenStart, hiddenEnd);
+
+            this.$list.empty();
+
+            items.forEach(function (item, i) {
+                if (i === hiddenStart) {
+                    self.$list.append(self._buildEllipsis(hiddenItems));
+                    self.$list.append(self._buildSeparator());
+                }
+                if (i >= hiddenStart && i < hiddenEnd) { return; }
+
+                self.$list.append(self._buildItemNode(item, i === items.length - 1));
+                if (i < items.length - 1 && i !== hiddenStart - 1) {
+                    self.$list.append(self._buildSeparator());
+                }
+            });
+        },
+
+        _buildEllipsis: function (hiddenItems) {
+            var self = this;
+            var $li = $("<li class='qpx-breadcrumb-item qpx-breadcrumb-ellipsis'></li>");
+            var $btn = $("<button type='button' class='qpx-breadcrumb-ellipsis-btn' aria-haspopup='true' aria-expanded='false'>&hellip;</button>");
+
+            $btn.on("click.qpxBreadcrumb", function (e) {
+                e.stopPropagation();
+                self._toggleEllipsisPopup($li, $btn, hiddenItems);
+            });
+
+            $li.append($btn);
+            return $li;
+        },
+
+        _toggleEllipsisPopup: function ($li, $btn, hiddenItems) {
+            var self = this;
+
+            if (this._popupOpen) {
+                this._closeEllipsisPopup();
+                return;
+            }
+
+            var $popup = $("<ul class='qpx-breadcrumb-popup'></ul>");
+            hiddenItems.forEach(function (item) {
+                var isDisabled = !!item.disabled || !!self.config.disabled;
+                var $pItem = $("<li class='qpx-breadcrumb-popup-item'></li>")
+                    .toggleClass("qpx-breadcrumb-item-disabled", isDisabled);
+
+                var $link = $("<a href='javascript:void(0);'></a>");
+                if (item.icon) {
+                    $link.append($("<i></i>").addClass("fa " + item.icon + " qpx-breadcrumb-icon"));
+                }
+                $link.append($("<span></span>").text(item.text || ""));
+                $pItem.append($link);
+
+                if (!isDisabled) {
+                    $link.on("click.qpxBreadcrumb", function (e) {
+                        e.preventDefault();
+                        self._closeEllipsisPopup();
+                        self._selectItem(item);
+                    });
+                }
+                $popup.append($pItem);
+            });
+
+            $li.append($popup);
+            $btn.attr("aria-expanded", "true");
+            this._popupOpen = true;
+
+            setTimeout(function () {
+                $(document).on("click.qpxBreadcrumbPopup" + self.id, function () {
+                    self._closeEllipsisPopup();
+                });
+            }, 0);
+        },
+
+        _closeEllipsisPopup: function () {
+            if (this.$list) {
+                this.$list.find(".qpx-breadcrumb-popup").remove();
+                this.$list.find(".qpx-breadcrumb-ellipsis-btn").attr("aria-expanded", "false");
+            }
+            $(document).off("click.qpxBreadcrumbPopup" + this.id);
+            this._popupOpen = false;
+        },
+
+        // ---------------------------------------------------------------
+        _bindResize: function () {
+            var self = this;
+            this._unbindResize();
+            this._onResize = function () { self._collapseToFit(); };
+            $(window).on("resize.qpxBreadcrumb" + this.id, this._onResize);
+        },
+
+        _unbindResize: function () {
+            if (this._onResize) {
+                $(window).off("resize.qpxBreadcrumb" + this.id);
+                this._onResize = null;
+            }
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        value: function (val) {
+            if (arguments.length === 0) { return this.config.value; }
+            return this.option("value", val);
+        },
+
+        items: function (newItems) {
+            if (arguments.length === 0) { return this.config.items; }
+            return this.option("items", newItems);
+        },
+
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+
+        focus: function () {
+            this.$list.find(".qpx-breadcrumb-link[tabindex='0']").first().trigger("focus");
+            return this;
+        },
+
+        // option("x") -> čtení; option("x", v) -> zápis; option({x:..}) -> hromadně
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "value":
+                    this._renderList();
+                    this.trigger("valueChanged", {
+                        value: value,
+                        previousValue: prev,
+                        component: this,
+                        element: this.getNode()
+                    });
+                    break;
+
+                case "items":
+                    this._normalizeItems();
+                    this._renderList();
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    this._renderList();
+                    break;
+
+                case "separatorIcon":
+                case "rootIcon":
+                case "overflow":
+                case "edgeVisibleItems":
+                    this._renderList();
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        destroy: function () {
+            this._closeEllipsisPopup();
+            this._unbindResize();
+            this.$container.off(".qpxBreadcrumb");
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpBreadcrumb", Breadcrumb);
+    qpx.qpBreadcrumb = Breadcrumb;
+
+})(window.qpx, jQuery);
+
+/*!
  * qpx - qpToolBar (refactored)
  * Panel nástrojů koncipovaný stejně jako DevExtreme dxToolBar:
  *  - items rozdělené do "before" / "center" / "after"
@@ -7242,9 +7645,44 @@
 
 /*!
  * qpx - qpPropertyGrid
- * PropertyGrid inspirovaný Kendo UI PropertyGrid.
+ * PropertyGrid inspirovaný Kendo UI PropertyGrid — vlastnosti seskupené
+ * do kategorií, editace přímo v mřížce pomocí odpovídajícího qpx
+ * editoru (text/number/checkbox/switch/dropdown) podle "editor" u
+ * každé položky. Vzhledem se řídí widgets/_propertygrid.scss, který je
+ * naladěný na styl Kendo UI "Classic" (Silver) — světlá i tmavá
+ * varianta jedou nad stejnými --qpx-* proměnnými jako zbytek frameworku.
+ *
+ * API je zachováno beze změny oproti předchozí verzi (items, readOnly,
+ * showCategories, categoryField, disabled, visible, onValueChanged,
+ * onItemChanged, onOptionChanged, editor: "text"|"number"|"checkbox"|
+ * "switch"|"dropdown", getValues()/setValues()). Doplněno pouze
+ * NEDESTRUKTIVNĚ:
+ *   - showHeader / nameHeader / valueHeader — volitelná hlavička
+ *     sloupců "Vlastnost | Hodnota" (typický Kendo PropertyGrid vzhled),
+ *   - onInitialized / onContentReady / onDisposing — pro konzistenci
+ *     s ostatními qpx widgety,
+ *   - oprava: refresh() už znovu neregistruje event handlery (dřív
+ *     způsobovalo vícenásobné volání onValueChanged po setValues()),
+ *   - oprava: option("readOnly"/"showCategories"/"categoryField"/...)
+ *     teď skutečně překreslí mřížku,
+ *   - vnořené editor-widgety (qpTextBox/qpNumberBox/qpCheckBox/
+ *     qpSwitch/dropDownButton) se při každém překreslení i při
+ *     destroy() korektně destruují (dřív mohly zůstávat "osiřelé").
+ *
+ * options:
+ *   items ([{ field, label, value, editor, category, readOnly, dataSource }]),
+ *   readOnly, showCategories, categoryField,
+ *   showHeader, nameHeader, valueHeader,
+ *   disabled, visible
+ *
+ * events:
+ *   onInitialized, onContentReady, onValueChanged, onItemChanged,
+ *   onOptionChanged, onDisposing
+ *
+ * methods:
+ *   option(name[, value]), getValues(), setValues(obj),
+ *   refresh(), enable(), disable(), destroy()
  */
-
 (function (qpx, $) {
     "use strict";
 
@@ -7255,48 +7693,82 @@
             readOnly: false,
             showCategories: true,
             categoryField: "category",
+
+            showHeader: true,
+            nameHeader: "Vlastnost",
+            valueHeader: "Hodnota",
+
             disabled: false,
             visible: true,
 
             onValueChanged: null,
             onItemChanged: null,
-            onOptionChanged: null
+            onOptionChanged: null,
+            onInitialized: null,
+            onContentReady: null,
+            onDisposing: null
         },
 
+        // ---------------------------------------------------------------
         render: function () {
             var cfg = this.config;
+            var self = this;
 
             this.$container
                 .addClass("qpx-propertygrid")
                 .toggleClass("qpx-hidden", !cfg.visible)
                 .toggleClass("qpx-state-disabled", !!cfg.disabled);
 
-            if (cfg.onValueChanged) this.on("valueChanged", cfg.onValueChanged);
-            if (cfg.onItemChanged) this.on("itemChanged", cfg.onItemChanged);
-            if (cfg.onOptionChanged) this.on("optionChanged", cfg.onOptionChanged);
+            if (cfg.onValueChanged) { this.on("valueChanged", cfg.onValueChanged); }
+            if (cfg.onItemChanged) { this.on("itemChanged", cfg.onItemChanged); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+            if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
+            if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
+            if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
+
+            this._editorInstances = [];
 
             this._renderGrid();
+
+            setTimeout(function () { self.trigger("contentReady", { component: self }); }, 0);
         },
 
+        // znovu-vykreslení BEZ opětovné registrace event handlerů
+        // (base Widget.refresh() by volal render() znovu -> duplicitní .on(...))
+        refresh: function () {
+            this._renderGrid();
+            return this;
+        },
+
+        // ---------------------------------------------------------------
         _renderGrid: function () {
             var self = this;
             var cfg = this.config;
 
+            this._destroyEditors();
             this.$container.empty();
 
+            if (cfg.showHeader) {
+                var $headerTable = $("<table class='qpx-pg-table qpx-pg-header-table'></table>");
+                var $headerRow = $("<tr class='qpx-pg-header-row'></tr>");
+                $headerRow.append($("<th class='qpx-pg-label'></th>").text(cfg.nameHeader));
+                $headerRow.append($("<th class='qpx-pg-editor'></th>").text(cfg.valueHeader));
+                $headerTable.append($headerRow);
+                this.$container.append($headerTable);
+            }
+
             var groups = {};
+            var order = [];
 
             cfg.items.forEach(function (item) {
                 var cat = cfg.showCategories ? (item[cfg.categoryField] || "General") : "_nocat";
-                groups[cat] = groups[cat] || [];
+                if (!groups[cat]) { groups[cat] = []; order.push(cat); }
                 groups[cat].push(item);
             });
 
-            Object.keys(groups).forEach(function (cat) {
+            order.forEach(function (cat) {
                 if (cfg.showCategories) {
-                    self.$container.append(
-                        $("<div class='qpx-pg-category'></div>").text(cat)
-                    );
+                    self.$container.append($("<div class='qpx-pg-category'></div>").text(cat));
                 }
 
                 var $table = $("<table class='qpx-pg-table'></table>");
@@ -7307,8 +7779,7 @@
                     var $label = $("<td class='qpx-pg-label'></td>").text(item.label || item.field);
                     var $editor = $("<td class='qpx-pg-editor'></td>");
 
-                    var editor = self._createEditor(item);
-                    $editor.append(editor);
+                    $editor.append(self._createEditor(item));
 
                     $tr.append($label, $editor);
                     $table.append($tr);
@@ -7318,70 +7789,87 @@
             });
         },
 
-		_createEditor: function (item) {
-		    var self = this;
-		    var cfg = this.config;
-		    var val = item.value;
+        _createEditor: function (item) {
+            var self = this;
+            var cfg = this.config;
+            var val = item.value;
 
-		    if (cfg.readOnly || item.readOnly) {
-		        return $("<span class='qpx-pg-readonly'></span>").text(val);
-		    }
+            if (cfg.readOnly || item.readOnly) {
+                return $("<span class='qpx-pg-readonly'></span>").text(this._formatReadOnlyValue(item));
+            }
 
-		    switch (item.editor) {
+            var widgetCfg = null;
 
-		        case "textbox":
-		        case "text":
-		            return qpx.ui({
-		                view: "qpTextBox",
-		                value: val,
-		                onValueChanged: function (e) {
-		                    self._updateValue(item, e.value);
-		                }
-		            }).getContainer();
+            switch (item.editor) {
 
-		        case "number":
-		        case "numberbox":
-		            return qpx.ui({
-		                view: "qpNumberBox",
-		                value: val,
-		                onValueChanged: function (e) {
-		                    self._updateValue(item, Number(e.value));
-		                }
-		            }).getContainer();
+                case "textbox":
+                case "text":
+                    widgetCfg = {
+                        view: "qpTextBox",
+                        value: val,
+                        onValueChanged: function (e) { self._updateValue(item, e.value); }
+                    };
+                    break;
 
-		        case "checkbox":
-		            return qpx.ui({
-		                view: "qpCheckBox",
-		                value: !!val,
-		                onValueChanged: function (e) {
-		                    self._updateValue(item, !!e.value);
-		                }
-		            }).getContainer();
+                case "number":
+                case "numberbox":
+                    widgetCfg = {
+                        view: "qpNumberBox",
+                        value: val,
+                        onValueChanged: function (e) { self._updateValue(item, Number(e.value)); }
+                    };
+                    break;
 
-		        case "switch":
-		            return qpx.ui({
-		                view: "qpSwitch",
-		                value: !!val,
-		                onValueChanged: function (e) {
-		                    self._updateValue(item, !!e.value);
-		                }
-		            }).getContainer();
+                case "checkbox":
+                    widgetCfg = {
+                        view: "qpCheckBox",
+                        value: !!val,
+                        onValueChanged: function (e) { self._updateValue(item, !!e.value); }
+                    };
+                    break;
 
-		        case "dropdown":
-		            return qpx.ui({
-		                view: "dropDownButton",
-		                items: item.dataSource || [],
-		                useSelectMode: true,
-		                selectedItemKey: val,
-		                onSelectionChanged: function (e) {
-		                    self._updateValue(item, e.key);
-		                }
-		            }).getContainer();
+                case "switch":
+                    widgetCfg = {
+                        view: "qpSwitch",
+                        value: !!val,
+                        onValueChanged: function (e) { self._updateValue(item, !!e.value); }
+                    };
+                    break;
 
-		        default:
-		            return $("<span></span>").text(val);
-		    }
-		},
+                case "dropdown":
+                    widgetCfg = {
+                        view: "dropDownButton",
+                        items: item.dataSource || [],
+                        useSelectMode: true,
+                        selectedItemKey: val,
+                        onSelectionChanged: function (e) { self._updateValue(item, e.key); }
+                    };
+                    break;
+            }
+
+            if (!widgetCfg) {
+                return $("<span></span>").text(val);
+            }
+
+            var instance = qpx.ui(widgetCfg);
+            this._editorInstances.push(instance);
+            return instance.getContainer();
+        },
+
+        // checkbox/switch v readOnly zobrazí "Ano"/"Ne" místo true/false
+        _formatReadOnlyValue: function (item) {
+            if (item.editor === "checkbox" || item.editor === "switch") {
+                return item.value ? "Ano" : "Ne";
+            }
+            return item.value;
+        },
+
+        _destroyEditors: function () {
+            (this._editorInstances || []).forEach(function (inst) {
+                try { inst.destroy(); } catch (e) { /* noop */ }
+            });
+            this._editorInstances = [];
+        },
 
         _updateValue: function (item, newVal) {
             var prev = item.value;
@@ -7403,6 +7891,9 @@
             });
         },
 
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
         getValues: function () {
             var obj = {};
             this.config.items.forEach(function (it) {
@@ -7418,36 +7909,51 @@
                 }
             });
             this.refresh();
-        },
-
-        option: function (name, value) {
-            if (arguments.length === 0) return this.config;
-            if (qpx.isObject(name)) {
-                var self = this;
-                $.each(name, function (k, v) { self.option(k, v); });
-                return this;
-            }
-            if (arguments.length === 1) return this.config[name];
-
-            var prev = this.config[name];
-            this.config[name] = value;
-
-            if (name === "items") {
-                this.refresh();
-            } else if (name === "visible") {
-                this.$container.toggleClass("qpx-hidden", !value);
-            } else if (name === "disabled") {
-                this.$container.toggleClass("qpx-state-disabled", !!value);
-            }
-
-            this.trigger("optionChanged", { name, value, previousValue: prev });
             return this;
         },
 
         enable: function () { return this.option("disabled", false); },
         disable: function () { return this.option("disabled", true); },
 
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "items":
+                case "showCategories":
+                case "categoryField":
+                case "readOnly":
+                case "showHeader":
+                case "nameHeader":
+                case "valueHeader":
+                    this.refresh();
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
         destroy: function () {
+            this._destroyEditors();
             this.$container.off();
             this._super();
         }

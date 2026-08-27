@@ -1,89 +1,148 @@
+// =====================================================================
+// qpx - widgets/_propertygrid.scss
+// Vzhled komponenty "qpPropertyGrid" (qpx.propertygrid.js) laděný na
+// styl Kendo UI "Classic" (Silver) — hlavička a pásy kategorií s jemným
+// gradientem, "zapuštěná" (bevel) záhlaví, plné mřížkové linky, stínovaný
+// vnější panel. Světlá i tmavá varianta jedou nad STEJNOU sadou --qpx-*
+// proměnných jako zbytek frameworku (žádné nové proměnné) — gradienty
+// jsou poskládané z var(--qpx-bg)/var(--qpx-surface)/var(--qpx-border),
+// takže se automaticky přizpůsobí aktivnímu tématu (generic-light /
+// generic-dark), stejně jako ostatní widgety.
+//
+// Vnitřek vnořených editor-widgetů (qpTextBox, qpNumberBox, qpCheckBox,
+// qpSwitch, dropDownButton) se odsud záměrně NEpřestylovává (respektuje
+// se zapouzdření jejich vlastního SCSS) — zde se řeší jen "rám" mřížky:
+// hlavička, pásy kategorií, buňky, readonly text a rozestupy.
+// =====================================================================
+
 @use "../base/variables" as *;
 
 .qpx-propertygrid {
     font-family: $qpx-font-family;
     font-size: $qpx-font-size;
     color: var(--qpx-text);
-    padding: 0;
 
-    // vnější rámeček celé gridu (Kendo style)
     border: 1px solid var(--qpx-border);
-    border-radius: $qpx-radius;
-    background: var(--qpx-surface);
+    border-radius: $qpx-radius-sm;
+    background: var(--qpx-bg);
+    box-shadow: 0 1px 3px var(--qpx-shadow, rgba(0, 0, 0, .15));
+    overflow: hidden; // aby zaoblené rohy ořízly hranatou hlavičku/tabulky uvnitř
+
+    &.qpx-hidden { display: none; }
 
     &.qpx-state-disabled {
         @include qpx-disabled-state;
     }
 
-    // Kategorie
-    .qpx-pg-category {
-        font-weight: 600;
-        font-size: 14px;
-        margin: 0;
-        padding: 10px;
-        background: var(--qpx-surface);
-        border-bottom: 1px solid var(--qpx-border);
-        color: var(--qpx-text-muted);
-    }
-
-    // Tabulka
+    // -------------------------------------------------------------
+    // Sdílené základy tabulek (hlavička i řádkové tabulky mají
+    // stejné rozložení sloupců 35% / auto, aby se vizuálně srovnaly)
+    // -------------------------------------------------------------
     .qpx-pg-table {
         width: 100%;
         border-collapse: collapse;
         margin: 0;
+        table-layout: fixed;
     }
 
-    // Řádek
+    .qpx-pg-label {
+        width: 38%;
+        padding: 6px 10px;
+        border-right: 1px solid var(--qpx-border);
+        vertical-align: middle;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .qpx-pg-editor {
+        padding: 5px 8px;
+        vertical-align: middle;
+    }
+
+    // -------------------------------------------------------------
+    // Hlavička "Vlastnost | Hodnota" — klasický Kendo grid header:
+    // jemný svislý gradient (bevel) + tučný text + silnější spodní linka
+    // -------------------------------------------------------------
+    .qpx-pg-header-table {
+        .qpx-pg-header-row th {
+            font-weight: 700;
+            text-align: left;
+            background-image: linear-gradient(to bottom, var(--qpx-bg), var(--qpx-surface));
+            border-bottom: 2px solid var(--qpx-border);
+            color: var(--qpx-text);
+        }
+
+        .qpx-pg-label { border-right: 1px solid var(--qpx-border); }
+    }
+
+    // -------------------------------------------------------------
+    // Pás kategorie — stínovaný pruh s barevným akcentem vlevo,
+    // typický pro "enterprise" property grid panely
+    // -------------------------------------------------------------
+    .qpx-pg-category {
+        font-weight: 600;
+        font-size: 12px;
+        margin: 0;
+        padding: 6px 10px 6px 8px;
+        background: var(--qpx-surface);
+        border-top: 1px solid var(--qpx-border);
+        border-bottom: 1px solid var(--qpx-border);
+        border-left: 3px solid var(--qpx-accent);
+        color: var(--qpx-text-muted);
+        letter-spacing: .02em;
+
+        &:first-child { border-top: none; }
+    }
+
+    // -------------------------------------------------------------
+    // Řádek — plné mřížkové linky (Kendo classic styl), hover
+    // zvýrazní celý řádek (obě buňky)
+    // -------------------------------------------------------------
     .qpx-pg-row {
         border-bottom: 1px solid var(--qpx-border);
         transition: background-color $qpx-transition;
 
         &:hover {
-            background: var(--qpx-hover);
+            .qpx-pg-label,
+            .qpx-pg-editor { background: var(--qpx-hover); }
         }
+
+        &:last-child { border-bottom: none; }
     }
 
-    // Label buňka
+    // Label sloupec je trvale jemně "zapuštěný" (odlišuje needitovatelný
+    // popisek od editovatelné hodnoty) — typický vzhled property gridů
     .qpx-pg-label {
-        width: 35%;
-        padding: 8px 10px;
-        border-right: 1px solid var(--qpx-border);
+        background: var(--qpx-surface);
         color: var(--qpx-text-muted);
-        background: var(--qpx-bg);
-        vertical-align: middle;
+        font-weight: 500;
     }
 
-    // Editor buňka
     .qpx-pg-editor {
-        padding: 8px 10px;
-        vertical-align: middle;
         background: var(--qpx-bg);
     }
 
-    // Textové editory
-    .qpx-pg-input {
-        width: 100%;
-        padding: 4px 6px;
-        border-radius: $qpx-radius-sm;
-        border: 1px solid var(--qpx-border);
-        background: var(--qpx-bg);
-        color: var(--qpx-text);
-        transition: border-color $qpx-transition;
-
-        @include qpx-focus-ring;
-
-        &:hover {
-            border-color: var(--qpx-accent);
-        }
-    }
-
-    // Readonly
+    // Needitovatelná hodnota (readOnly) — jemně odlišená kurzívou
     .qpx-pg-readonly {
+        display: inline-block;
+        padding: 3px 4px;
         color: var(--qpx-text-muted);
+        font-style: italic;
     }
 
-    // Vnořené widgety (switch, textbox, checkbox, dropdown…)
-    .qpx-view {
-        width: 100%;
+    // -------------------------------------------------------------
+    // Vnořené editor-widgety — jen rozměr/zarovnání v buňce,
+    // vzhled jednotlivých widgetů řeší jejich vlastní SCSS
+    // -------------------------------------------------------------
+    .qpx-pg-editor {
+        .qpx-view { width: 100%; }
+
+        // kompaktní ovládací prvky se nemají roztahovat na 100 % šířky
+        .qpx-switch,
+        .qpx-checkbox {
+            width: auto;
+            display: inline-flex;
+        }
     }
 }

@@ -1,15 +1,6 @@
 /* ============================
    QPX – jednotný layout testovacích stránek
    ============================ */
-/*
-body.qpx-view {
-    margin: 0;
-    padding: 0;
-    background: var(--qpx-bg);
-    color: var(--qpx-fg);
-    font-family: sans-serif;
-}
-*/
 /* Horní fixní bar */
 .qpx-test-topbar {
     height: 36px;
@@ -37,7 +28,18 @@ body.qpx-view {
     color: #000;
 }
 
-/* Scrollovací obsah */
+/* Scrollovací obsah
+   ----------------------------------------------------------------
+   .qpx-theme-generic-light / .qpx-theme-generic-dark je v
+   jquery.qpx.all.css globální (nescopnuté) pravidlo - jen nastaví
+   CSS proměnné frameworku (--qpx-bg, --qpx-text, --qpx-border, ...).
+   Když se tato třída přidá přímo na .qpx-test-content (místo aby ji
+   testovací stránka přepínala na každém widgetu zvlášť), díky
+   dědičnosti CSS proměnných se automaticky použije jak ve widgetech
+   uvnitř, tak v běžném obsahu stránky níže (nadpisy, .value-out, ...).
+   Fallback hodnoty ve var(...) odpovídají původnímu světlému vzhledu,
+   takže stránky, které tuto třídu ještě nepřepínají, vypadají stejně
+   jako dřív. */
 .qpx-test-content {
     position: absolute;
     top: 36px;
@@ -46,6 +48,8 @@ body.qpx-view {
     bottom: 0;
     overflow: auto;
     padding-bottom: 40px;
+    background: var(--qpx-bg, #fff);
+    color: var(--qpx-text, #333);
 }
 
 /* Header */
@@ -55,10 +59,10 @@ header.page-head {
 header.page-head h1 {
     font-size: 18px;
     margin: 0 0 4px;
-    color: #337ab7; 
+    color: var(--qpx-accent, #337ab7);
 }
 header.page-head .subtitle {
-    color: #767676;
+    color: var(--qpx-text-muted, #767676);
     font-size: 12px;
     margin: 0;
 }
@@ -83,10 +87,11 @@ main {
 .demo-block h2 {
     font-size: 14px;
     margin: 0 0 4px;
+    color: var(--qpx-text, #333);
 }
 .demo-block .desc {
     font-size: 12px;
-    color: #767676;
+    color: var(--qpx-text-muted, #767676);
     margin: 0 0 10px;
 }
 
@@ -97,8 +102,8 @@ main {
     font-size: 11px;
     padding: 6px 8px;
     border-radius: 4px;
-    background: #eef4fb;
-    color: #333;
+    background: var(--qpx-selected, #eef4fb);
+    color: var(--qpx-text, #333);
 }
 
 /* Light / Dark */
