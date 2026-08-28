@@ -1,0 +1,129 @@
+/* ============================
+   QPX – jednotný layout testovacích stránek
+   ============================ */
+/* Horní fixní bar */
+.qpx-test-topbar {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--qpx-topbar-bg);
+    border-bottom: 1px solid var(--qpx-border);
+    z-index: 1000;
+}
+
+.qpx-back-home {
+    font-size: 20px;
+    text-decoration: none;
+    padding: 6px 10px;
+    color: var(--qpx-fg);
+    border-radius: 6px;
+}
+.qpx-back-home:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* Scrollovací obsah
+   ----------------------------------------------------------------
+   .qpx-theme-generic-light / .qpx-theme-generic-dark je v
+   jquery.qpx.all.css globální (nescopnuté) pravidlo - jen nastaví
+   CSS proměnné frameworku (--qpx-bg, --qpx-text, --qpx-border, ...).
+   Když se tato třída přidá přímo na .qpx-test-content (místo aby ji
+   testovací stránka přepínala na každém widgetu zvlášť), díky
+   dědičnosti CSS proměnných se automaticky použije jak ve widgetech
+   uvnitř, tak v běžném obsahu stránky níže (nadpisy, .value-out, ...).
+   Fallback hodnoty ve var(...) odpovídají původnímu světlému vzhledu,
+   takže stránky, které tuto třídu ještě nepřepínají, vypadají stejně
+   jako dřív. */
+.qpx-test-content {
+    position: absolute;
+    top: 36px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+    padding-bottom: 40px;
+    background: var(--qpx-bg, #fff);
+    color: var(--qpx-text, #333);
+}
+
+/* Header */
+header.page-head {
+    padding: 18px 24px 6px;
+}
+header.page-head h1 {
+    font-size: 18px;
+    margin: 0 0 4px;
+    color: var(--qpx-accent, #337ab7);
+}
+header.page-head .subtitle {
+    color: var(--qpx-text-muted, #767676);
+    font-size: 12px;
+    margin: 0;
+}
+
+/* Toolbar */
+.qpx-test-toolbar,
+.toolbar-wrap {
+    margin: 12px 24px 4px;
+}
+
+/* Obsah */
+main {
+    padding: 8px 24px 60px;
+    max-width: 760px;
+}
+
+/* Demo bloky */
+.demo-row,
+.demo-block {
+    margin: 26px 0;
+}
+.demo-block h2 {
+    font-size: 14px;
+    margin: 0 0 4px;
+    color: var(--qpx-text, #333);
+}
+.demo-block .desc {
+    font-size: 12px;
+    color: var(--qpx-text-muted, #767676);
+    margin: 0 0 10px;
+}
+
+/* Výstupní hodnoty */
+.value-out {
+    margin-top: 8px;
+    font-family: monospace;
+    font-size: 11px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    background: var(--qpx-selected, #eef4fb);
+    color: var(--qpx-text, #333);
+}
+
+/* Light / Dark */
+:root {
+    --qpx-bg: #fff;
+    --qpx-fg: #111;
+    --qpx-topbar-bg: #f5f5f5;
+    --qpx-border: #d0d0d0;
+}
+
+body.qpx-page-dark {
+    --qpx-bg: #1b1b1b;
+    --qpx-fg: #eee;
+    --qpx-topbar-bg: #2a2a2a;
+    --qpx-border: #444;
+}
+body.qpx-page-dark .demo-block .desc {
+    color: #a3a3a3;
+}
+body.qpx-page-dark .value-out {
+    background: #333;
+    color: #e6e6e6;
+}

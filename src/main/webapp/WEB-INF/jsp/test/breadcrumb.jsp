@@ -16,7 +16,7 @@
     <script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
 </head>
 
-<body class="qpx-view">
+<body class="qpx-view  qpx-theme-generic-light">
 	<div class="qpx-test-topbar">
 		<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
 			<span class="fa fa-home"></span>

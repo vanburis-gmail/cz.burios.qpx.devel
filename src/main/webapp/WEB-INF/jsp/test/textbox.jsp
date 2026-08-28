@@ -9,7 +9,7 @@
 
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 		<link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
@@ -125,13 +125,14 @@
 		    // -----------------------------------------------------------------
 		    var allTextBoxes = [textbox1, textbox2, textbox3, textbox4, textbox4b];
 
-		    function applyTheme(themeClass) {
-		        allTextBoxes.forEach(function (tb) {
-		            tb.getContainer().removeClass("qpx-theme-generic-light qpx-theme-generic-dark").addClass(themeClass);
-		        });
-		        toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
-		        $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
-		    }
+			function applyTheme(themeClass) {
+				$(".qpx-test-content")
+					.removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+					.addClass(themeClass);
+				toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
+				// zpětně kompatibilní přepínač pro topbar (viz qpx-test.css)
+				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
+			}
 
 		    function applyStylingMode(mode) {
 		        allTextBoxes.forEach(function (tb) { tb.option("stylingMode", mode); });

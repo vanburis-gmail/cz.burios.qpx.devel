@@ -10,26 +10,72 @@
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
-		<link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
+
+		<style>
+			body.qpx-page-dark { background: #1b1b1b; color: #eee; }
+			header.page-head { padding: 18px 24px 6px; }
+			h1 { font-size: 18px; margin: 0 0 4px; }
+			.subtitle { color: #767676; font-size: 12px; margin: 0; }
+
+			.toolbar-wrap { margin: 12px 24px 4px; }
+
+			main { padding: 8px 24px 60px; max-width: 860px; }
+
+			.demo-block { margin: 26px 0; }
+			.demo-block h2 { font-size: 14px; margin: 0 0 4px; }
+			.demo-block .desc { font-size: 12px; color: #767676; margin: 0 0 10px; }
+			body.qpx-page-dark .demo-block .desc { color: #a3a3a3; }
+
+			.demo-actions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+			.value-out {
+				margin-top: 8px;
+				font-family: monospace;
+				font-size: 11px;
+				padding: 6px 8px;
+				border-radius: 4px;
+				background: #eef4fb;
+				color: #333;
+				white-space: pre-wrap;
+				word-break: break-all;
+				max-height: 90px;
+				overflow: auto;
+			}
+			body.qpx-page-dark .value-out { background: #333; color: #e6e6e6; }
+			.qpx-back-home {
+				font-size: 20px;
+				color: #444;
+				text-decoration: none;
+				z-index: 9999;
+				padding: 6px 10px;
+				background: rgba(255,255,255,0.85);
+				border-radius: 6px;
+			}
+			.qpx-back-home:hover {
+				background: #fff;
+				color: #000;
+			}
+		</style>
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
 	</head>
-	<body class="qpx-view qpx-theme-generic-light">
-		<div class="qpx-test-topbar">
+	<body class="qpx-view">
+		<!-- návratová ikona vlevo nahoře -->
+		<div style="height: 32px; position: absolute; top: 0; left: 0; right: 0;">
 			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
 				<span class="fa fa-home"></span>
 			</a>
 		</div>
-
-		<div class="qpx-test-content">
+		<div style="min-height: 320px; position: absolute; top: 36px; left: 0; right: 0; border: 0;">
 			<header class="page-head">
-				<h1>qpSyntaxEditor</h1>
+				<h1>qpSyntaxEditor – test</h1>
 				<p class="subtitle">Zvýrazňování syntaxe nad Ace Editorem — integrace widgetu třetí strany do QPX (Ace se donačte dynamicky z <code>/devel/libs/ace/1.33.0/</code>).</p>
 			</header>
-			<main>
+			<div class="toolbar-wrap">
 				<div id="pageToolbar"></div>
-
+			</div>
+			<main>
 				<div class="demo-block">
 					<h2>1) JavaScript, s automatickým doplňováním (autocomplete)</h2>
 					<p class="desc">mode: "javascript", autocomplete: true, onValueChanged.</p>
@@ -144,72 +190,64 @@
 
 		    // -----------------------------------------------------------------
 		    // Horní panel: přepínač tématu (light/dark) + zalamování řádků
-		    //
-		    // Téma se přepíná JEDINÝM místem — třídou qpx-theme-generic-light/
-		    // -dark na <body>. Díky dědičnosti CSS proměnných (--qpx-bg,
-		    // --qpx-text, --qpx-border, ...) se automaticky obarví jak
-		    // widgety, tak okolní obsah stránky (nadpisy, .value-out, topbar).
-		    // U qpSyntaxEditoru navíc voláme ed.option("theme", ...), protože
-		    // Ace Editor má svůj VLASTNÍ, samostatný systém témat (na CSS
-		    // proměnných frameworku nezávislý) — to je jediný widget na téhle
-		    // stránce, který takové zvláštní zacházení potřebuje.
 		    // -----------------------------------------------------------------
 		    var allEditors = [editor1, editor2, editor3, editor4, editor4b];
 
-			function applyTheme(themeKey) {
-				$("body")
-					.removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
-					.addClass("qpx-theme-" + themeKey);
-				// sem doplnit misto each pole přes jquery $(".qpx-view").each(...) 
-				/*
-				allEditors.forEach(function (ed) {
-					ed.option("theme", themeKey); // "generic-light" | "generic-dark" -> namapováno na Ace téma
-				});
-				*/
-				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
-				toolbar.option("theme", themeKey);
-			}
+		    function applyTheme(themeKey) {
+		        allEditors.forEach(function (ed) {
+		            ed.getContainer()
+		                .removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+		                .addClass("qpx-theme-" + themeKey);
+		            ed.option("theme", themeKey); // "generic-light" | "generic-dark" -> namapováno na Ace téma
+		        });
+		        toolbar.option("theme", themeKey);
+		        $("body").toggleClass("qpx-page-dark", themeKey === "generic-dark");
+		    }
 
-			function applyWrap(wrapOn) {
-				allEditors.forEach(function (ed) { ed.option("wrap", wrapOn); });
-			}
-			
-			var toolbar = qpx.ui({
-				view: "qpToolBar",
-				theme: "generic-light",
-				items: [{
-					location: "before", widget: "template",
-					template: "<b style='padding:0 4px;'>Téma:</b>"
-				}, {
-					location: "before", 
-					widget: "buttonGroup",
-					options: {
-						items: [
-							{ text: "Světlé", key: "generic-light" },
-							{ text: "Tmavé", key: "generic-dark" }
-						],
-						selectedItemKeys: ["generic-light"],
-						onSelectionChanged: function (e) {
-							var key = e.component.getSelectedItemKeys()[0] || "generic-light";
-							applyTheme(key);
-						}
-					}
-				}, {
-					location: "after", widget: "buttonGroup",
-					options: {
-						items: [
-							{ text: "Bez zalamování", key: false },
-							{ text: "Zalamovat řádky", key: true }
-						],
-						selectedItemKeys: [false],
-						onSelectionChanged: function (e) {
-							var wrapOn = !!e.component.getSelectedItemKeys()[0];
-							applyWrap(wrapOn);
-						}
-					}
-				}]
-			}, "#pageToolbar");
-			applyTheme("generic-light");
+		    function applyWrap(wrapOn) {
+		        allEditors.forEach(function (ed) { ed.option("wrap", wrapOn); });
+		    }
+
+		    var toolbar = qpx.ui({
+		        view: "qpToolBar",
+		        theme: "generic-light",
+		        items: [
+		            {
+		                location: "before", widget: "template",
+		                template: "<b style='padding:0 4px;'>Styl:</b>"
+		            },
+		            {
+		                location: "before", widget: "buttonGroup",
+		                options: {
+		                    items: [
+		                        { text: "Světlé", key: "generic-light" },
+		                        { text: "Tmavé", key: "generic-dark" }
+		                    ],
+		                    selectedItemKeys: ["generic-light"],
+		                    onSelectionChanged: function (e) {
+		                        var key = e.component.getSelectedItemKeys()[0] || "generic-light";
+		                        applyTheme(key);
+		                    }
+		                }
+		            },
+		            {
+		                location: "after", widget: "buttonGroup",
+		                options: {
+		                    items: [
+		                        { text: "Bez zalamování", key: false },
+		                        { text: "Zalamovat řádky", key: true }
+		                    ],
+		                    selectedItemKeys: [false],
+		                    onSelectionChanged: function (e) {
+		                        var wrapOn = !!e.component.getSelectedItemKeys()[0];
+		                        applyWrap(wrapOn);
+		                    }
+		                }
+		            }
+		        ]
+		    }, "#pageToolbar");
+
+		    applyTheme("generic-light");
 		});
 		</script>
 	</body>
