@@ -2904,6 +2904,7 @@
 }
 
 .qpx-propertygrid {
+  display: block;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 13px;
   color: var(--qpx-text);
@@ -2928,7 +2929,6 @@
   table-layout: fixed;
 }
 .qpx-propertygrid .qpx-pg-label {
-  width: 38%;
   padding: 6px 10px;
   border-right: 1px solid var(--qpx-border);
   vertical-align: middle;
@@ -2940,30 +2940,51 @@
   padding: 5px 8px;
   vertical-align: middle;
 }
-.qpx-propertygrid .qpx-pg-header-table .qpx-pg-header-row th {
+.qpx-propertygrid thead .qpx-pg-header-row th {
   font-weight: 700;
   text-align: left;
   background-image: linear-gradient(to bottom, var(--qpx-bg), var(--qpx-surface));
   border-bottom: 2px solid var(--qpx-border);
   color: var(--qpx-text);
 }
-.qpx-propertygrid .qpx-pg-header-table .qpx-pg-label {
-  border-right: 1px solid var(--qpx-border);
-}
-.qpx-propertygrid .qpx-pg-category {
-  font-weight: 600;
-  font-size: 12px;
-  margin: 0;
+.qpx-propertygrid .qpx-pg-group-row td {
   padding: 6px 10px 6px 8px;
   background: var(--qpx-surface);
   border-top: 1px solid var(--qpx-border);
   border-bottom: 1px solid var(--qpx-border);
   border-left: 3px solid var(--qpx-accent);
-  color: var(--qpx-text-muted);
+  font-weight: 600;
+  font-size: 12px;
   letter-spacing: 0.02em;
+  color: var(--qpx-text-muted);
+  user-select: none;
 }
-.qpx-propertygrid .qpx-pg-category:first-child {
+.qpx-propertygrid .qpx-pg-group-row:hover td {
+  background: var(--qpx-hover);
+}
+.qpx-propertygrid .qpx-pg-group-row:first-child td {
   border-top: none;
+}
+.qpx-propertygrid .qpx-pg-group-toggle {
+  display: inline-block;
+  width: 12px;
+  text-align: center;
+  font-size: 10px;
+  margin-right: 4px;
+}
+.qpx-propertygrid .qpx-pg-group-toggle.qpx-pg-group-toggle-static {
+  visibility: hidden;
+}
+.qpx-propertygrid .qpx-pg-group-label {
+  color: var(--qpx-text);
+}
+.qpx-propertygrid .qpx-pg-group-count {
+  margin-left: 6px;
+  font-weight: 400;
+  color: var(--qpx-text-muted);
+}
+.qpx-propertygrid .qpx-pg-group-row.qpx-state-collapsed td {
+  border-bottom-color: var(--qpx-border);
 }
 .qpx-propertygrid .qpx-pg-row {
   border-bottom: 1px solid var(--qpx-border);
@@ -3492,6 +3513,89 @@
   border-color: transparent;
 }
 
+.qpx-syntaxeditor {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--qpx-border, #ccc);
+  border-radius: 4px;
+  background: var(--qpx-bg, #fff);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.qpx-syntaxeditor.qpx-hidden {
+  display: none;
+}
+.qpx-syntaxeditor.qpx-state-focused {
+  border-color: var(--qpx-accent, #337ab7);
+  box-shadow: 0 0 0 2px var(--qpx-accent, #337ab7) inset;
+}
+.qpx-syntaxeditor.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+.qpx-syntaxeditor.qpx-state-readonly {
+  border-style: dashed;
+}
+
+.qpx-syntaxeditor-host {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.qpx-syntaxeditor-host :focus {
+  outline: none;
+}
+
+.qpx-syntaxeditor-placeholder {
+  position: absolute;
+  top: 6px;
+  left: 54px;
+  right: 8px;
+  z-index: 2;
+  pointer-events: none;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  color: var(--qpx-text-muted, #767676);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qpx-syntaxeditor-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--qpx-text-muted, #767676);
+  background: var(--qpx-bg, #fff);
+}
+.qpx-syntaxeditor-overlay:not(.qpx-syntaxeditor-overlay-error)::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--qpx-border, #ccc);
+  border-top-color: var(--qpx-accent, #337ab7);
+  border-radius: 50%;
+  animation: qpx-syntaxeditor-spin 0.8s linear infinite;
+}
+.qpx-syntaxeditor-overlay.qpx-syntaxeditor-overlay-error {
+  color: var(--qpx-danger, #d9534f);
+}
+
+@keyframes qpx-syntaxeditor-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 :root,
 .qpx-view {
   --qpx-bg: #2a2a2a;

@@ -278,6 +278,15 @@ System.out.println("/devel/index.jsp");
 					<span class="card-path">/devel/test/treeview</span>
 				</a>
 			</div>
+			<h2 class="group-title">Ostetní</h2>
+			<div class="grid" data-group="other">
+				<a class="card" href="/devel/test/syntaxeditor">
+					<span class="card-icon"><i class="fa fa-table" style="color: #337ab7;"></i></span>
+					<span class="card-title">qpSyntaxEditor</span>
+					<span class="card-desc">Editor programovacích jazyků se zvýrazněnou syntaxy</span>
+					<span class="card-path">/devel/test/syntaxeditor</span>
+				</a>
+			</div>
 		</main>
 
 		<footer>qpx framework — interní vývojářský rozcestník. Verze CSS/JS buildu se řídí parametrem <code>?build=${ timeNo }</code>.</footer>

@@ -7645,64 +7645,79 @@
 
 /*!
  * qpx - qpPropertyGrid
- * PropertyGrid inspirovaný Kendo UI PropertyGrid — vlastnosti seskupené
- * do kategorií, editace přímo v mřížce pomocí odpovídajícího qpx
- * editoru (text/number/checkbox/switch/dropdown) podle "editor" u
- * každé položky. Vzhledem se řídí widgets/_propertygrid.scss, který je
- * naladěný na styl Kendo UI "Classic" (Silver) — světlá i tmavá
- * varianta jedou nad stejnými --qpx-* proměnnými jako zbytek frameworku.
+ * PropertyGrid, funkčností co nejblíže jQuery EasyUI PropertyGrid
+ * (rozšíření EasyUI DataGrid o 2 sloupce name/value a "editor" per-řádek):
  *
- * API je zachováno beze změny oproti předchozí verzi (items, readOnly,
- * showCategories, categoryField, disabled, visible, onValueChanged,
- * onItemChanged, onOptionChanged, editor: "text"|"number"|"checkbox"|
- * "switch"|"dropdown", getValues()/setValues()). Doplněno pouze
- * NEDESTRUKTIVNĚ:
- *   - showHeader / nameHeader / valueHeader — volitelná hlavička
- *     sloupců "Vlastnost | Hodnota" (typický Kendo PropertyGrid vzhled),
- *   - onInitialized / onContentReady / onDisposing — pro konzistenci
- *     s ostatními qpx widgety,
- *   - oprava: refresh() už znovu neregistruje event handlery (dřív
- *     způsobovalo vícenásobné volání onValueChanged po setValues()),
- *   - oprava: option("readOnly"/"showCategories"/"categoryField"/...)
- *     teď skutečně překreslí mřížku,
- *   - vnořené editor-widgety (qpTextBox/qpNumberBox/qpCheckBox/
- *     qpSwitch/dropDownButton) se při každém překreslení i při
- *     destroy() korektně destruují (dřív mohly zůstávat "osiřelé").
+ *   - data se načítají jako pole řádků NEBO objekt { rows: [...] },
+ *     stejně jako EasyUI ( data.rows / loadData(data) ),
+ *   - showGroup + groupField seskupují řádky do "group" pásů uvnitř
+ *     JEDNÉ tabulky (<tr colspan="2">, přesně jako EasyUI datagrid
+ *     group-row), a tyto skupiny jsou VOLITELNĚ SBALITELNÉ kliknutím
+ *     na hlavičku (collapsible) — v původní EasyUI-inspirované verzi
+ *     tohle chybělo (byly to jen vizuální oddíly bez collapse),
+ *   - columns: [{field:'name'|'value', title, width}] (i vnořené
+ *     columns:[[...]] jako u EasyUI datagrid) mění hlavičku/šířku,
+ *   - editor u položky lze zapsat jako řetězec ("text","numberbox",
+ *     "checkbox","combobox","datebox"...) NEBO jako EasyUI-styl objekt
+ *     { type:"combobox", options:{ data:[...], valueField, textField } },
+ *   - loadData(data) / getData() — stejná jména metod jako v EasyUI.
+ *
+ * Zpětná kompatibilita: showCategories/categoryField a starší editor
+ * "dropdown" (přes dropDownButton) i nadále fungují beze změny — jsou
+ * jen alias/legacy cesta vedle nových showGroup/groupField/combobox.
+ *
+ * Vzhled (widgets/_propertygrid.scss) zůstává v duchu zadání z
+ * minulého kroku — Kendo UI "Classic" (Silver) / dark, postavené jen
+ * na stávajících --qpx-* proměnných; jen doplněno o styl nového
+ * sbalitelného group-row.
  *
  * options:
- *   items ([{ field, label, value, editor, category, readOnly, dataSource }]),
- *   readOnly, showCategories, categoryField,
- *   showHeader, nameHeader, valueHeader,
- *   disabled, visible
+ *   items / data ([{...}] nebo {rows:[...]}),
+ *   showCategories / showGroup, categoryField / groupField,
+ *   collapsible, collapsedGroups,
+ *   showHeader, nameHeader, valueHeader, nameColumnWidth, columns,
+ *   readOnly, disabled, visible
  *
  * events:
  *   onInitialized, onContentReady, onValueChanged, onItemChanged,
- *   onOptionChanged, onDisposing
+ *   onRowClick, onGroupToggle, onOptionChanged, onDisposing
  *
  * methods:
- *   option(name[, value]), getValues(), setValues(obj),
+ *   option(name[, value]), loadData(data), getData(), getValues(), setValues(obj),
+ *   collapseGroup(name), expandGroup(name), collapseAll(), expandAll(),
  *   refresh(), enable(), disable(), destroy()
  */
 (function (qpx, $) {
     "use strict";
 
+    function isPlainArray(v) { return Object.prototype.toString.call(v) === "[object Array]"; }
+
     var PropertyGrid = qpx.Widget.extend({
 
         defaults: {
             items: [],
+            data: null, // alias pro items — přijímá i EasyUI tvar {rows:[...]}
+
             readOnly: false,
-            showCategories: true,
-            categoryField: "category",
+
+            showCategories: true,   // EasyUI: showGroup (alias, viz níže)
+            categoryField: "category", // EasyUI: groupField (alias, viz níže)
+            collapsible: true,      // skupiny lze kliknutím sbalit/rozbalit
+            collapsedGroups: [],    // názvy skupin, které mají být zpočátku sbalené
 
             showHeader: true,
-            nameHeader: "Vlastnost",
-            valueHeader: "Hodnota",
+            nameHeader: "Vlastnost",  // EasyUI columns[].title pro field:"name"
+            valueHeader: "Hodnota",   // EasyUI columns[].title pro field:"value"
+            nameColumnWidth: "38%",
+            columns: null, // volitelně: [{field:"name"|"value", title, width}] (i vnořené [[...]])
 
             disabled: false,
             visible: true,
 
             onValueChanged: null,
             onItemChanged: null,
+            onRowClick: null,
+            onGroupToggle: null,
             onOptionChanged: null,
             onInitialized: null,
             onContentReady: null,
@@ -7714,6 +7729,11 @@
             var cfg = this.config;
             var self = this;
 
+            // -- EasyUI-style aliasy: showGroup/groupField, data/items --------
+            if (cfg.showGroup !== undefined) { cfg.showCategories = !!cfg.showGroup; }
+            if (cfg.groupField) { cfg.categoryField = cfg.groupField; }
+            cfg.items = this._normalizeItems(cfg.data || cfg.items);
+
             this.$container
                 .addClass("qpx-propertygrid")
                 .toggleClass("qpx-hidden", !cfg.visible)
@@ -7721,13 +7741,20 @@
 
             if (cfg.onValueChanged) { this.on("valueChanged", cfg.onValueChanged); }
             if (cfg.onItemChanged) { this.on("itemChanged", cfg.onItemChanged); }
+            if (cfg.onRowClick) { this.on("rowClick", cfg.onRowClick); }
+            if (cfg.onGroupToggle) { this.on("groupToggle", cfg.onGroupToggle); }
             if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
             if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
             if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
             if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
 
             this._editorInstances = [];
+            this._collapsed = (cfg.collapsedGroups || []).slice();
+            this._groupRows = {};       // groupName -> [ $tr, $tr, ... ]
+            this._groupHeaderEls = {};  // groupName -> $tr (group-row)
+            this._nameColWidth = cfg.nameColumnWidth;
 
+            this._applyColumnsConfig();
             this._renderGrid();
 
             setTimeout(function () { self.trigger("contentReady", { component: self }); }, 0);
@@ -7741,21 +7768,61 @@
         },
 
         // ---------------------------------------------------------------
+        // Normalizace vstupních dat — přijímá pole i EasyUI tvar {rows:[...]}
+        // ---------------------------------------------------------------
+        _normalizeItems: function (data) {
+            if (isPlainArray(data)) { return data; }
+            if (data && isPlainArray(data.rows)) { return data.rows; }
+            return [];
+        },
+
+        // columns:[{field,title,width}] (i vnořené columns:[[...]] jako EasyUI datagrid)
+        _applyColumnsConfig: function () {
+            var cfg = this.config;
+            var cols = cfg.columns;
+            if (!cols || !cols.length) { return; }
+            if (isPlainArray(cols[0])) { cols = cols[0]; }
+
+            var nameCol = cols.filter(function (c) { return c.field === "name"; })[0] || cols[0];
+            var valueCol = cols.filter(function (c) { return c.field === "value"; })[0] || cols[1];
+
+            if (nameCol) {
+                if (nameCol.title) { cfg.nameHeader = nameCol.title; }
+                if (nameCol.width) { this._nameColWidth = qpx.toPx(nameCol.width); }
+            }
+            if (valueCol && valueCol.title) { cfg.valueHeader = valueCol.title; }
+        },
+
+        // ---------------------------------------------------------------
+        // Vykreslení — JEDNA tabulka, skupiny jako <tr colspan="2">
+        // (stejná stavba jako EasyUI datagrid group-row)
+        // ---------------------------------------------------------------
         _renderGrid: function () {
             var self = this;
             var cfg = this.config;
 
             this._destroyEditors();
             this.$container.empty();
+            this._groupRows = {};
+            this._groupHeaderEls = {};
+
+            var $table = $("<table class='qpx-pg-table'></table>");
+
+            var $colgroup = $("<colgroup></colgroup>");
+            $colgroup.append($("<col>").css("width", this._nameColWidth));
+            $colgroup.append($("<col>"));
+            $table.append($colgroup);
 
             if (cfg.showHeader) {
-                var $headerTable = $("<table class='qpx-pg-table qpx-pg-header-table'></table>");
-                var $headerRow = $("<tr class='qpx-pg-header-row'></tr>");
-                $headerRow.append($("<th class='qpx-pg-label'></th>").text(cfg.nameHeader));
-                $headerRow.append($("<th class='qpx-pg-editor'></th>").text(cfg.valueHeader));
-                $headerTable.append($headerRow);
-                this.$container.append($headerTable);
+                var $thead = $("<thead></thead>");
+                var $headRow = $("<tr class='qpx-pg-header-row'></tr>");
+                $headRow.append($("<th class='qpx-pg-label'></th>").text(cfg.nameHeader));
+                $headRow.append($("<th class='qpx-pg-editor'></th>").text(cfg.valueHeader));
+                $thead.append($headRow);
+                $table.append($thead);
             }
+
+            var $tbody = $("<tbody></tbody>");
 
             var groups = {};
             var order = [];
@@ -7768,31 +7835,98 @@
 
             order.forEach(function (cat) {
                 if (cfg.showCategories) {
-                    self.$container.append($("<div class='qpx-pg-category'></div>").text(cat));
+                    $tbody.append(self._renderGroupRow(cat, groups[cat].length));
                 }
 
-                var $table = $("<table class='qpx-pg-table'></table>");
+                self._groupRows[cat] = [];
 
                 groups[cat].forEach(function (item) {
-                    var $tr = $("<tr class='qpx-pg-row'></tr>");
-
-                    var $label = $("<td class='qpx-pg-label'></td>").text(item.label || item.field);
-                    var $editor = $("<td class='qpx-pg-editor'></td>");
-
-                    $editor.append(self._createEditor(item));
-
-                    $tr.append($label, $editor);
-                    $table.append($tr);
+                    var $tr = self._renderRow(item, cat);
+                    if (cfg.showCategories && self._collapsed.indexOf(cat) !== -1) { $tr.hide(); }
+                    self._groupRows[cat].push($tr);
+                    $tbody.append($tr);
                 });
-
-                self.$container.append($table);
             });
+
+            $table.append($tbody);
+            this.$container.append($table);
+        },
+
+        _renderGroupRow: function (groupName, count) {
+            var self = this;
+            var cfg = this.config;
+            var collapsed = this._collapsed.indexOf(groupName) !== -1;
+
+            var $tr = $("<tr class='qpx-pg-group-row'></tr>").toggleClass("qpx-state-collapsed", collapsed);
+            var $td = $("<td colspan='2'></td>");
+
+            if (cfg.collapsible) {
+                var $toggle = $("<span class='qpx-pg-group-toggle'></span>").text(collapsed ? "▸" : "▾");
+                $td.append($toggle);
+                $tr.css("cursor", "pointer");
+                $tr.on("click.qpxPropertyGrid", function () { self._toggleGroup(groupName); });
+            } else {
+                $td.append($("<span class='qpx-pg-group-toggle qpx-pg-group-toggle-static'></span>"));
+            }
+
+            $td.append($("<span class='qpx-pg-group-label'></span>").text(groupName));
+            $td.append($("<span class='qpx-pg-group-count'></span>").text("(" + count + ")"));
+
+            $tr.append($td);
+            this._groupHeaderEls[groupName] = $tr;
+            return $tr;
+        },
+
+        _toggleGroup: function (groupName) {
+            var idx = this._collapsed.indexOf(groupName);
+            var collapsed;
+            if (idx === -1) { this._collapsed.push(groupName); collapsed = true; }
+            else { this._collapsed.splice(idx, 1); collapsed = false; }
+
+            var $hdr = this._groupHeaderEls[groupName];
+            if ($hdr) {
+                $hdr.toggleClass("qpx-state-collapsed", collapsed);
+                $hdr.find(".qpx-pg-group-toggle").text(collapsed ? "▸" : "▾");
+            }
+            (this._groupRows[groupName] || []).forEach(function ($tr) { $tr.toggle(!collapsed); });
+
+            this.trigger("groupToggle", { group: groupName, collapsed: collapsed, component: this });
+        },
+
+        _renderRow: function (item, groupName) {
+            var self = this;
+            var $tr = $("<tr class='qpx-pg-row'></tr>").attr("data-group", groupName);
+
+            var $label = $("<td class='qpx-pg-label'></td>").text(item.label || item.field);
+            var $editor = $("<td class='qpx-pg-editor'></td>");
+            $editor.append(this._createEditor(item));
+
+            $tr.append($label, $editor);
+
+            $tr.on("click.qpxPropertyGrid", function () {
+                self.trigger("rowClick", { item: item, row: item, component: self });
+            });
+
+            return $tr;
+        },
+
+        // ---------------------------------------------------------------
+        // Editory — string i EasyUI-styl { type, options }
+        // ---------------------------------------------------------------
+        _editorType: function (item) {
+            return qpx.isObject(item.editor) ? item.editor.type : item.editor;
+        },
+
+        _editorOptions: function (item) {
+            return qpx.isObject(item.editor) ? (item.editor.options || {}) : {};
         },
 
         _createEditor: function (item) {
             var self = this;
             var cfg = this.config;
             var val = item.value;
+            var type = this._editorType(item);
+            var opts = this._editorOptions(item);
 
             if (cfg.readOnly || item.readOnly) {
                 return $("<span class='qpx-pg-readonly'></span>").text(this._formatReadOnlyValue(item));
@@ -7800,7 +7934,7 @@
 
             var widgetCfg = null;
 
-            switch (item.editor) {
+            switch (type) {
 
                 case "textbox":
                 case "text":
@@ -7811,11 +7945,22 @@
                     };
                     break;
 
+                case "textarea":
+                    widgetCfg = {
+                        view: "qpTextBox",
+                        value: val,
+                        multiline: true,
+                        onValueChanged: function (e) { self._updateValue(item, e.value); }
+                    };
+                    break;
+
                 case "number":
                 case "numberbox":
                     widgetCfg = {
                         view: "qpNumberBox",
                         value: val,
+                        min: opts.min,
+                        max: opts.max,
                         onValueChanged: function (e) { self._updateValue(item, Number(e.value)); }
                     };
                     break;
@@ -7836,6 +7981,20 @@
                     };
                     break;
 
+                // -- EasyUI: editor:{type:"combobox", options:{data, valueField, textField}} --
+                case "combobox":
+                    widgetCfg = {
+                        view: "qpSelectBox",
+                        value: val,
+                        dataSource: opts.data || item.dataSource || [],
+                        valueExpr: opts.valueField || "value",
+                        displayExpr: opts.textField || "text",
+                        searchEnabled: !!opts.searchEnabled,
+                        onValueChanged: function (e) { self._updateValue(item, e.value); }
+                    };
+                    break;
+
+                // -- zpětná kompatibilita s předchozí verzí (dropDownButton) --
                 case "dropdown":
                     widgetCfg = {
                         view: "dropDownButton",
@@ -7843,6 +8002,28 @@
                         useSelectMode: true,
                         selectedItemKey: val,
                         onSelectionChanged: function (e) { self._updateValue(item, e.key); }
+                    };
+                    break;
+
+                // -- EasyUI: editor:"datebox" --
+                case "date":
+                case "datebox":
+                    widgetCfg = {
+                        view: "qpDatePicker",
+                        value: val ? new Date(val) : null,
+                        formatString: opts.formatString || "dd.MM.yyyy",
+                        onValueChanged: function (e) { self._updateValue(item, e.value); }
+                    };
+                    break;
+
+                // -- rozšíření nad rámec EasyUI (využívá qpColorPicker z tohoto frameworku) --
+                case "color":
+                case "colorbox":
+                    widgetCfg = {
+                        view: "qpColorPicker",
+                        value: val || "#000000",
+                        mode: opts.mode || "both",
+                        onValueChanged: function (e) { self._updateValue(item, e.value); }
                     };
                     break;
             }
@@ -7856,10 +8037,17 @@
             return instance.getContainer();
         },
 
-        // checkbox/switch v readOnly zobrazí "Ano"/"Ne" místo true/false
+        // readOnly zobrazení hodnoty — item.formatter má přednost (EasyUI: columns[].formatter)
         _formatReadOnlyValue: function (item) {
-            if (item.editor === "checkbox" || item.editor === "switch") {
-                return item.value ? "Ano" : "Ne";
+            if (qpx.isFunction(item.formatter)) { return item.formatter(item.value, item); }
+
+            var type = this._editorType(item);
+            if (type === "checkbox" || type === "switch") { return item.value ? "Ano" : "Ne"; }
+            if ((type === "date" || type === "datebox") && item.value) {
+                var d = (item.value instanceof Date) ? item.value : new Date(item.value);
+                if (!isNaN(d.getTime())) {
+                    return ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+                }
             }
             return item.value;
         },
@@ -7894,21 +8082,41 @@
         // ---------------------------------------------------------------
         // Veřejné API
         // ---------------------------------------------------------------
+
+        // EasyUI: .propertygrid('loadData', data) — data jako pole i {rows:[...]}
+        loadData: function (data) {
+            return this.option("items", this._normalizeItems(data));
+        },
+
+        // EasyUI: .propertygrid('getData') — vrací stejný tvar jako se do gridu nahrává
+        getData: function () {
+            return { total: this.config.items.length, rows: this.config.items };
+        },
+
         getValues: function () {
             var obj = {};
-            this.config.items.forEach(function (it) {
-                obj[it.field] = it.value;
-            });
+            this.config.items.forEach(function (it) { obj[it.field] = it.value; });
             return obj;
         },
 
         setValues: function (obj) {
             this.config.items.forEach(function (it) {
-                if (obj[it.field] !== undefined) {
-                    it.value = obj[it.field];
-                }
+                if (obj[it.field] !== undefined) { it.value = obj[it.field]; }
             });
             this.refresh();
+            return this;
+        },
+
+        collapseGroup: function (name) { if (this._collapsed.indexOf(name) === -1) { this._toggleGroup(name); } return this; },
+        expandGroup: function (name) { if (this._collapsed.indexOf(name) !== -1) { this._toggleGroup(name); } return this; },
+        collapseAll: function () {
+            var self = this;
+            Object.keys(this._groupHeaderEls).forEach(function (name) { self.collapseGroup(name); });
+            return this;
+        },
+        expandAll: function () {
+            var self = this;
+            Object.keys(this._groupHeaderEls).forEach(function (name) { self.expandGroup(name); });
             return this;
         },
 
@@ -7929,13 +8137,39 @@
             this.config[name] = value;
 
             switch (name) {
+                case "data":
+                    this.config.items = this._normalizeItems(value);
+                    this.refresh();
+                    break;
+
                 case "items":
-                case "showCategories":
-                case "categoryField":
                 case "readOnly":
+                case "collapsible":
+                    this.refresh();
+                    break;
+
+                case "showCategories":
+                case "showGroup":
+                    this.config.showCategories = !!value;
+                    this.refresh();
+                    break;
+
+                case "categoryField":
+                case "groupField":
+                    this.config.categoryField = value;
+                    this.refresh();
+                    break;
+
                 case "showHeader":
                 case "nameHeader":
                 case "valueHeader":
+                case "nameColumnWidth":
+                    if (name === "nameColumnWidth") { this._nameColWidth = value; }
+                    this.refresh();
+                    break;
+
+                case "columns":
+                    this._applyColumnsConfig();
                     this.refresh();
                     break;
 
@@ -7954,7 +8188,7 @@
 
         destroy: function () {
             this._destroyEditors();
-            this.$container.off();
+            this.$container.off(".qpxPropertyGrid");
             this._super();
         }
     });
@@ -9259,6 +9493,476 @@
 
     qpx.registerWidget("qpDataGrid", DataGrid);
     qpx.qpDataGrid = DataGrid;
+
+})(window.qpx, jQuery);
+
+/*!
+ * qpx - qpSyntaxEditor
+ * Obálka nad Ace Editorem (https://ace.c9.io) - editor kódu se zvýrazňováním
+ * syntaxe (JavaScript, SQL, JSON, HTML/CSS, Python, ...), integrovaná do
+ * qpx frameworku stejným způsobem, jakým Webix zapouzdřuje widgety třetích
+ * stran (vlastní view, vlastní kontejner, syncování hodnoty/rozměrů,
+ * proxy na nativní API, úklid v destroy()).
+ *
+ * Na rozdíl od ostatních qpx widgetů se Ace Editor NENAČÍTÁ staticky
+ * <script> tagem předem - qpSyntaxEditor si ho při první instanci sám
+ * dynamicky stáhne (a využije vestavěný dynamický loader Ace pro
+ * mode-*.js/theme-*.js/ext-*.js soubory). Container se proto vykreslí
+ * ihned (se stavem "načítání"), samotná instance Ace je k dispozici až
+ * po dokončení načtení - viz event "contentReady" / metoda isReady().
+ *
+ * Umístění knihovny (analogie k /devel/libs/qpx, /devel/libs/jquery)
+ * se nastavuje staticky před vytvořením první instance:
+ *
+ *   qpx.qpSyntaxEditor.configure({ basePath: "/devel/libs/ace/" });
+ *   // nebo per-instance přepsáním options.basePath
+ *
+ * options:
+ *   value (string), mode ("javascript"|"sql"|"json"|"html"|"css"|"xml"|
+ *     "python"|"php"|"csharp"|"java"|"yaml"|"markdown"|"text" nebo přímo
+ *     "ace/mode/xxx"), theme ("generic-light"|"generic-dark" - namapováno
+ *     na Ace témata "chrome"/"tomorrow_night" - nebo přímo název/"ace/theme/xxx"),
+ *   autoTheme (při theme:null odvodí světlé/tmavé téma z nejbližšího
+ *     předka se třídou "qpx-theme-generic-light/dark"),
+ *   placeholder, fontSize, tabSize, useSoftTabs, wrap, showGutter,
+ *   showPrintMargin, printMarginColumn, highlightActiveLine, showInvisibles,
+ *   minLines, maxLines, autocomplete (lazy-load ext-language_tools),
+ *   keyboardHandler (null|"vim"|"emacs"|"sublime"),
+ *   basePath (přepíše statické qpx.qpSyntaxEditor.basePath jen pro tuto instanci),
+ *   disabled, readOnly, visible, height (výchozí 240 - Ace potřebuje explicitní výšku)
+ *
+ * events:
+ *   onInitialized, onContentReady (voláno až PO úspěšném načtení Ace a
+ *     vytvoření instance - obsahuje i "editor": nativní objekt Ace),
+ *   onValueChanged, onFocusIn, onFocusOut, onOptionChanged,
+ *   onLoadError (nepodařilo se stáhnout Ace), onDisposing
+ *
+ * methods:
+ *   option(name[, value]), value([val]), focus(), blur(), reset(),
+ *   enable(), disable(), resize(), insert(text), gotoLine(line[, column]),
+ *   undo(), redo(), setAnnotations(list), clearAnnotations(),
+ *   getEditor() - vrátí nativní instanci Ace (přímý přístup ke třetí straně),
+ *   isReady(), destroy()
+ *
+ * statické (qpx.qpSyntaxEditor.*):
+ *   basePath - výchozí cesta ke souborům Ace,
+ *   configure({ basePath }) - pohodlná změna basePath pro všechny další instance
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var MODE_ALIASES = {
+        js: "javascript", ts: "typescript",
+        json: "json", html: "html", htm: "html",
+        css: "css", scss: "scss", less: "less",
+        xml: "xml", sql: "sql", python: "python", py: "python",
+        java: "java", csharp: "csharp", cs: "csharp", php: "php",
+        yaml: "yaml", yml: "yaml", markdown: "markdown", md: "markdown",
+        text: "text", plain_text: "text", plaintext: "text",
+        sh: "sh", bash: "sh", c_cpp: "c_cpp", cpp: "c_cpp"
+    };
+
+    var THEME_ALIASES = {
+        "generic-light": "chrome",
+        "generic-dark": "tomorrow_night"
+    };
+
+    // sdílený loader - stačí jedno stažení ace.js na basePath, i pro víc instancí
+    var loadPromises = {};
+
+    function ensureAce(basePath) {
+        if (window.ace) {
+            window.ace.config.set("basePath", basePath);
+            window.ace.config.set("modePath", basePath);
+            window.ace.config.set("themePath", basePath);
+            return $.Deferred().resolve(window.ace).promise();
+        }
+        if (loadPromises[basePath]) { return loadPromises[basePath]; }
+
+        var dfd = $.Deferred();
+        var script = document.createElement("script");
+        script.src = basePath + "ace.js";
+        script.async = true;
+        script.onload = function () {
+            window.ace.config.set("basePath", basePath);
+            window.ace.config.set("modePath", basePath);
+            window.ace.config.set("themePath", basePath);
+            dfd.resolve(window.ace);
+        };
+        script.onerror = function () {
+            dfd.reject(new Error("qpx.qpSyntaxEditor: nepodařilo se načíst Ace Editor ze souboru '" + script.src + "'."));
+        };
+        document.head.appendChild(script);
+        loadPromises[basePath] = dfd.promise();
+        return loadPromises[basePath];
+    }
+
+    // =====================================================================
+    var SyntaxEditor = qpx.Widget.extend({
+
+        defaults: {
+            value: "",
+            mode: "text",
+            theme: null,        // null = odvodí se dle autoTheme, jinak "generic-light"/"generic-dark" nebo název Ace tématu
+            autoTheme: true,
+
+            placeholder: "",
+
+            fontSize: 13,
+            tabSize: 4,
+            useSoftTabs: true,
+            wrap: false,
+            showGutter: true,
+            showPrintMargin: false,
+            printMarginColumn: 80,
+            highlightActiveLine: true,
+            showInvisibles: false,
+
+            minLines: null,
+            maxLines: null,
+
+            autocomplete: false,
+            keyboardHandler: null, // null | "vim" | "emacs" | "sublime"
+
+            basePath: null,     // přepíše qpx.qpSyntaxEditor.basePath jen pro tuto instanci
+            height: 240,        // Ace potřebuje explicitní výšku kontejneru
+
+            disabled: false,
+            readOnly: false,
+            visible: true,
+
+            onValueChanged: null,
+            onOptionChanged: null,
+            onInitialized: null,
+            onContentReady: null,
+            onFocusIn: null,
+            onFocusOut: null,
+            onLoadError: null,
+            onDisposing: null
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+            var self = this;
+
+            this._editor = null;
+            this._aceReady = false;
+            this._resizeObserver = null;
+            this._suppressChange = false;
+
+            this.$container
+                .addClass("qpx-syntaxeditor")
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-state-readonly", !!cfg.readOnly);
+
+            if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
+            if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
+            if (cfg.onValueChanged) { this.on("valueChanged", cfg.onValueChanged); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+            if (cfg.onFocusIn) { this.on("focusIn", cfg.onFocusIn); }
+            if (cfg.onFocusOut) { this.on("focusOut", cfg.onFocusOut); }
+            if (cfg.onLoadError) { this.on("loadError", cfg.onLoadError); }
+            if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
+
+            this.$host = $("<div class='qpx-syntaxeditor-host'></div>");
+            this.$placeholder = $("<div class='qpx-syntaxeditor-placeholder'></div>").hide();
+            this.$overlay = $("<div class='qpx-syntaxeditor-overlay'></div>");
+            this.$overlayText = $("<span></span>");
+            this.$overlay.append(this.$overlayText);
+
+            this.$container.append(this.$host, this.$placeholder, this.$overlay);
+
+            this._showOverlay("Načítání editoru...", false);
+
+            var basePath = cfg.basePath || this.constructor.basePath;
+
+            ensureAce(basePath)
+                .done(function (ace) { self._initAce(ace); })
+                .fail(function (err) {
+                    self._showOverlay((err && err.message) || "Editor se nepodařilo načíst.", true);
+                    self.trigger("loadError", { error: err, component: self });
+                });
+        },
+
+        _showOverlay: function (text, isError) {
+            this.$overlayText.text(text);
+            this.$overlay.toggleClass("qpx-syntaxeditor-overlay-error", !!isError).show();
+        },
+
+        _hideOverlay: function () {
+            this.$overlay.hide();
+        },
+
+        // ---------------------------------------------------------------
+        // Inicializace nativní instance Ace (volá se asynchronně po načtení)
+        // ---------------------------------------------------------------
+        _initAce: function (ace) {
+            var cfg = this.config;
+            var self = this;
+
+            var editor = ace.edit(this.$host[0]);
+            this._editor = editor;
+
+            editor.setTheme(this._resolveTheme());
+            editor.session.setMode(this._resolveMode());
+            editor.setFontSize(cfg.fontSize);
+            editor.setReadOnly(!!cfg.readOnly || !!cfg.disabled);
+            editor.setShowPrintMargin(!!cfg.showPrintMargin);
+            editor.setPrintMarginColumn(cfg.printMarginColumn);
+            editor.setHighlightActiveLine(!!cfg.highlightActiveLine);
+            editor.setShowInvisibles(!!cfg.showInvisibles);
+            editor.renderer.setShowGutter(cfg.showGutter !== false);
+            editor.session.setTabSize(cfg.tabSize);
+            editor.session.setUseSoftTabs(cfg.useSoftTabs !== false);
+            editor.session.setUseWrapMode(!!cfg.wrap);
+            if (cfg.minLines) { editor.setOption("minLines", cfg.minLines); }
+            if (cfg.maxLines) { editor.setOption("maxLines", cfg.maxLines); }
+            if (cfg.keyboardHandler) { editor.setKeyboardHandler("ace/keyboard/" + cfg.keyboardHandler); }
+
+            this._suppressChange = true;
+            editor.setValue(cfg.value || "", -1); // -1 = kurzor na začátek (bez ozn. celého textu)
+            this._suppressChange = false;
+
+            if (cfg.autocomplete) { this._applyAutocomplete(true); }
+
+            this._bindAceEvents();
+
+            if (window.ResizeObserver) {
+                this._resizeObserver = new ResizeObserver(function () {
+                    if (self._editor) { self._editor.resize(); }
+                });
+                this._resizeObserver.observe(this.$host[0]);
+            }
+
+            this._aceReady = true;
+            this._hideOverlay();
+            this._updatePlaceholder();
+
+            this.trigger("contentReady", { component: this, editor: editor });
+        },
+
+        _applyAutocomplete: function (enabled) {
+            var editor = this._editor;
+            if (!editor) { return; }
+            if (enabled) {
+                try { window.ace.require("ace/ext/language_tools"); } catch (e) { /* dotáhne se dynamicky přes basePath */ }
+                editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true, enableSnippets: true });
+            } else {
+                editor.setOptions({ enableBasicAutocompletion: false, enableLiveAutocompletion: false, enableSnippets: false });
+            }
+        },
+
+        _bindAceEvents: function () {
+            var self = this;
+            var editor = this._editor;
+
+            editor.session.on("change", function () {
+                if (self._suppressChange) { return; }
+                var val = editor.getValue();
+                if (val === self.config.value) { return; }
+                var prev = self.config.value;
+                self.config.value = val;
+                self._updatePlaceholder();
+                self.trigger("valueChanged", { value: val, previousValue: prev, component: self, editor: editor });
+            });
+
+            editor.on("focus", function () {
+                self.$container.addClass("qpx-state-focused");
+                self._updatePlaceholder();
+                self.trigger("focusIn", { component: self, editor: editor });
+            });
+
+            editor.on("blur", function () {
+                self.$container.removeClass("qpx-state-focused");
+                self._updatePlaceholder();
+                self.trigger("focusOut", { component: self, editor: editor });
+            });
+        },
+
+        _updatePlaceholder: function () {
+            var cfg = this.config;
+            var isEmpty = !cfg.value || cfg.value.length === 0;
+            var isFocused = this.$container.hasClass("qpx-state-focused");
+            this.$placeholder.text(cfg.placeholder || "").toggle(!!cfg.placeholder && isEmpty && !isFocused);
+        },
+
+        _resolveMode: function () {
+            var m = this.config.mode || "text";
+            if (m.indexOf("ace/mode/") === 0) { return m; }
+            return "ace/mode/" + (MODE_ALIASES[m] || m);
+        },
+
+        _resolveTheme: function () {
+            var cfg = this.config;
+            var raw = cfg.theme;
+
+            if (!raw && cfg.autoTheme) {
+                var isDark = this.$container.closest(".qpx-theme-generic-dark").length > 0 ||
+                    this.$container.hasClass("qpx-theme-generic-dark");
+                raw = isDark ? "generic-dark" : "generic-light";
+            }
+            raw = raw || "generic-light";
+
+            if (raw.indexOf("ace/theme/") === 0) { return raw; }
+            return "ace/theme/" + (THEME_ALIASES[raw] || raw);
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        value: function (val) {
+            if (arguments.length === 0) { return this.config.value; }
+            return this.option("value", val);
+        },
+
+        focus: function () { if (this._editor) { this._editor.focus(); } return this; },
+        blur: function () { if (this._editor) { this._editor.blur(); } return this; },
+        reset: function () { return this.option("value", ""); },
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+
+        resize: function () { if (this._editor) { this._editor.resize(true); } return this; },
+        insert: function (text) { if (this._editor) { this._editor.insert(text); } return this; },
+        gotoLine: function (line, column) { if (this._editor) { this._editor.gotoLine(line, column || 0, true); } return this; },
+        undo: function () { if (this._editor) { this._editor.undo(); } return this; },
+        redo: function () { if (this._editor) { this._editor.redo(); } return this; },
+        setAnnotations: function (list) { if (this._editor) { this._editor.session.setAnnotations(list || []); } return this; },
+        clearAnnotations: function () { if (this._editor) { this._editor.session.clearAnnotations(); } return this; },
+
+        getEditor: function () { return this._editor; },
+        isReady: function () { return !!this._aceReady; },
+
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            var editor = this._editor;
+
+            switch (name) {
+                case "value":
+                    if (editor) {
+                        this._suppressChange = true;
+                        var pos = editor.getCursorPosition();
+                        editor.setValue(value || "", -1);
+                        try { editor.moveCursorToPosition(pos); } catch (e) { /* mimo rozsah nového textu - ignorovat */ }
+                        this._suppressChange = false;
+                    }
+                    this._updatePlaceholder();
+                    this.trigger("valueChanged", { value: value, previousValue: prev, component: this, editor: editor });
+                    break;
+
+                case "mode":
+                    if (editor) { editor.session.setMode(this._resolveMode()); }
+                    break;
+
+                case "theme":
+                    if (editor) { editor.setTheme(this._resolveTheme()); }
+                    break;
+
+                case "autoTheme":
+                    if (editor && !this.config.theme) { editor.setTheme(this._resolveTheme()); }
+                    break;
+
+                case "fontSize":
+                    if (editor) { editor.setFontSize(value); }
+                    break;
+
+                case "tabSize":
+                    if (editor) { editor.session.setTabSize(value); }
+                    break;
+
+                case "useSoftTabs":
+                    if (editor) { editor.session.setUseSoftTabs(!!value); }
+                    break;
+
+                case "wrap":
+                    if (editor) { editor.session.setUseWrapMode(!!value); }
+                    break;
+
+                case "showGutter":
+                    if (editor) { editor.renderer.setShowGutter(!!value); }
+                    break;
+
+                case "showPrintMargin":
+                    if (editor) { editor.setShowPrintMargin(!!value); }
+                    break;
+
+                case "printMarginColumn":
+                    if (editor) { editor.setPrintMarginColumn(value); }
+                    break;
+
+                case "highlightActiveLine":
+                    if (editor) { editor.setHighlightActiveLine(!!value); }
+                    break;
+
+                case "showInvisibles":
+                    if (editor) { editor.setShowInvisibles(!!value); }
+                    break;
+
+                case "minLines":
+                case "maxLines":
+                    if (editor) { editor.setOption(name, value); }
+                    break;
+
+                case "autocomplete":
+                    this._applyAutocomplete(!!value);
+                    break;
+
+                case "keyboardHandler":
+                    if (editor) { editor.setKeyboardHandler(value ? ("ace/keyboard/" + value) : null); }
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    if (editor) { editor.setReadOnly(!!value || !!this.config.readOnly); }
+                    break;
+
+                case "readOnly":
+                    this.$container.toggleClass("qpx-state-readonly", !!value);
+                    if (editor) { editor.setReadOnly(!!value || !!this.config.disabled); }
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    if (value) { this.resize(); }
+                    break;
+
+                case "placeholder":
+                    this._updatePlaceholder();
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        destroy: function () {
+            if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+            if (this._editor) { this._editor.destroy(); this._editor = null; }
+            this._super();
+        }
+
+    }, {
+        // --- statické členy (qpx.Class podporuje statiku podobně jako Java) ---
+        basePath: "/devel/libs/ace/",
+        configure: function (opts) {
+            if (opts && opts.basePath) { this.basePath = opts.basePath; }
+        }
+    });
+
+    qpx.registerWidget("qpSyntaxEditor", SyntaxEditor);
+    qpx.qpSyntaxEditor = SyntaxEditor;
 
 })(window.qpx, jQuery);
 

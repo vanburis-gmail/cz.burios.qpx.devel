@@ -33,6 +33,7 @@
 @use "widgets/treeview";
 @use "widgets/propertygrid";
 @use "widgets/datagrid";
+@use "widgets/syntaxeditor";
 
 // proměnné tématu se aplikují rovnou na :root i na .qpx-view,
 // takže je není nutné (ale je stále možné) obalovat třídou
