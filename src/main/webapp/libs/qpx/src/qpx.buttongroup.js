@@ -1,8 +1,13 @@
 /*!
- * qpx - buttonGroup
+ * qpx - qpButtonGroup
  * Skupina vizuálně spojených tlačítek, koncepčně jako DevExtreme dxButtonGroup.
  *  - options: items, keyExpr, selectionMode, selectedItemKeys, stylingMode
  *  - události: onItemClick, onSelectionChanged, onOptionChanged
+ *
+ * Pozn.: widget byl přejmenován z "buttonGroup"/qpx.ButtonGroup na
+ * "qpButtonGroup"/qpx.qpButtonGroup (sjednocení "qp" prefixu). Kdekoliv
+ * byl použit název "buttonGroup" (např. v options.widget u qpToolBar
+ * položek), nahraďte ho za "qpButtonGroup".
  */
 (function (qpx, $) {
     "use strict";
@@ -121,7 +126,7 @@
         disable: function () { return this.option("disabled", true); }
     });
 
-    qpx.registerWidget("buttonGroup", ButtonGroup);
-    qpx.ButtonGroup = ButtonGroup;
+    qpx.registerWidget("qpButtonGroup", ButtonGroup);
+    qpx.qpButtonGroup = ButtonGroup;
 
 })(window.qpx, jQuery);

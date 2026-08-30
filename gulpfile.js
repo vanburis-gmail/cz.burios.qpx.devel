@@ -24,6 +24,8 @@ gulp.task('build-js', function() {
 		"src/main/webapp/libs/qpx/src/qpx.dropdownbox.js",
 		"src/main/webapp/libs/qpx/src/qpx.lookup.js",
 		"src/main/webapp/libs/qpx/src/qpx.breadcrumb.js",
+		"src/main/webapp/libs/qpx/src/qpx.scrollview.js",
+		"src/main/webapp/libs/qpx/src/qpx.grouplist.js",
 		"src/main/webapp/libs/qpx/src/qpx.toolbar.js",
 		"src/main/webapp/libs/qpx/src/qpx.tabview.js",
 		"src/main/webapp/libs/qpx/src/qpx.treeview.js",

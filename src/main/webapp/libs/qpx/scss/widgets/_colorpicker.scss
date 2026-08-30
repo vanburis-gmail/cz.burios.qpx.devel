@@ -9,6 +9,7 @@
 // Google Sheets (mřížka vzorků + odkaz "Vlastní barva…").
 // =====================================================================
 
+@use "sass:math";
 @use "../base/variables" as *;
 
 // šachovnicový podklad pro průhlednost (alfa kanál / "bez barvy")
@@ -19,7 +20,7 @@
         linear-gradient(45deg, transparent 75%, #ccc 75%),
         linear-gradient(-45deg, transparent 75%, #ccc 75%);
     background-size: $size $size;
-    background-position: 0 0, 0 ($size / 2), ($size / 2) (-$size / 2), (-$size / 2) 0;
+    background-position: 0 0, 0 math.div($size, 2), math.div($size, 2) math.div(-$size, 2), math.div(-$size, 2) 0;
 }
 
 // =====================================================================

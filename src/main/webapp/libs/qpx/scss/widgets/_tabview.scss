@@ -2,68 +2,38 @@
  * qpx - qpTabView styles
  * Vzhledově se blíží DevExtreme dxTabPanel (Material-like "primary"
  * podtržený indikátor + "secondary" vyplněné "pilulky").
- * Barvy jsou vytažené do $proměnných, podobně jako u qpToolBar,
- * aby šlo snadno postavit vlastní téma / přepínat generic-light <-> generic-dark.
+ *
+ * Sjednoceno se zbytkem frameworku: barvy už nejsou soukromé
+ * $qp-tabview-light-* / $qp-tabview-dark-* SCSS proměnné duplikované ve
+ * dvou blocích, ale sdílené CSS proměnné (--qpx-*) z scss/themes/_light.scss
+ * a scss/themes/_dark.scss - přesně stejný mechanismus jako u
+ * qpTextBox/qpToolBar/qpCheckBox atd. Díky tomu:
+ *  - qpTabView už nepotřebuje mít theme třídu přímo na sobě - stačí ji
+ *    mít na libovolném předkovi (typicky <body>, viz qpx.setTheme()),
+ *  - v qpx.tabview.js proto NENÍ potřeba žádná speciální "theme" logika.
+ *
+ * Rozměrové (netématizované) tokeny byly přesunuty do
+ * base/_variables.scss pod jednotný prefix "$qpx-tabview-*".
  */
 
-// -----------------------------------------------------------------------
-// Proměnné — společný základ
-// -----------------------------------------------------------------------
-$qp-tabview-font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif !default;
-$qp-tabview-font-size: 14px !default;
-$qp-tabview-tab-height: 48px !default;
-$qp-tabview-tab-padding-x: 20px !default;
-$qp-tabview-tab-gap: 4px !default;
-$qp-tabview-indicator-height: 2px !default;
-$qp-tabview-radius: 4px !default;
-$qp-tabview-nav-size: 32px !default;
-$qp-tabview-transition: 0.18s ease-in-out !default;
-$qp-tabview-icon-size: 18px !default;
+@use "sass:math";
+@use "../base/variables" as *;
 
 // -----------------------------------------------------------------------
-// Proměnné — generic-light (výchozí téma)
-// -----------------------------------------------------------------------
-$qp-tabview-light-bg: #ffffff !default;
-$qp-tabview-light-panel-bg: #ffffff !default;
-$qp-tabview-light-border: #e0e0e0 !default;
-$qp-tabview-light-text: #333333 !default;
-$qp-tabview-light-text-muted: #757575 !default;
-$qp-tabview-light-accent: #1976d2 !default;
-$qp-tabview-light-hover-bg: rgba(0, 0, 0, 0.04) !default;
-$qp-tabview-light-selected-bg: rgba(25, 118, 210, 0.08) !default;
-$qp-tabview-light-disabled: #bdbdbd !default;
-$qp-tabview-light-nav-bg: #ffffff !default;
-$qp-tabview-light-badge-bg: #e53935 !default;
-$qp-tabview-light-badge-text: #ffffff !default;
-
-// -----------------------------------------------------------------------
-// Proměnné — generic-dark
-// -----------------------------------------------------------------------
-$qp-tabview-dark-bg: #2b2b2b !default;
-$qp-tabview-dark-panel-bg: #262626 !default;
-$qp-tabview-dark-border: #3f3f3f !default;
-$qp-tabview-dark-text: #e8e8e8 !default;
-$qp-tabview-dark-text-muted: #a0a0a0 !default;
-$qp-tabview-dark-accent: #64b5f6 !default;
-$qp-tabview-dark-hover-bg: rgba(255, 255, 255, 0.06) !default;
-$qp-tabview-dark-selected-bg: rgba(100, 181, 246, 0.14) !default;
-$qp-tabview-dark-disabled: #5c5c5c !default;
-$qp-tabview-dark-nav-bg: #2b2b2b !default;
-$qp-tabview-dark-badge-bg: #ef5350 !default;
-$qp-tabview-dark-badge-text: #ffffff !default;
-
-// -----------------------------------------------------------------------
-// Layout / struktura (nezávisle na tématu)
+// Layout / struktura + barvy (přes --qpx-*)
 // -----------------------------------------------------------------------
 .qpx-tabview {
     display: flex;
     flex-direction: column;
-    font-family: $qp-tabview-font-family;
-    font-size: $qp-tabview-font-size;
+    font-family: $qpx-font-family;
+    font-size: $qpx-font-size;
     width: 100%;
     min-width: 0;
     min-height: 0;
     position: relative;
+
+    background: var(--qpx-bg, #fff);
+    color: var(--qpx-text, #333);
 
     &.qpx-hidden { display: none; }
 
@@ -78,6 +48,17 @@ $qp-tabview-dark-badge-text: #ffffff !default;
         align-items: stretch;
         flex: 0 0 auto;
         position: relative;
+        background: var(--qpx-bg, #fff);
+        border-bottom: 1px solid var(--qpx-border, #ccc);
+    }
+    &.qpx-tabview-pos-bottom .qpx-tabview-tabswrapper {
+        border-bottom: none; border-top: 1px solid var(--qpx-border, #ccc);
+    }
+    &.qpx-tabview-pos-left .qpx-tabview-tabswrapper {
+        border-bottom: none; border-right: 1px solid var(--qpx-border, #ccc);
+    }
+    &.qpx-tabview-pos-right .qpx-tabview-tabswrapper {
+        border-bottom: none; border-left: 1px solid var(--qpx-border, #ccc);
     }
 
     .qpx-tabview-tabsscroll {
@@ -96,7 +77,7 @@ $qp-tabview-dark-badge-text: #ffffff !default;
 
     .qpx-tabview-nav {
         flex: 0 0 auto;
-        width: $qp-tabview-nav-size;
+        width: $qpx-tabview-nav-size;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -104,6 +85,9 @@ $qp-tabview-dark-badge-text: #ffffff !default;
         user-select: none;
         font-size: 18px;
         line-height: 1;
+        background: var(--qpx-bg, #fff);
+        color: var(--qpx-text-muted, #767676);
+        &:hover { background: var(--qpx-hover, #eceff1); }
     }
 
     .qpx-tabview-tab {
@@ -111,9 +95,9 @@ $qp-tabview-dark-badge-text: #ffffff !default;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        height: $qp-tabview-tab-height;
-        padding: 0 $qp-tabview-tab-padding-x;
+        gap: $qpx-gap-md;
+        height: $qpx-tabview-tab-height;
+        padding: 0 $qpx-tabview-tab-padding-x;
         white-space: nowrap;
         cursor: pointer;
         user-select: none;
@@ -121,6 +105,12 @@ $qp-tabview-dark-badge-text: #ffffff !default;
         outline: none;
         text-transform: none;
         font-weight: 500;
+        color: var(--qpx-text-muted, #767676);
+
+        &:hover { background: var(--qpx-hover, #eceff1); }
+        &.qpx-state-selected { color: var(--qpx-accent, #337ab7); }
+        &.qpx-state-disabled { color: var(--qpx-disabled, #bdbdbd); }
+        &:focus-visible { outline: 2px solid var(--qpx-accent, #337ab7); outline-offset: -2px; }
 
         &.qpx-hidden { display: none; }
 
@@ -140,8 +130,8 @@ $qp-tabview-dark-badge-text: #ffffff !default;
     &.qpx-icon-position-bottom .qpx-tabview-tab { flex-direction: column-reverse; }
 
     .qpx-icon {
-        width: $qp-tabview-icon-size;
-        height: $qp-tabview-icon-size;
+        width: $qpx-tabview-icon-size;
+        height: $qpx-tabview-icon-size;
         flex: 0 0 auto;
         display: inline-block;
         background: currentColor;
@@ -161,16 +151,19 @@ $qp-tabview-dark-badge-text: #ffffff !default;
         padding: 3px 6px;
         border-radius: 999px;
         font-weight: 600;
+        background: var(--qpx-danger, #d9534f);
+        color: var(--qpx-danger-contrast, #fff);
     }
 
     .qpx-tabview-indicator {
         position: absolute;
         bottom: 0;
         left: 0;
-        height: $qp-tabview-indicator-height;
-        border-radius: $qp-tabview-indicator-height / 2;
-        transition: left $qp-tabview-transition, width $qp-tabview-transition,
-                    top $qp-tabview-transition, height $qp-tabview-transition;
+        height: $qpx-tabview-indicator-height;
+        border-radius: math.div($qpx-tabview-indicator-height, 2);
+        transition: left $qpx-transition, width $qpx-transition,
+                    top $qpx-transition, height $qpx-transition;
+        background: var(--qpx-accent, #337ab7);
 
         &.qpx-no-anim { transition: none; }
     }
@@ -181,6 +174,7 @@ $qp-tabview-dark-badge-text: #ffffff !default;
         position: relative;
         min-height: 0;
         overflow: auto;
+        background: var(--qpx-bg, #fff);
     }
 
     .qpx-tabview-panel {
@@ -189,6 +183,7 @@ $qp-tabview-dark-badge-text: #ffffff !default;
         box-sizing: border-box;
         padding: 16px;
         overflow: auto;
+        background: var(--qpx-bg, #fff);
     }
 
     // --- pozice "bottom": záložky pod obsahem --------------------------
@@ -210,11 +205,11 @@ $qp-tabview-dark-badge-text: #ffffff !default;
         .qpx-tabview-tab {
             justify-content: flex-start;
             height: auto;
-            min-height: $qp-tabview-tab-height;
+            min-height: $qpx-tabview-tab-height;
         }
-        .qpx-tabview-nav { width: auto; height: $qp-tabview-nav-size; }
+        .qpx-tabview-nav { width: auto; height: $qpx-tabview-nav-size; }
         .qpx-tabview-indicator {
-            top: 0; left: auto; bottom: auto; width: $qp-tabview-indicator-height; height: auto;
+            top: 0; left: auto; bottom: auto; width: $qpx-tabview-indicator-height; height: auto;
         }
     }
 
@@ -234,109 +229,12 @@ $qp-tabview-dark-badge-text: #ffffff !default;
     // --- styling "secondary" (vyplněné "pilulky", indikátor skrytý) -----
     &.qpx-tabview-styling-secondary {
         .qpx-tabview-indicator { display: none; }
-        .qpx-tabview-tabslist { gap: $qp-tabview-tab-gap; padding: 4px; }
+        .qpx-tabview-tabslist { gap: $qpx-tabview-tab-gap; padding: 4px; }
         .qpx-tabview-tab {
-            border-radius: $qp-tabview-radius;
-            height: $qp-tabview-tab-height - 8px;
+            border-radius: $qpx-radius;
+            height: $qpx-tabview-tab-height - 8px;
+
+            &.qpx-state-selected { background: var(--qpx-selected, #e3f0fb); }
         }
-    }
-}
-
-// -----------------------------------------------------------------------
-// Téma: generic-light
-// -----------------------------------------------------------------------
-.qpx-tabview.qpx-theme-generic-light,
-.qpx-tabview:not(.qpx-theme-generic-dark) {
-    background: $qp-tabview-light-bg;
-    color: $qp-tabview-light-text;
-
-    .qpx-tabview-tabswrapper {
-        background: $qp-tabview-light-bg;
-        border-bottom: 1px solid $qp-tabview-light-border;
-    }
-    &.qpx-tabview-pos-bottom .qpx-tabview-tabswrapper {
-        border-bottom: none; border-top: 1px solid $qp-tabview-light-border;
-    }
-    &.qpx-tabview-pos-left .qpx-tabview-tabswrapper {
-        border-bottom: none; border-right: 1px solid $qp-tabview-light-border;
-    }
-    &.qpx-tabview-pos-right .qpx-tabview-tabswrapper {
-        border-bottom: none; border-left: 1px solid $qp-tabview-light-border;
-    }
-
-    .qpx-tabview-nav {
-        background: $qp-tabview-light-nav-bg;
-        color: $qp-tabview-light-text-muted;
-        &:hover { background: $qp-tabview-light-hover-bg; }
-    }
-
-    .qpx-tabview-tab {
-        color: $qp-tabview-light-text-muted;
-
-        &:hover { background: $qp-tabview-light-hover-bg; }
-        &.qpx-state-selected { color: $qp-tabview-light-accent; }
-        &.qpx-state-disabled { color: $qp-tabview-light-disabled; }
-        &:focus-visible { outline: 2px solid $qp-tabview-light-accent; outline-offset: -2px; }
-    }
-
-    .qpx-tabview-tab-badge {
-        background: $qp-tabview-light-badge-bg;
-        color: $qp-tabview-light-badge-text;
-    }
-
-    .qpx-tabview-indicator { background: $qp-tabview-light-accent; }
-    .qpx-tabview-content, .qpx-tabview-panel { background: $qp-tabview-light-panel-bg; }
-
-    &.qpx-tabview-styling-secondary .qpx-tabview-tab.qpx-state-selected {
-        background: $qp-tabview-light-selected-bg;
-    }
-}
-
-// -----------------------------------------------------------------------
-// Téma: generic-dark
-// -----------------------------------------------------------------------
-.qpx-tabview.qpx-theme-generic-dark {
-    background: $qp-tabview-dark-bg;
-    color: $qp-tabview-dark-text;
-
-    .qpx-tabview-tabswrapper {
-        background: $qp-tabview-dark-bg;
-        border-bottom: 1px solid $qp-tabview-dark-border;
-    }
-    &.qpx-tabview-pos-bottom .qpx-tabview-tabswrapper {
-        border-bottom: none; border-top: 1px solid $qp-tabview-dark-border;
-    }
-    &.qpx-tabview-pos-left .qpx-tabview-tabswrapper {
-        border-bottom: none; border-right: 1px solid $qp-tabview-dark-border;
-    }
-    &.qpx-tabview-pos-right .qpx-tabview-tabswrapper {
-        border-bottom: none; border-left: 1px solid $qp-tabview-dark-border;
-    }
-
-    .qpx-tabview-nav {
-        background: $qp-tabview-dark-nav-bg;
-        color: $qp-tabview-dark-text-muted;
-        &:hover { background: $qp-tabview-dark-hover-bg; }
-    }
-
-    .qpx-tabview-tab {
-        color: $qp-tabview-dark-text-muted;
-
-        &:hover { background: $qp-tabview-dark-hover-bg; }
-        &.qpx-state-selected { color: $qp-tabview-dark-accent; }
-        &.qpx-state-disabled { color: $qp-tabview-dark-disabled; }
-        &:focus-visible { outline: 2px solid $qp-tabview-dark-accent; outline-offset: -2px; }
-    }
-
-    .qpx-tabview-tab-badge {
-        background: $qp-tabview-dark-badge-bg;
-        color: $qp-tabview-dark-badge-text;
-    }
-
-    .qpx-tabview-indicator { background: $qp-tabview-dark-accent; }
-    .qpx-tabview-content, .qpx-tabview-panel { background: $qp-tabview-dark-panel-bg; }
-
-    &.qpx-tabview-styling-secondary .qpx-tabview-tab.qpx-state-selected {
-        background: $qp-tabview-dark-selected-bg;
     }
 }

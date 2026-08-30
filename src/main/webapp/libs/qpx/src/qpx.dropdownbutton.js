@@ -1,9 +1,15 @@
 /*!
- * qpx - dropDownButton
+ * qpx - qpDropDownButton
  * Tlačítko s rozbalovacím seznamem položek, koncepčně jako DevExtreme
  * dxDropDownButton (volitelně "split" tlačítko se samostatnou šipkou).
  *  - options: text, icon, items, keyExpr, displayExpr, splitButton, useSelectMode
  *  - události: onButtonClick, onItemClick, onSelectionChanged, onOptionChanged
+ *
+ * Pozn.: widget byl přejmenován z "dropDownButton"/qpx.DropDownButton na
+ * "qpDropDownButton"/qpx.qpDropDownButton (sjednocení "qp" prefixu).
+ * Kdekoliv byl použit název "dropDownButton" (např. view: "dropDownButton"
+ * v qpPropertyGrid, nebo options.widget u qpToolBar položek), nahraďte
+ * ho za "qpDropDownButton".
  */
 (function (qpx, $) {
     "use strict";
@@ -206,7 +212,7 @@
         }
     });
 
-    qpx.registerWidget("dropDownButton", DropDownButton);
-    qpx.DropDownButton = DropDownButton;
+    qpx.registerWidget("qpDropDownButton", DropDownButton);
+    qpx.qpDropDownButton = DropDownButton;
 
 })(window.qpx, jQuery);

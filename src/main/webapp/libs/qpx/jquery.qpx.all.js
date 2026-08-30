@@ -192,6 +192,28 @@
  * Základní bázová třída pro všechny UI komponenty + registr a tovární
  * metoda qpx.ui(config, container), přes kterou se skládají komponenty
  * do JSON stromu (podobně jako ve webixu).
+ *
+ * Novinky v této verzi:
+ *  - každý widget dostane na svůj container HTML atribut "id" (buď z
+ *    options.id, nebo automaticky vygenerovaný) - POKUD ho container
+ *    ještě nemá. Umožňuje pak najít instanci klasicky přes jQuery:
+ *
+ *       var sw = $("#mySwitch").data("qpSwitch");
+ *
+ *  - kdykoliv volané qpx.registerWidget(name, Class) navíc automaticky
+ *    zaregistruje i jQuery plugin stejného jména (chování podobné Kendo UI):
+ *
+ *       var sw = $("#mySwitch").qpSwitch();               // getter - vrátí instanci
+ *       $("#mySwitch").qpSwitch({ value: true });          // vytvoří (pokud neexistuje) / přenastaví options
+ *       $("#mySwitch").qpSwitch("value", true);             // zavolá metodu instance: sw.value(true)
+ *
+ *  - báze qpx.Widget nově obsahuje obecnou metodu option(), kterou
+ *    potomci dědí, pokud si ji sami nepřepíší vlastní implementací:
+ *
+ *       sw.option()                       // -> celý config (object)
+ *       sw.option("height")               // -> hodnota jedné vlastnosti
+ *       sw.option("height", 100)          // -> nastavení jedné vlastnosti
+ *       sw.option({ height: 100, width: 100 }) // -> nastavení více vlastností najednou
  */
 (function (qpx, $) {
     "use strict";
@@ -208,7 +230,12 @@
         //             Pokud není zadán, vytvoří se plovoucí <div>, který je možné později připojit.
         init: function (config, container) {
             this.config = $.extend(true, {}, this.defaults, config || {});
+
+            // interní id widgetu - buď převzaté z options.id, nebo vygenerované;
+            // zpětně se promítne i do configu, ať option("id") vrací vždy platnou hodnotu
             this.id = this.config.id || qpx.uid("qpx");
+            this.config.id = this.id;
+
             this._children = [];
             this._handlers = {};
 
@@ -219,6 +246,19 @@
                 .addClass("qpx-view")
                 .attr("data-qpx-id", this.id)
                 .data("qpx-widget", this);
+
+            // HTML atribut "id" přiřadíme containeru JEN pokud ho ještě nemá -
+            // pokud si element přinesl vlastní id (z HTML/JSP), respektujeme ho
+            // a neprepisujeme.
+            if (!this.$container.attr("id")) {
+                this.$container.attr("id", this.id);
+            }
+
+            // uloží instanci i pod jménem "view", pod kterým byl widget
+            // zaregistrován (qpx.registerWidget) - viz $(...).data("qpSwitch")
+            if (this.constructor.viewName) {
+                this.$container.data(this.constructor.viewName, this);
+            }
 
             if (this.config.css) { this.$container.addClass(this.config.css); }
             if (this.config.width !== undefined) { this.$container.css("width", qpx.toPx(this.config.width)); }
@@ -249,6 +289,61 @@
 
         show: function () { this.$container.show(); this.trigger("show"); return this; },
         hide: function () { this.$container.hide(); this.trigger("hide"); return this; },
+
+        // ---------------------------------------------------------------
+        // Obecná implementace option() - potomci ji dědí, pokud si ji sami
+        // nepřepíší vlastní specializovanou verzí (v qpx Class systému
+        // úplné přepsání metody v potomkovi nahrazuje tuto bázovou verzi
+        // celou; volání this._super(name, value) z potomka je ale možné,
+        // pokud chce zachovat i toto obecné chování).
+        //
+        //   option()                    -> vrátí celý config (object)
+        //   option("jmeno")             -> vrátí hodnotu jedné vlastnosti
+        //   option("jmeno", hodnota)    -> nastaví jednu vlastnost
+        //   option({ a: 1, b: 2 })      -> nastaví víc vlastností najednou
+        // ---------------------------------------------------------------
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            // obecné, widgetům společné vlastnosti - konkrétní potomci
+            // typicky doplňují vlastní specializovanou logiku
+            switch (name) {
+                case "width":
+                    this.$container.css("width", qpx.toPx(value));
+                    break;
+                case "height":
+                    this.$container.css("height", qpx.toPx(value));
+                    break;
+                case "visible":
+                    this.$container.toggle(!!value);
+                    break;
+                case "hidden":
+                    this.$container.toggle(!value);
+                    break;
+                case "css":
+                    if (prev) { this.$container.removeClass(prev); }
+                    if (value) { this.$container.addClass(value); }
+                    break;
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
 
         destroy: function () {
             this.trigger("destroy");
@@ -283,6 +378,20 @@
     // registrace nové komponenty pod jménem použitým v "view"
     qpx.registerWidget = function (name, WidgetClass) {
         registry[name] = WidgetClass;
+
+        // jméno view si uložíme i jako statický člen třídy - použije se
+        // v qpx.Widget.init pro $container.data(viewName, instance)
+        WidgetClass.viewName = name;
+
+        // automatická registrace jQuery pluginu stejného jména, ve stylu
+        // Kendo UI: $(...).qpSwitch() / $(...).qpSwitch({...}) / $(...).qpSwitch("metoda", ...)
+        if ($ && $.fn && !$.fn[name]) {
+            $.fn[name] = function () {
+                var args = Array.prototype.slice.call(arguments);
+                return qpx.jqueryPlugin(name, this, args);
+            };
+        }
+
         return qpx;
     };
 
@@ -290,9 +399,54 @@
         return registry[name];
     };
 
+    // -----------------------------------------------------------------
+    // Společná implementace jQuery pluginů generovaných v registerWidget().
+    //
+    //   $(sel).qpXxx()                 -> getter: vrátí instanci NA PRVNÍM
+    //                                     prvku výběru (undefined, pokud tam žádná není)
+    //   $(sel).qpXxx("metoda", ...)     -> zavolá metodu "metoda" na existující
+    //                                     instanci (např. .qpSwitch("value", true))
+    //   $(sel).qpXxx({ ...options })    -> na KAŽDÉM prvku výběru: pokud
+    //                                     instance ještě neexistuje, vytvoří ji
+    //                                     (qpx.ui), pokud existuje, zavolá na ní
+    //                                     option(options); vrací zpět jQuery výběr
+    //                                     (standardní chaining)
+    // -----------------------------------------------------------------
+    qpx.jqueryPlugin = function (viewName, $elements, args) {
+        args = args || [];
+        var firstArg = args[0];
+
+        // a) bez argumentů -> getter (vrátí instanci prvního prvku výběru)
+        if (args.length === 0) {
+            return $elements.data(viewName);
+        }
+
+        // b) první argument je řetězec a instance už existuje -> volání metody
+        var existingFirst = $elements.data(viewName);
+        if (qpx.isString(firstArg) && existingFirst) {
+            var method = firstArg;
+            var methodArgs = args.slice(1);
+            if (qpx.isFunction(existingFirst[method])) {
+                return existingFirst[method].apply(existingFirst, methodArgs);
+            }
+            return existingFirst;
+        }
+
+        // c) inicializace / hromadné přenastavení na všech prvcích výběru
+        $elements.each(function () {
+            var $el = $(this);
+            var existing = $el.data(viewName);
+            if (existing) {
+                if (qpx.isObject(firstArg)) { existing.option(firstArg); }
+            } else {
+                qpx.ui($.extend({ view: viewName }, qpx.isObject(firstArg) ? firstArg : {}), $el);
+            }
+        });
+        return $elements;
+    };
+
     // hlavní tovární metoda — sestavování z JSON konfigurace:
     //   qpx.ui({ view: "template", template: "Ahoj #name#" }, "#mistoVDom");
-	/*	
     qpx.ui = function (config, container) {
         if (qpx.isString(config)) {
             config = { view: config };
@@ -305,31 +459,11 @@
         if (!WidgetClass) {
             throw new Error("qpx: neregistrovaný typ komponenty '" + view + "'.");
         }
+
+        // instance si během init() sama zaregistruje .data("qpx-widget", ...)
+        // i .data(viewName, ...) na svém containeru (viz qpx.Widget.init)
         return new WidgetClass(config, container);
     };
-	*/
-	qpx.ui = function (config, container) {
-	    if (qpx.isString(config)) {
-	        config = { view: config };
-	    }
-	    var view = config.view || (config.rows || config.cols ? "layout" : null);
-	    if (!view) {
-	        throw new Error("qpx: konfigurace komponenty musí obsahovat 'view' (nebo 'rows'/'cols').");
-	    }
-	    var WidgetClass = registry[view];
-	    if (!WidgetClass) {
-	        throw new Error("qpx: neregistrovaný typ komponenty '" + view + "'.");
-	    }
-
-	    var instance = new WidgetClass(config, container);
-
-	    // 🔥 DOPLNĚNO — stejné chování jako jQuery plugin
-	    if (instance.$container) {
-	        instance.$container.data("qpx-widget", instance);
-	    }
-
-	    return instance;
-	};
 
 })(window.qpx, jQuery);
 
@@ -519,11 +653,17 @@
 })(window.qpx, jQuery);
 
 /*!
- * qpx - button
+ * qpx - qpButton
  * Tlačítko se stejnou koncepcí jako DevExtreme dxButton:
  *  - options: text, icon, type, stylingMode, disabled, visible, hint, template
  *  - metody: option(), enable(), disable(), focus()
  *  - události: onClick, onOptionChanged
+ *
+ * Pozn.: widget byl přejmenován z "button"/qpx.Button na "qpButton"/qpx.qpButton,
+ * aby jméno odpovídalo sjednocené konvenci "qp" prefixu ostatních qpx widgetů
+ * (qpCheckBox, qpTextBox, qpSwitch, ...). Kdekoliv ve vaší aplikaci nebo
+ * v konfiguraci qpToolBar (options.widget) byl použit název "button",
+ * je potřeba ho nahradit za "qpButton".
  */
 (function (qpx, $) {
     "use strict";
@@ -636,16 +776,21 @@
         }
     });
 
-    qpx.registerWidget("button", Button);
-    qpx.Button = Button;
+    qpx.registerWidget("qpButton", Button);
+    qpx.qpButton = Button;
 
 })(window.qpx, jQuery);
 
 /*!
- * qpx - buttonGroup
+ * qpx - qpButtonGroup
  * Skupina vizuálně spojených tlačítek, koncepčně jako DevExtreme dxButtonGroup.
  *  - options: items, keyExpr, selectionMode, selectedItemKeys, stylingMode
  *  - události: onItemClick, onSelectionChanged, onOptionChanged
+ *
+ * Pozn.: widget byl přejmenován z "buttonGroup"/qpx.ButtonGroup na
+ * "qpButtonGroup"/qpx.qpButtonGroup (sjednocení "qp" prefixu). Kdekoliv
+ * byl použit název "buttonGroup" (např. v options.widget u qpToolBar
+ * položek), nahraďte ho za "qpButtonGroup".
  */
 (function (qpx, $) {
     "use strict";
@@ -764,17 +909,23 @@
         disable: function () { return this.option("disabled", true); }
     });
 
-    qpx.registerWidget("buttonGroup", ButtonGroup);
-    qpx.ButtonGroup = ButtonGroup;
+    qpx.registerWidget("qpButtonGroup", ButtonGroup);
+    qpx.qpButtonGroup = ButtonGroup;
 
 })(window.qpx, jQuery);
 
 /*!
- * qpx - dropDownButton
+ * qpx - qpDropDownButton
  * Tlačítko s rozbalovacím seznamem položek, koncepčně jako DevExtreme
  * dxDropDownButton (volitelně "split" tlačítko se samostatnou šipkou).
  *  - options: text, icon, items, keyExpr, displayExpr, splitButton, useSelectMode
  *  - události: onButtonClick, onItemClick, onSelectionChanged, onOptionChanged
+ *
+ * Pozn.: widget byl přejmenován z "dropDownButton"/qpx.DropDownButton na
+ * "qpDropDownButton"/qpx.qpDropDownButton (sjednocení "qp" prefixu).
+ * Kdekoliv byl použit název "dropDownButton" (např. view: "dropDownButton"
+ * v qpPropertyGrid, nebo options.widget u qpToolBar položek), nahraďte
+ * ho za "qpDropDownButton".
  */
 (function (qpx, $) {
     "use strict";
@@ -977,8 +1128,8 @@
         }
     });
 
-    qpx.registerWidget("dropDownButton", DropDownButton);
-    qpx.DropDownButton = DropDownButton;
+    qpx.registerWidget("qpDropDownButton", DropDownButton);
+    qpx.qpDropDownButton = DropDownButton;
 
 })(window.qpx, jQuery);
 
@@ -6099,6 +6250,898 @@
 })(window.qpx, jQuery);
 
 /*!
+ * qpx - qpScrollView
+ * Kontejner pro scrollovatelný obsah, inspirovaný Webix ScrollView:
+ *  - "items": pole karet vykreslených vedle sebe (x) nebo pod sebou (y)
+ *  - "content": libovolný (i volně větší) HTML obsah, po kterém lze
+ *    posouvat/tahat myší (panning) - typicky velký obrázek, mapa, plátno
+ *  - podpora tažení myší (mouseScroll), volitelné přichytávání na
+ *    položky (snap, přes nativní CSS scroll-snap), šipky prev/next
+ *    (showNav) a klávesová navigace šipkami
+ *
+ * options:
+ *   items, content, direction ("x"|"y"|"xy"), itemWidth, itemHeight, gap,
+ *   snap, mouseScroll, showScrollbar, showNav, disabled, visible
+ *
+ * events:
+ *   onScroll (za jízdy), onScrollEnd (po doscrollování), onOptionChanged
+ *
+ * methods:
+ *   option(name[, value]), items([items]), content([html]),
+ *   scrollTo(x, y[, animate]), scrollBy(dx, dy[, animate]),
+ *   scrollToItem(index[, animate]), next(), prev(), getScrollState(),
+ *   enable(), disable(), focus()
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var ScrollView = qpx.Widget.extend({
+
+        defaults: {
+            items: null,            // pole { html } / string - vykreslí se jako karty vedle sebe/pod sebou
+            content: null,           // volný HTML obsah (použije se, pokud nejsou items)
+            direction: "x",          // "x" | "y" | "xy" - které osy jsou scrollovatelné
+            itemWidth: null,         // šířka jedné karty (px), pokud null -> auto
+            itemHeight: null,
+            gap: 10,
+            snap: false,             // přichytávání na položky (CSS scroll-snap)
+            mouseScroll: true,       // tažení myší (grab-to-pan)
+            showScrollbar: true,     // zobrazit (stylovaný) scrollbar
+            showNav: false,          // šipky prev/next (má smysl hlavně s items)
+            disabled: false,
+            visible: true,
+
+            onScroll: null,
+            onScrollEnd: null,
+            onOptionChanged: null
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+
+            this.$container
+                .addClass("qpx-scrollview")
+                .addClass("qpx-scrollview-dir-" + cfg.direction)
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-scrollview-hide-scrollbar", !cfg.showScrollbar)
+                .attr("role", "region");
+
+            if (cfg.onScroll) { this.off("scroll"); this.on("scroll", cfg.onScroll); }
+            if (cfg.onScrollEnd) { this.off("scrollEnd"); this.on("scrollEnd", cfg.onScrollEnd); }
+            if (cfg.onOptionChanged) { this.off("optionChanged"); this.on("optionChanged", cfg.onOptionChanged); }
+
+            this._buildDom();
+            this._renderBody();
+            this._bindScroll();
+            this._bindDrag();
+            this._bindKeys();
+        },
+
+        // ---------------------------------------------------------------
+        // DOM
+        // ---------------------------------------------------------------
+        _buildDom: function () {
+            var self = this;
+            var cfg = this.config;
+
+            this.$container.empty();
+
+            this.$viewport = $("<div class='qpx-scrollview-viewport'></div>")
+                .attr("tabindex", cfg.disabled ? "-1" : "0");
+            this.$body = $("<div class='qpx-scrollview-body'></div>");
+            this.$viewport.append(this.$body);
+            this.$container.append(this.$viewport);
+
+            if (cfg.showNav) {
+                this.$prevBtn = $("<button type='button' class='qpx-scrollview-nav qpx-scrollview-nav-prev' aria-label='Předchozí'></button>")
+                    .append($("<i></i>").addClass("fa " + (cfg.direction === "y" ? "fa-chevron-up" : "fa-chevron-left")));
+                this.$nextBtn = $("<button type='button' class='qpx-scrollview-nav qpx-scrollview-nav-next' aria-label='Další'></button>")
+                    .append($("<i></i>").addClass("fa " + (cfg.direction === "y" ? "fa-chevron-down" : "fa-chevron-right")));
+
+                this.$prevBtn.on("click.qpxScrollView", function () { self.prev(); });
+                this.$nextBtn.on("click.qpxScrollView", function () { self.next(); });
+
+                this.$container.append(this.$prevBtn, this.$nextBtn);
+            } else {
+                this.$prevBtn = null;
+                this.$nextBtn = null;
+            }
+        },
+
+        _renderBody: function () {
+            var self = this;
+            var cfg = this.config;
+
+            this.$body.empty();
+
+            if (cfg.items && cfg.items.length) {
+                this.$body.addClass("qpx-scrollview-items").css("gap", qpx.toPx(cfg.gap));
+                cfg.items.forEach(function (item, i) {
+                    var html = qpx.isString(item) ? item : ((item && item.html) || "");
+                    var $it = $("<div class='qpx-scrollview-item'></div>")
+                        .attr("data-qpx-index", i)
+                        .html(html);
+                    if (cfg.itemWidth) { $it.css("width", qpx.toPx(cfg.itemWidth)); }
+                    if (cfg.itemHeight) { $it.css("height", qpx.toPx(cfg.itemHeight)); }
+                    self.$body.append($it);
+                });
+            } else {
+                this.$body.removeClass("qpx-scrollview-items").css("gap", "").html(cfg.content || "");
+            }
+
+            this.$viewport
+                .toggleClass("qpx-scrollview-scroll-x", cfg.direction === "x" || cfg.direction === "xy")
+                .toggleClass("qpx-scrollview-scroll-y", cfg.direction === "y" || cfg.direction === "xy")
+                .toggleClass("qpx-scrollview-snap", !!cfg.snap);
+
+            this._updateNavState();
+        },
+
+        // ---------------------------------------------------------------
+        // Scroll události
+        // ---------------------------------------------------------------
+        _bindScroll: function () {
+            var self = this;
+            var timer = null;
+
+            this.$viewport.off(".qpxScrollView");
+            this.$viewport.on("scroll.qpxScrollView", function () {
+                self.trigger("scroll", self.getScrollState());
+                self._updateNavState();
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                    self.trigger("scrollEnd", self.getScrollState());
+                }, 120);
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Tažení myší (grab-to-pan)
+        // ---------------------------------------------------------------
+        _bindDrag: function () {
+            var self = this;
+            var ns = ".qpxScrollViewDrag" + this.id;
+
+            $(document).off(ns);
+            this.$viewport.off(".qpxScrollViewDragLocal");
+
+            if (!this.config.mouseScroll) { return; }
+
+            var dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0, moved = false;
+
+            this.$viewport.on("mousedown.qpxScrollViewDragLocal", function (e) {
+                if (self.config.disabled) { return; }
+                if ($(e.target).is("input, textarea, select, [contenteditable]")) { return; }
+
+                dragging = true;
+                moved = false;
+                startX = e.pageX;
+                startY = e.pageY;
+                startLeft = self.$viewport.scrollLeft();
+                startTop = self.$viewport.scrollTop();
+                self.$viewport.addClass("qpx-scrollview-dragging");
+                e.preventDefault();
+            });
+
+            $(document).on("mousemove" + ns, function (e) {
+                if (!dragging) { return; }
+                var cfg = self.config;
+                var dx = e.pageX - startX;
+                var dy = e.pageY - startY;
+                if (Math.abs(dx) > 3 || Math.abs(dy) > 3) { moved = true; }
+                if (cfg.direction === "x" || cfg.direction === "xy") { self.$viewport.scrollLeft(startLeft - dx); }
+                if (cfg.direction === "y" || cfg.direction === "xy") { self.$viewport.scrollTop(startTop - dy); }
+            });
+
+            $(document).on("mouseup" + ns, function () {
+                if (!dragging) { return; }
+                dragging = false;
+                self.$viewport.removeClass("qpx-scrollview-dragging");
+            });
+
+            // po tažení nepropouštět "click" na odkazy/tlačítka uvnitř obsahu
+            this.$viewport.on("click.qpxScrollViewDragLocal", "a, button", function (e) {
+                if (moved) { e.stopPropagation(); e.preventDefault(); }
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Klávesová navigace (šipky)
+        // ---------------------------------------------------------------
+        _bindKeys: function () {
+            var self = this;
+            var step = 60;
+
+            this.$viewport.off("keydown.qpxScrollView");
+            this.$viewport.on("keydown.qpxScrollView", function (e) {
+                if (self.config.disabled) { return; }
+                var cfg = self.config;
+
+                if (e.key === "ArrowRight" && cfg.direction !== "y") { self.scrollBy(step, 0); e.preventDefault(); }
+                else if (e.key === "ArrowLeft" && cfg.direction !== "y") { self.scrollBy(-step, 0); e.preventDefault(); }
+                else if (e.key === "ArrowDown" && cfg.direction !== "x") { self.scrollBy(0, step); e.preventDefault(); }
+                else if (e.key === "ArrowUp" && cfg.direction !== "x") { self.scrollBy(0, -step); e.preventDefault(); }
+            });
+        },
+
+        _updateNavState: function () {
+            if (!this.config.showNav || !this.$prevBtn) { return; }
+            var state = this.getScrollState();
+            this.$prevBtn.toggleClass("qpx-state-disabled", state.x <= 0 && state.y <= 0);
+            this.$nextBtn.toggleClass("qpx-state-disabled", state.x >= state.maxX - 1 && state.y >= state.maxY - 1);
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        items: function (newItems) {
+            if (arguments.length === 0) { return this.config.items; }
+            return this.option("items", newItems);
+        },
+
+        content: function (newContent) {
+            if (arguments.length === 0) { return this.config.content; }
+            return this.option("content", newContent);
+        },
+
+        scrollTo: function (x, y, animate) {
+            var $vp = this.$viewport;
+            if (animate === undefined) { animate = true; }
+
+            if (animate) {
+                $vp.stop(true).animate({
+                    scrollLeft: x != null ? x : $vp.scrollLeft(),
+                    scrollTop: y != null ? y : $vp.scrollTop()
+                }, 220);
+            } else {
+                if (x != null) { $vp.scrollLeft(x); }
+                if (y != null) { $vp.scrollTop(y); }
+            }
+            return this;
+        },
+
+        scrollBy: function (dx, dy, animate) {
+            var $vp = this.$viewport;
+            return this.scrollTo((dx || 0) + $vp.scrollLeft(), (dy || 0) + $vp.scrollTop(), animate);
+        },
+
+        scrollToItem: function (index, animate) {
+            var $item = this.$body.children().eq(index);
+            if (!$item.length) { return this; }
+
+            if (this.config.direction === "y") {
+                return this.scrollTo(null, $item.position().top + this.$viewport.scrollTop(), animate);
+            }
+            return this.scrollTo($item.position().left + this.$viewport.scrollLeft(), null, animate);
+        },
+
+        next: function () { return this._stepItem(1); },
+        prev: function () { return this._stepItem(-1); },
+
+        _stepItem: function (dir) {
+            var cfg = this.config;
+            var items = this.$body.children();
+            if (!items.length) { return this; }
+
+            var vpRect = this.$viewport[0].getBoundingClientRect();
+            var center = (cfg.direction === "y") ? (vpRect.top + vpRect.height / 2) : (vpRect.left + vpRect.width / 2);
+            var currentIndex = 0;
+
+            items.each(function (i) {
+                var r = this.getBoundingClientRect();
+                var c = (cfg.direction === "y") ? (r.top + r.height / 2) : (r.left + r.width / 2);
+                if (c <= center) { currentIndex = i; }
+            });
+
+            var nextIndex = Math.max(0, Math.min(items.length - 1, currentIndex + dir));
+            return this.scrollToItem(nextIndex);
+        },
+
+        getScrollState: function () {
+            var $vp = this.$viewport;
+            var node = $vp[0];
+            return {
+                x: $vp.scrollLeft(),
+                y: $vp.scrollTop(),
+                maxX: node.scrollWidth - node.clientWidth,
+                maxY: node.scrollHeight - node.clientHeight
+            };
+        },
+
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+        focus: function () { this.$viewport.trigger("focus"); return this; },
+
+        // option("x") -> čtení; option("x", v) -> zápis; option({x:..}) -> hromadně
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    this.$viewport.attr("tabindex", value ? "-1" : "0");
+                    break;
+
+                case "showScrollbar":
+                    this.$container.toggleClass("qpx-scrollview-hide-scrollbar", !value);
+                    break;
+
+                // items/content/direction/itemWidth/itemHeight/gap/snap/
+                // mouseScroll/showNav mění strukturu DOM - nejjednodušší a
+                // nejspolehlivější je kompletní překreslení (refresh)
+                default:
+                    this.refresh();
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        destroy: function () {
+            $(document).off(".qpxScrollViewDrag" + this.id);
+            if (this.$viewport) { this.$viewport.off(".qpxScrollView .qpxScrollViewDragLocal"); }
+            if (this.$prevBtn) { this.$prevBtn.off(".qpxScrollView"); }
+            if (this.$nextBtn) { this.$nextBtn.off(".qpxScrollView"); }
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpScrollView", ScrollView);
+    qpx.qpScrollView = ScrollView;
+
+})(window.qpx, jQuery);
+
+/*!
+ * qpx - qpGroupList
+ * Seznam s položkami rozdělenými do skupin, inspirovaný Webix GroupList
+ * (typicky seznam kontaktů seskupených podle prvního písmene, úkolů podle
+ * stavu apod.):
+ *  - "data": plochý seznam { id, group, text, icon, disabled }, widget si
+ *    položky sám seskupí podle pole "group" (groupBy)
+ *  - záhlaví skupiny při scrollování "lepí" nahoře scrollovatelné oblasti
+ *    (position: sticky, čistě CSS - stejný princip jako u responzivní
+ *    mřížky v qpScrollView, žádný JS listener na scroll není potřeba)
+ *  - volitelný boční rychlý index (showIndex) pro skok na skupinu
+ *  - jednoduchý (single) i vícenásobný (multiselect) výběr, klávesová
+ *    navigace šipkami
+ *  - "drillDown": hierarchické procházení dat "na místě" (bez vnořeného
+ *    breadcrumb) - položky mohou mít vlastní pole "children" (další
+ *    úroveň se stejnou strukturou); klik na položku s potomky zobrazí
+ *    tuto další úroveň, nahoře se automaticky objeví klikatelný řádek
+ *    "Zpět" pro návrat o úroveň výš (inspirováno Webix GroupList
+ *    drill-down ukázkou)
+ *
+ * options:
+ *   data, groupBy, sortGroups, value, multiselect, stickyHeaders,
+ *   showIndex, height, disabled, visible, groupTemplate, itemTemplate,
+ *   drillDown, drillIcon, backIcon, backLabel, backTemplate
+ *
+ * events:
+ *   onItemClick, onSelectionChanged, onDrillChange, onOptionChanged
+ *
+ * methods:
+ *   option(name[, value]), value([val]), data([data]),
+ *   select(id[, addToSelection]), unselect(id),
+ *   getSelectedItem(), getSelectedItems(), scrollToGroup(key[, animate]),
+ *   drillInto(node), drillUp(), drillReset(), getDrillPath(), getDrillLevel(),
+ *   enable(), disable(), focus()
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var GroupList = qpx.Widget.extend({
+
+        defaults: {
+            data: [],                // [{ id, group, text, icon, disabled }]
+            groupBy: "group",         // název pole, podle kterého se seskupuje
+            sortGroups: false,        // seřadit skupiny abecedně (jinak pořadí prvního výskytu)
+
+            value: null,              // single: id vybrané položky; multiselect: pole id
+            multiselect: false,
+
+            stickyHeaders: true,      // "lepivé" záhlaví skupiny při scrollování (CSS sticky)
+            showIndex: false,         // boční rychlý index (A, B, C, ...) pro skok na skupinu
+            height: null,             // volitelná výška (px); jinak 100 % rodiče
+
+            disabled: false,
+            visible: true,
+
+            groupTemplate: null,      // function(groupKey, items) -> html; default = groupKey
+            itemTemplate: null,       // function(item) -> html; default = item.text
+
+            // --- drill-down (hierarchické procházení bez breadcrumb) -------
+            drillDown: false,         // zapne procházení "children" na místě
+            drillIcon: "fa-angle-right",  // ikona u položky, která má potomky
+            backIcon: "fa-angle-left",    // ikona řádku "Zpět"
+            backLabel: "Zpět",            // výchozí text řádku "Zpět"
+            backTemplate: null,       // function(parentNode, path) -> html; přepíše vzhled řádku "Zpět"
+
+            onItemClick: null,
+            onSelectionChanged: null,
+            onDrillChange: null,
+            onOptionChanged: null
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+
+            this.$container
+                .addClass("qpx-grouplist")
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-grouplist-no-sticky", !cfg.stickyHeaders)
+                .attr("role", "listbox")
+                .attr("aria-multiselectable", !!cfg.multiselect);
+
+            this.$container.css("height", cfg.height != null ? qpx.toPx(cfg.height) : "");
+
+            if (cfg.onItemClick) { this.off("itemClick"); this.on("itemClick", cfg.onItemClick); }
+            if (cfg.onSelectionChanged) { this.off("selectionChanged"); this.on("selectionChanged", cfg.onSelectionChanged); }
+            if (cfg.onDrillChange) { this.off("drillChange"); this.on("drillChange", cfg.onDrillChange); }
+            if (cfg.onOptionChanged) { this.off("optionChanged"); this.on("optionChanged", cfg.onOptionChanged); }
+
+            if (!this._path) { this._path = []; } // aktuální pozice v hierarchii (drillDown)
+
+            this._normalizeValue();
+            this._buildDom();
+            this._renderList();
+            this._bindKeys();
+        },
+
+        // ---------------------------------------------------------------
+        // DOM
+        // ---------------------------------------------------------------
+        _buildDom: function () {
+            var cfg = this.config;
+
+            this.$container.empty();
+
+            this.$scroller = $("<div class='qpx-grouplist-scroller'></div>")
+                .attr("tabindex", cfg.disabled ? "-1" : "0");
+            this.$container.append(this.$scroller);
+
+            if (cfg.showIndex) {
+                this.$index = $("<div class='qpx-grouplist-index'></div>");
+                this.$container.append(this.$index);
+            } else {
+                this.$index = null;
+            }
+        },
+
+        _normalizeValue: function () {
+            var cfg = this.config;
+            if (cfg.multiselect) {
+                cfg.value = $.isArray(cfg.value) ? cfg.value : (cfg.value != null ? [cfg.value] : []);
+            } else if ($.isArray(cfg.value)) {
+                cfg.value = cfg.value.length ? cfg.value[0] : null;
+            }
+        },
+
+        // položky aktuálně zobrazené úrovně: kořen ("data"), nebo "children"
+        // posledního uzlu v _path, pokud je drillDown zapnuté a jsme níž
+        _currentItems: function () {
+            var cfg = this.config;
+            if (cfg.drillDown && this._path && this._path.length) {
+                var parent = this._path[this._path.length - 1];
+                return (parent && parent.children) || [];
+            }
+            return cfg.data || [];
+        },
+
+        _groupData: function (items) {
+            var cfg = this.config;
+            var groups = [];
+            var map = {};
+
+            (items || []).forEach(function (item) {
+                var key = item[cfg.groupBy] != null ? String(item[cfg.groupBy]) : "";
+                if (!map[key]) {
+                    map[key] = { key: key, items: [] };
+                    groups.push(map[key]);
+                }
+                map[key].items.push(item);
+            });
+
+            if (cfg.sortGroups) {
+                groups.sort(function (a, b) { return a.key.localeCompare(b.key, "cs"); });
+            }
+            return groups;
+        },
+
+        _escape: function (str) {
+            return $("<div></div>").text(str == null ? "" : String(str)).html();
+        },
+
+        // ---------------------------------------------------------------
+        _renderList: function () {
+            var self = this;
+            var cfg = this.config;
+
+            this.$scroller.empty();
+            if (this.$index) { this.$index.empty(); }
+
+            if (cfg.drillDown && this._path && this._path.length) {
+                this.$scroller.append(this._buildBackNode());
+            }
+
+            var groups = this._groupData(this._currentItems());
+            this._groupNodes = {};
+
+            groups.forEach(function (g) {
+                var $header = $("<div class='qpx-grouplist-group-header'></div>")
+                    .attr("data-qpx-group", g.key)
+                    .html(cfg.groupTemplate ? cfg.groupTemplate(g.key, g.items) : self._escape(g.key));
+                self.$scroller.append($header);
+                self._groupNodes[g.key] = $header;
+
+                g.items.forEach(function (item) {
+                    self.$scroller.append(self._buildItemNode(item));
+                });
+
+                if (self.$index) {
+                    var $idxItem = $("<button type='button' class='qpx-grouplist-index-item'></button>")
+                        .text((g.key || "").charAt(0).toUpperCase() || "•")
+                        .attr("title", g.key)
+                        .attr("aria-label", g.key);
+                    $idxItem.on("click.qpxGroupList", function () { self.scrollToGroup(g.key); });
+                    self.$index.append($idxItem);
+                }
+            });
+        },
+
+        // řádek "Zpět" nahoře seznamu, jsme-li v drillDown módu níž než
+        // v kořeni - klik (nebo Enter/mezerník) odscrolluje o úroveň výš
+        _buildBackNode: function () {
+            var self = this;
+            var cfg = this.config;
+            var parent = this._path[this._path.length - 1];
+
+            var html = cfg.backTemplate
+                ? cfg.backTemplate(parent, this._path.slice())
+                : ("<i class='fa " + cfg.backIcon + "'></i><span>" + this._escape(cfg.backLabel) + "</span>");
+
+            var $back = $("<div class='qpx-grouplist-back' role='button' tabindex='0'></div>").html(html);
+
+            $back.on("click.qpxGroupList", function () { self.drillUp(); });
+            $back.on("keydown.qpxGroupList", function (e) {
+                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); self.drillUp(); }
+            });
+
+            return $back;
+        },
+
+        _buildItemNode: function (item) {
+            var self = this;
+            var cfg = this.config;
+            var isDisabled = !!item.disabled || !!cfg.disabled;
+            var isSelected = this._isSelected(item.id);
+
+            var $it = $("<div></div>")
+                .addClass("qpx-grouplist-item")
+                .toggleClass("qpx-state-disabled", isDisabled)
+                .toggleClass("qpx-state-selected", isSelected)
+                .attr("data-qpx-id", item.id)
+                .attr("role", "option")
+                .attr("aria-selected", isSelected ? "true" : "false")
+                .attr("tabindex", "-1")
+                .data("qpx-item", item);
+
+            if (item.icon) {
+                $it.append($("<i></i>").addClass("fa " + item.icon + " qpx-grouplist-item-icon"));
+            }
+
+            var $text = $("<span class='qpx-grouplist-item-text'></span>");
+            if (cfg.itemTemplate) { $text.html(cfg.itemTemplate(item)); }
+            else { $text.text(item.text != null ? item.text : ""); }
+            $it.append($text);
+
+            if (cfg.drillDown && item.children && item.children.length) {
+                $it.addClass("qpx-grouplist-item-drillable");
+                $it.append($("<i></i>").addClass("fa " + cfg.drillIcon + " qpx-grouplist-item-drill"));
+            }
+
+            if (!isDisabled) {
+                $it.on("click.qpxGroupList", function () { self._handleItemClick(item); });
+            }
+
+            return $it;
+        },
+
+        _isSelected: function (id) {
+            var v = this.config.value;
+            if (this.config.multiselect) { return $.isArray(v) && v.indexOf(id) >= 0; }
+            return v === id;
+        },
+
+        _handleItemClick: function (item) {
+            this.trigger("itemClick", { item: item, component: this, element: this.getNode() });
+
+            if (this.config.drillDown && item.children && item.children.length) {
+                this.drillInto(item);
+                return;
+            }
+
+            if (this.config.multiselect) {
+                var val = (this.config.value || []).slice();
+                var idx = val.indexOf(item.id);
+                if (idx >= 0) { val.splice(idx, 1); } else { val.push(item.id); }
+                this.option("value", val);
+            } else {
+                this.option("value", item.id);
+            }
+        },
+
+        // ---------------------------------------------------------------
+        // Klávesová navigace (šipky/Home/End) mezi (ne-disabled) položkami
+        // ---------------------------------------------------------------
+        _bindKeys: function () {
+            var self = this;
+
+            this.$scroller.off("keydown.qpxGroupList");
+            this.$scroller.on("keydown.qpxGroupList", function (e) {
+                if (self.config.disabled) { return; }
+
+                if (e.key === "Escape" && self.config.drillDown) { e.preventDefault(); self.drillUp(); return; }
+
+                var $items = self.$scroller.find(".qpx-grouplist-item:not(.qpx-state-disabled)");
+                if (!$items.length) { return; }
+
+                var currentId = self.config.multiselect
+                    ? (self.config.value || [])[(self.config.value || []).length - 1]
+                    : self.config.value;
+
+                var idx = -1;
+                $items.each(function (i) {
+                    var it = $(this).data("qpx-item");
+                    if (it && it.id === currentId) { idx = i; }
+                });
+
+                if (e.key === "ArrowDown") { e.preventDefault(); self._selectByIndex($items, Math.min($items.length - 1, idx + 1)); }
+                else if (e.key === "ArrowUp") { e.preventDefault(); self._selectByIndex($items, Math.max(0, idx <= 0 ? 0 : idx - 1)); }
+                else if (e.key === "Home") { e.preventDefault(); self._selectByIndex($items, 0); }
+                else if (e.key === "End") { e.preventDefault(); self._selectByIndex($items, $items.length - 1); }
+            });
+        },
+
+        _selectByIndex: function ($items, idx) {
+            var $it = $items.eq(idx);
+            var item = $it.data("qpx-item");
+            if (!item) { return; }
+            this._handleItemClick(item);
+            if ($it[0] && $it[0].scrollIntoView) { $it[0].scrollIntoView({ block: "nearest" }); }
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        value: function (val) {
+            if (arguments.length === 0) { return this.config.value; }
+            return this.option("value", val);
+        },
+
+        data: function (newData) {
+            if (arguments.length === 0) { return this.config.data; }
+            return this.option("data", newData);
+        },
+
+        select: function (id, addToSelection) {
+            if (this.config.multiselect) {
+                var val = addToSelection ? (this.config.value || []).slice() : [];
+                if (val.indexOf(id) < 0) { val.push(id); }
+                return this.option("value", val);
+            }
+            return this.option("value", id);
+        },
+
+        unselect: function (id) {
+            if (this.config.multiselect) {
+                var val = (this.config.value || []).slice();
+                var idx = val.indexOf(id);
+                if (idx >= 0) { val.splice(idx, 1); }
+                return this.option("value", val);
+            }
+            if (this.config.value === id) { return this.option("value", null); }
+            return this;
+        },
+
+        // rekurzivně sloučí data (i s vnořenými "children") do jednoho pole -
+        // používá se pro hledání položek podle id, ať leží v jakékoli hloubce
+        _flattenTree: function (nodes) {
+            var out = [];
+            (nodes || []).forEach(function walk(item) {
+                out.push(item);
+                if (item.children && item.children.length) { item.children.forEach(walk); }
+            });
+            return out;
+        },
+
+        getSelectedItem: function () {
+            var id = this.config.multiselect ? (this.config.value || [])[0] : this.config.value;
+            var found = null;
+            this._flattenTree(this.config.data).some(function (it) {
+                if (it.id === id) { found = it; return true; }
+                return false;
+            });
+            return found;
+        },
+
+        getSelectedItems: function () {
+            var ids = this.config.multiselect ? (this.config.value || []) : (this.config.value != null ? [this.config.value] : []);
+            return this._flattenTree(this.config.data).filter(function (it) { return ids.indexOf(it.id) >= 0; });
+        },
+
+        scrollToGroup: function (key, animate) {
+            var $header = this._groupNodes && this._groupNodes[key];
+            if (!$header || !$header.length) { return this; }
+
+            var top = $header.position().top + this.$scroller.scrollTop();
+            if (animate === undefined) { animate = true; }
+
+            if (animate) { this.$scroller.stop(true).animate({ scrollTop: top }, 200); }
+            else { this.$scroller.scrollTop(top); }
+            return this;
+        },
+
+        // --- drill-down navigace ---------------------------------------
+        drillInto: function (node) {
+            if (!node || !node.children || !node.children.length) { return this; }
+            if (!this._path) { this._path = []; }
+            this._path.push(node);
+            this._renderList();
+            this.trigger("drillChange", {
+                level: this._path.length,
+                node: node,
+                path: this._path.slice(),
+                direction: "down",
+                component: this,
+                element: this.getNode()
+            });
+            return this;
+        },
+
+        drillUp: function () {
+            if (!this._path || !this._path.length) { return this; }
+            this._path.pop();
+            this._renderList();
+            this.trigger("drillChange", {
+                level: this._path.length,
+                node: this._path.length ? this._path[this._path.length - 1] : null,
+                path: this._path.slice(),
+                direction: "up",
+                component: this,
+                element: this.getNode()
+            });
+            return this;
+        },
+
+        drillReset: function () {
+            if (!this._path || !this._path.length) { return this; }
+            this._path = [];
+            this._renderList();
+            this.trigger("drillChange", {
+                level: 0,
+                node: null,
+                path: [],
+                direction: "up",
+                component: this,
+                element: this.getNode()
+            });
+            return this;
+        },
+
+        getDrillPath: function () { return (this._path || []).slice(); },
+        getDrillLevel: function () { return this._path ? this._path.length : 0; },
+
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+        focus: function () { this.$scroller.trigger("focus"); return this; },
+
+        // option("x") -> čtení; option("x", v) -> zápis; option({x:..}) -> hromadně
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "value":
+                    if (this.config.multiselect) {
+                        this.config.value = $.isArray(value) ? value.slice() : (value != null ? [value] : []);
+                    } else {
+                        this.config.value = $.isArray(value) ? (value.length ? value[0] : null) : value;
+                    }
+                    this._renderList();
+                    this.trigger("selectionChanged", {
+                        value: this.config.value,
+                        previousValue: prev,
+                        component: this,
+                        element: this.getNode()
+                    });
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    this.$scroller.attr("tabindex", value ? "-1" : "0");
+                    this._renderList();
+                    break;
+
+                case "stickyHeaders":
+                    this.$container.toggleClass("qpx-grouplist-no-sticky", !value);
+                    break;
+
+                case "height":
+                    this.$container.css("height", value != null ? qpx.toPx(value) : "");
+                    break;
+
+                case "showIndex":
+                    // mění strukturu DOM (přidání/odebrání panelu indexu) -
+                    // nejjednodušší a nejspolehlivější je kompletní refresh
+                    this.refresh();
+                    break;
+
+                case "data":
+                    // nová kořenová data - stará pozice v hierarchii by mohla
+                    // ukazovat na uzly, které už neexistují
+                    this._path = [];
+                    this._normalizeValue();
+                    this._renderList();
+                    break;
+
+                // groupBy/sortGroups/multiselect/groupTemplate/itemTemplate/
+                // drillDown/drillIcon/backIcon/backLabel/backTemplate
+                default:
+                    this._normalizeValue();
+                    this._renderList();
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        destroy: function () {
+            if (this.$index) { this.$index.off(".qpxGroupList"); }
+            if (this.$scroller) { this.$scroller.off(".qpxGroupList"); }
+            this.$container.off(".qpxGroupList");
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpGroupList", GroupList);
+    qpx.qpGroupList = GroupList;
+
+})(window.qpx, jQuery);
+
+/*!
  * qpx - qpToolBar (refactored)
  * Panel nástrojů koncipovaný stejně jako DevExtreme dxToolBar:
  *  - items rozdělené do "before" / "center" / "after"
@@ -6200,8 +7243,11 @@
             itemCfg.location = itemCfg.location || "before";
             itemCfg.locateInMenu = itemCfg.locateInMenu || "auto";
 
-            var widgetName = itemCfg.widget || (itemCfg.template !== undefined ? "template" : "button");
-            var options = $.extend({}, itemCfg.options);
+			var widgetName = itemCfg.widget || (itemCfg.template !== undefined ? "template" : "qpButton");
+			if (!qpx.getWidgetClass(widgetName)) {
+			    console.warn("qpToolBar: neznámý widget '" + widgetName + "'.");
+			}
+			var options = $.extend({}, itemCfg.options);
             if (itemCfg.template !== undefined && options.template === undefined) { options.template = itemCfg.template; }
             if (itemCfg.data !== undefined && options.data === undefined) { options.data = itemCfg.data; }
             options.view = widgetName;
@@ -7663,7 +8709,7 @@
  *   - loadData(data) / getData() — stejná jména metod jako v EasyUI.
  *
  * Zpětná kompatibilita: showCategories/categoryField a starší editor
- * "dropdown" (přes dropDownButton) i nadále fungují beze změny — jsou
+ * "dropdown" (přes qpDropDownButton) i nadále fungují beze změny — jsou
  * jen alias/legacy cesta vedle nových showGroup/groupField/combobox.
  *
  * Vzhled (widgets/_propertygrid.scss) zůstává v duchu zadání z
@@ -7994,10 +9040,10 @@
                     };
                     break;
 
-                // -- zpětná kompatibilita s předchozí verzí (dropDownButton) --
+                // -- zpětná kompatibilita s předchozí verzí (qpDropDownButton) --
                 case "dropdown":
                     widgetCfg = {
-                        view: "dropDownButton",
+                        view: "qpDropDownButton",
                         items: item.dataSource || [],
                         useSelectMode: true,
                         selectedItemKey: val,

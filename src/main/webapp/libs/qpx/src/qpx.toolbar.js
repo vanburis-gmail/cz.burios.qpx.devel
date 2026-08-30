@@ -100,8 +100,11 @@
             itemCfg.location = itemCfg.location || "before";
             itemCfg.locateInMenu = itemCfg.locateInMenu || "auto";
 
-            var widgetName = itemCfg.widget || (itemCfg.template !== undefined ? "template" : "button");
-            var options = $.extend({}, itemCfg.options);
+			var widgetName = itemCfg.widget || (itemCfg.template !== undefined ? "template" : "qpButton");
+			if (!qpx.getWidgetClass(widgetName)) {
+			    console.warn("qpToolBar: neznámý widget '" + widgetName + "'.");
+			}
+			var options = $.extend({}, itemCfg.options);
             if (itemCfg.template !== undefined && options.template === undefined) { options.template = itemCfg.template; }
             if (itemCfg.data !== undefined && options.data === undefined) { options.data = itemCfg.data; }
             options.view = widgetName;

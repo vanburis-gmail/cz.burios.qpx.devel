@@ -18,7 +18,7 @@
  *   - loadData(data) / getData() — stejná jména metod jako v EasyUI.
  *
  * Zpětná kompatibilita: showCategories/categoryField a starší editor
- * "dropdown" (přes dropDownButton) i nadále fungují beze změny — jsou
+ * "dropdown" (přes qpDropDownButton) i nadále fungují beze změny — jsou
  * jen alias/legacy cesta vedle nových showGroup/groupField/combobox.
  *
  * Vzhled (widgets/_propertygrid.scss) zůstává v duchu zadání z
@@ -349,10 +349,10 @@
                     };
                     break;
 
-                // -- zpětná kompatibilita s předchozí verzí (dropDownButton) --
+                // -- zpětná kompatibilita s předchozí verzí (qpDropDownButton) --
                 case "dropdown":
                     widgetCfg = {
-                        view: "dropDownButton",
+                        view: "qpDropDownButton",
                         items: item.dataSource || [],
                         useSelectMode: true,
                         selectedItemKey: val,

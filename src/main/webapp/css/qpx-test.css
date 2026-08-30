@@ -31,6 +31,19 @@
     border-bottom: 1px solid var(--qpx-border, #d0d0d0);
     z-index: 1000;
 }
+.qpx-test-topbar1 {
+    height: 32px;
+    display: block;
+    align-items: center;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--qpx-surface, #f5f5f5);
+    border-bottom: 1px solid var(--qpx-border, #d0d0d0);
+    z-index: 1000;
+}
 
 .qpx-back-home {
     font-size: 20px;
@@ -93,6 +106,48 @@ main {
     max-width: 860px;
 }
 
+.qpxicon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  vertical-align: -0.125em; /* Ideální zarovnání k textu */
+  background-color: currentColor; /* Zajistí, že ikona bude mít stejnou barvu jako okolní text */
+  
+  /* Definice masky - ikona se vykreslí skrz barvu pozadí */
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+.qpxicon-circle {
+  -webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjE5MiIvPjwvc3ZnPg==');
+  mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjE5MiIvPjwvc3ZnPg==');
+}
+.qpxicon-square {
+  -webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB4PSI2NCIgeT0iNjQiIHdpZHRoPSIzODQiIGhlaWdodD0iMzg0IiByeD0iNDAiLz48L3N2Zz4=');
+  mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB4PSI2NCIgeT0iNjQiIHdpZHRoPSIzODQiIGhlaWdodD0iMzg0IiByeD0iNDAiLz48L3N2Zz4=');
+}
+.qpxicon-chevron-down {
+  -webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNMTA5LjQgMjMzLjRsMTM3LjMgMTM3LjNjMTIuNSAxMi41IDMyLjggMTIuNSA0NS4zIDBsMTM3LjMtMTM3LjNjMTIuNS0xMi41IDEyLjUtMzIuOCAwLTQ1LjNzLTMyLjgtMTIuNS00NS4zIDBMMjU2IDMxNC43IDExMy40IDE3Mi4xYy0xMi41LTEyLjUtMzIuOC0xMi41LTQ1LjMgMHMtMTIuNSAzMi44IDAgNDUuM3oiLz48L3N2Zz4=');
+  mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNMTA5LjQgMjMzLjRsMTM3LjMgMTM3LjNjMTIuNS0xMi41IDMyLjggMTIuNSA0NS4zIDBsMTM3LjMtMTM3LjNjMTIuNS0xMi41IDEyLjUtMzIuOCAwLTQ1LjNzLTMyLjgtMTIuNS00NS4zIDBMMjU2IDMxNC43IDExMy40IDE3Mi4xYy0xMi41LTEyLjUtMzIuOC0xMi41LTQ1LjMgMHMtMTIuNSAzMi44IDAgNDUuM3oiLz48L3N2Zz4=');
+}
+
+.qpx-topbar-breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    padding-left: 4px;
+    color: var(--qpx-text);
+}
+
+.qpx-topbar-breadcrumb span {
+    display: inline-flex;
+    align-items: center;
+}
+
 /* Demo bloky — "demo-row" i "demo-block" jsou zaměnitelné názvy
    používané napříč testovacími stránkami, mají stejný vzhled */
 .demo-row,
@@ -110,6 +165,15 @@ main {
     font-size: 12px;
     color: var(--qpx-text-muted, #767676);
     margin: 0 0 10px;
+}
+
+/* Skupina widgetů/prvků pod sebou v rámci jednoho dema (např. porovnání
+   "disabled položka" vs "disabled celý widget", skupina checkboxů,
+   odsazené potomky u "vybrat vše") — používá např. breadcrumb.jsp, checkbox.jsp */
+.demo-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 /* Řádek akčních tlačítek pod demem (např. Sbalit vše / getData() / ...) */

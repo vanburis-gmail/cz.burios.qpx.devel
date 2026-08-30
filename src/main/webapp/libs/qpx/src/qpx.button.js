@@ -1,9 +1,15 @@
 /*!
- * qpx - button
+ * qpx - qpButton
  * Tlačítko se stejnou koncepcí jako DevExtreme dxButton:
  *  - options: text, icon, type, stylingMode, disabled, visible, hint, template
  *  - metody: option(), enable(), disable(), focus()
  *  - události: onClick, onOptionChanged
+ *
+ * Pozn.: widget byl přejmenován z "button"/qpx.Button na "qpButton"/qpx.qpButton,
+ * aby jméno odpovídalo sjednocené konvenci "qp" prefixu ostatních qpx widgetů
+ * (qpCheckBox, qpTextBox, qpSwitch, ...). Kdekoliv ve vaší aplikaci nebo
+ * v konfiguraci qpToolBar (options.widget) byl použit název "button",
+ * je potřeba ho nahradit za "qpButton".
  */
 (function (qpx, $) {
     "use strict";
@@ -116,7 +122,7 @@
         }
     });
 
-    qpx.registerWidget("button", Button);
-    qpx.Button = Button;
+    qpx.registerWidget("qpButton", Button);
+    qpx.qpButton = Button;
 
 })(window.qpx, jQuery);

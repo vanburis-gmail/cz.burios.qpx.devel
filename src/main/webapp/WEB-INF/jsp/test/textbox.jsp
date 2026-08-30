@@ -10,19 +10,19 @@
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
-		<link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>
 	</head>
 	<body class="qpx-view">
-		<div class="qpx-test-topbar">
-			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-				<span class="fa fa-home"></span>
-			</a>
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar" style="width: 100%"></div>
 		</div>
 		<div class="qpx-test-content">
 			<header class="page-head">
+				<i class="qpxicon qpxicon-circle"></i>
 				<h1>qpTextBox – test</h1>
 				<p class="subtitle">Jednořádkové textové pole — analogie DevExtreme dxTextBox.</p>
 			</header>
@@ -57,74 +57,74 @@
 
 		<script>
 		$(function () {
-		    // -----------------------------------------------------------------
-		    // 1) základní demo
-		    // -----------------------------------------------------------------
-		    var textbox1 = qpx.ui({
-		        view: "qpTextBox",
-		        width: 320,
-		        value: "Ahoj světe",
-		        placeholder: "Zadejte text...",
-		        showClearButton: true,
-		        stylingMode: "outlined",
-		        onValueChanged: function (e) {
-		            $("#out1").text("value: " + JSON.stringify(e.value));
-		        }
-		    }, "#textbox1");
-		    $("#out1").text("value: " + JSON.stringify(textbox1.value()));
+			// -----------------------------------------------------------------
+			// 1) základní demo
+			// -----------------------------------------------------------------
+			var textbox1 = qpx.ui({
+				view: "qpTextBox",
+				width: 320,
+				value: "Ahoj světe",
+				placeholder: "Zadejte text...",
+				showClearButton: true,
+				stylingMode: "outlined",
+				onValueChanged: function (e) {
+					$("#out1").text("value: " + JSON.stringify(e.value));
+				}
+			}, "#textbox1");
+			$("#out1").text("value: " + JSON.stringify(textbox1.value()));
 
-		    // -----------------------------------------------------------------
-		    // 2) heslo
-		    // -----------------------------------------------------------------
-		    var textbox2 = qpx.ui({
-		        view: "qpTextBox",
-		        width: 320,
-		        mode: "password",
-		        placeholder: "Heslo...",
-		        showClearButton: true,
-		        stylingMode: "filled"
-		    }, "#textbox2");
+			// -----------------------------------------------------------------
+			// 2) heslo
+			// -----------------------------------------------------------------
+			var textbox2 = qpx.ui({
+				view: "qpTextBox",
+				width: 320,
+				mode: "password",
+				placeholder: "Heslo...",
+				showClearButton: true,
+				stylingMode: "filled"
+			}, "#textbox2");
 
-		    // -----------------------------------------------------------------
-		    // 3) maxLength + valueChangeEvent: "input"
-		    // -----------------------------------------------------------------
-		    var textbox3 = qpx.ui({
-		        view: "qpTextBox",
-		        width: 320,
-		        placeholder: "Max. 12 znaků...",
-		        maxLength: 12,
-		        valueChangeEvent: "input",
-		        stylingMode: "underlined",
-		        onValueChanged: function (e) {
-		            $("#out3").text("value: " + JSON.stringify(e.value) + " (" + e.value.length + "/12)");
-		        }
-		    }, "#textbox3");
-		    $("#out3").text("value: \"\" (0/12)");
+			// -----------------------------------------------------------------
+			// 3) maxLength + valueChangeEvent: "input"
+			// -----------------------------------------------------------------
+			var textbox3 = qpx.ui({
+				view: "qpTextBox",
+				width: 320,
+				placeholder: "Max. 12 znaků...",
+				maxLength: 12,
+				valueChangeEvent: "input",
+				stylingMode: "underlined",
+				onValueChanged: function (e) {
+					$("#out3").text("value: " + JSON.stringify(e.value) + " (" + e.value.length + "/12)");
+				}
+			}, "#textbox3");
+			$("#out3").text("value: \"\" (0/12)");
 
-		    // -----------------------------------------------------------------
-		    // 4) disabled / readOnly
-		    // -----------------------------------------------------------------
-		    var textbox4 = qpx.ui({
-		        view: "qpTextBox",
-		        width: 320,
-		        value: "Needitovatelné pole",
-		        disabled: true,
-		        stylingMode: "outlined"
-		    }, "#textbox4");
+			// -----------------------------------------------------------------
+			// 4) disabled / readOnly
+			// -----------------------------------------------------------------
+			var textbox4 = qpx.ui({
+				view: "qpTextBox",
+				width: 320,
+				value: "Needitovatelné pole",
+				disabled: true,
+				stylingMode: "outlined"
+			}, "#textbox4");
 
-		    var textbox4b = qpx.ui({
-		        view: "qpTextBox",
-		        width: 320,
-		        value: "Jen ke čtení",
-		        readOnly: true,
-		        stylingMode: "outlined"
-		    }, "#textbox4b");
+			var textbox4b = qpx.ui({
+				view: "qpTextBox",
+				width: 320,
+				value: "Jen ke čtení",
+				readOnly: true,
+				stylingMode: "outlined"
+			}, "#textbox4b");
 
-		    // -----------------------------------------------------------------
-		    // Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny instance)
-		    // -----------------------------------------------------------------
-		    var allTextBoxes = [textbox1, textbox2, textbox3, textbox4, textbox4b];
-
+			// -----------------------------------------------------------------
+			// Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny instance)
+			// -----------------------------------------------------------------
+			var allTextBoxes = [textbox1, textbox2, textbox3, textbox4, textbox4b];
+		
 			function applyTheme(themeClass) {
 				$(".qpx-test-content")
 					.removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
@@ -138,50 +138,46 @@
 		        allTextBoxes.forEach(function (tb) { tb.option("stylingMode", mode); });
 		    }
 
-		    var toolbar = qpx.ui({
-		        view: "qpToolBar",
-		        theme: "generic-light",
-		        items: [
-		            {
-		                location: "before", widget: "template",
-		                template: "<b style='padding:0 4px;'>Styl:</b>"
-		            },
-		            {
-		                location: "before", widget: "buttonGroup",
-		                options: {
-		                    items: [
-		                        { text: "Světlé", key: "generic-light" },
-		                        { text: "Tmavé", key: "generic-dark" }
-		                    ],
-		                    selectedItemKeys: ["generic-light"],
-		                    onSelectionChanged: function (e) {
-		                        var key = e.component.getSelectedItemKeys()[0] || "generic-light";
-		                        applyTheme("qpx-theme-" + key);
-		                    }
-		                }
-		            },
-		            {
-		                location: "after", widget: "buttonGroup",
-		                options: {
-		                    items: [
-		                        { text: "outlined", key: "outlined" },
-		                        { text: "filled", key: "filled" },
-		                        { text: "underlined", key: "underlined" }
-		                    ],
-		                    selectedItemKeys: ["outlined"],
-		                    onSelectionChanged: function (e) {
-		                        var mode = e.component.getSelectedItemKeys()[0] || "outlined";
-		                        applyStylingMode(mode);
-		                    }
-		                }
-		            }
-		        ]
-		    }, "#pageToolbar");
-
-		    applyTheme("qpx-theme-generic-light");
+			var toolbar = qpx.ui({
+				view: "qpToolBar",
+				theme: "generic-light",
+				items: [{
+					location: "before", widget: "template",
+					template: "<b style='padding:0 4px;'>Styl:</b>"
+				}, {
+					location: "before", 
+					widget: "qpDropDownButton",
+					options: {
+						items: [
+							{ text: "Světlé", key: "generic-light" },
+							{ text: "Tmavé", key: "generic-dark" }
+						],
+						selectedItemKeys: ["generic-light"],
+						onSelectionChanged: function (e) {
+							var key = e.component.getSelectedItemKeys()[0] || "generic-light";
+							applyTheme("qpx-theme-" + key);
+						}
+					}
+				}, {
+					location: "after", 
+					widget: "qpDropDownButton",
+					options: {
+						items: [
+							{ text: "outlined", key: "outlined" },
+							{ text: "filled", key: "filled" },
+							{ text: "underlined", key: "underlined" }
+						],
+						selectedItemKeys: ["outlined"],
+						onSelectionChanged: function (e) {
+							var mode = e.component.getSelectedItemKeys()[0] || "outlined";
+							applyStylingMode(mode);
+						}
+					}
+				}]
+			}, "#pageToolbar");
+	
+			applyTheme("qpx-theme-generic-light");
 		});
 		</script>
 	</body>
 </html>
-textbox.jsp
-prosím vytvořit samostatný soubor css do jsp doplnit pouze link

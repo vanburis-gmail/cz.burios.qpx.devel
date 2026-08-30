@@ -15,7 +15,7 @@
 	</target>
 
 	<target name="archive.src" depends="prepare" description="Archivate source files">
-		<zip destfile="${archive.home.default}/cz.burios.qpx-devel-25.2-${date}.zip" basedir="${project.home}">
+		<zip destfile="${archive.home.default}/cz.burios.qpx-devel-26.2-${date}.zip" basedir="${project.home}">
 			<exclude name=".project" />
 			<exclude name=".classpath" />
 			<exclude name=".git/**" />
@@ -25,7 +25,7 @@
 		</zip>
 	</target>
 	<target name="archive.src.home" depends="prepare" description="Archivate source files">
-		<zip destfile="${archive.home.home}/cz.burios.qpx-devel-25.2-${date}.zip" basedir="${project.home}">
+		<zip destfile="${archive.home.home}/cz.burios.qpx-devel-26.2-${date}.zip" basedir="${project.home}">
 			<exclude name=".project" />
 			<exclude name=".classpath" />
 			<exclude name=".git/**" />

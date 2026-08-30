@@ -8,6 +8,12 @@
 // se dají za běhu přepnout jinou třídou na kontejneru (viz
 // scss/qp-framework.scss), nebo je lze v konzumentské aplikaci
 // libovolně přebít vlastním pravidlem s vyšší specificitou.
+//
+// Pozn.: --qpx-alt-row-bg / --qpx-disabled / --qpx-edit-bg byly
+// doplněny při sjednocování qpDataGrid a qpTabView se zbytkem
+// frameworku - dřív šlo o soukromé $qp-grid-*/$qp-tabview-* barvy
+// bez obecného ekvivalentu; nově jsou to sdílené tokeny použitelné
+// i v dalších (i budoucích) widgetech.
 // =====================================================================
 
 @mixin qpx-theme-vars {
@@ -32,4 +38,16 @@
 
     // Na světlém pozadí se má hover checkboxu (qpTreeView) ztmavit
     --qpx-checkbox-hover-filter: brightness(0.9);
+
+    // Zebrované ("alternující") pozadí řádků - qpDataGrid, potenciálně
+    // i qpTreeView/qpPropertyTable apod.
+    --qpx-alt-row-bg: #f7f8fa;
+
+    // Barva "zašedlého" (needitovatelného/vypnutého) textu či ikony -
+    // odlišná od --qpx-text-muted (ten je pro běžný popisný text,
+    // tohle je vyloženě pro disabled stav).
+    --qpx-disabled: #bdbdbd;
+
+    // Jemné zvýraznění právě editovaného řádku/buňky (qpDataGrid).
+    --qpx-edit-bg: #fff8e1;
 }

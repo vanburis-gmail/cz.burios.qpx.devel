@@ -160,12 +160,6 @@
 				$("body")
 					.removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
 					.addClass("qpx-theme-" + themeKey);
-				// sem doplnit misto each pole přes jquery $(".qpx-view").each(...) 
-				/*
-				allEditors.forEach(function (ed) {
-					ed.option("theme", themeKey); // "generic-light" | "generic-dark" -> namapováno na Ace téma
-				});
-				*/
 				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
 				toolbar.option("theme", themeKey);
 			}
