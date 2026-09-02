@@ -127,6 +127,16 @@
 					<span class="card-desc">Skládání komponent přes rows/cols, responzivní chování, gap, spacer buňky.</span>
 					<span class="card-path">/devel/test/layout</span>
 				</a>
+				<a class="card" href="/devel/test/flexlayout">
+					<span class="card-icon qpxicon qpxicon-layout qpxicon-xl"></span>				
+					<span class="card-title">qpFlexLayout</span>
+						Rozkládací kontejner postavený přímo nad CSS flexboxem. Na rozdíl od základního "layout" (rows/cols,
+						každá buňka se defaultně rovnoměrně roztahuje)
+						qpFlexLayout vystavuje skutečné flexbox vlastnosti
+					<span class="card-desc">
+					</span>
+					<span class="card-path">/devel/test/flexlayout</span>
+				</a>
 				<a class="card" href="/devel/test/scrollview">
 					<span class="card-icon qpxicon qpxicon-scrollview qpxicon-xl"></span>				
 					<span class="card-title">qpScrollView</span>

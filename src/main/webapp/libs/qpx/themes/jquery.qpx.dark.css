@@ -2538,6 +2538,56 @@
   color: var(--qpx-accent, #337ab7);
 }
 
+.qpx-flexlayout {
+  display: flex;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+.qpx-flexlayout.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.qpx-flexlayout-cell {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+.qpx-flexlayout-cell > .qpx-view {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.qpx-flexlayout-spacer {
+  pointer-events: none;
+}
+
+.qpx-flexlayout-debug > .qpx-flexlayout-cell {
+  outline: 1px dashed var(--qpx-border, #d3d9df);
+  outline-offset: -1px;
+}
+
+.qpx-flexlayout-debug > .qpx-flexlayout-cell::before {
+  content: attr(data-qpx-index);
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  z-index: 1;
+  padding: 0 3px;
+  font-size: 9px;
+  line-height: 1.4;
+  color: var(--qpx-text-muted, #767676);
+  background: var(--qpx-surface, #f8f9fb);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
 .qpx-numberbox {
   position: relative;
   display: flex;
