@@ -2588,6 +2588,56 @@
   pointer-events: none;
 }
 
+.qpx-gridlayout {
+  display: grid;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+.qpx-gridlayout.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.qpx-gridlayout-cell {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+.qpx-gridlayout-cell > .qpx-view {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.qpx-gridlayout-spacer {
+  pointer-events: none;
+}
+
+.qpx-gridlayout-debug > .qpx-gridlayout-cell {
+  outline: 1px dashed var(--qpx-border, #d3d9df);
+  outline-offset: -1px;
+}
+
+.qpx-gridlayout-debug > .qpx-gridlayout-cell::before {
+  content: attr(data-qpx-index);
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  z-index: 1;
+  padding: 0 3px;
+  font-size: 9px;
+  line-height: 1.4;
+  color: var(--qpx-text-muted, #767676);
+  background: var(--qpx-surface, #f8f9fb);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
 .qpx-numberbox {
   position: relative;
   display: flex;
@@ -3780,6 +3830,285 @@
     transform: rotate(360deg);
   }
 }
+/*!
+ * qpx - qpRibbonButton styles
+ * Ploché, bezrámečkové tlačítko pro položky qpRibbon (styl Office 365
+ * online) - zvýrazní se až při hoveru. Dvě varianty:
+ *   .qpx-ribbonbutton-large - ikona nahoře, text pod ní, přes celou
+ *     výšku skupiny (šířka $qpx-ribbon-item-large-width).
+ *   .qpx-ribbonbutton-small - ikona + text v jedné řádce, přesná výška
+ *     $qpx-ribbon-btn-small-height (aby se 3 tlačítka pod sebou vešla
+ *     do skupiny beze zbytku - viz item.stack v qpx.ribbon.js).
+ */
+.qpx-ribbonbutton {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  cursor: pointer;
+  outline: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--qpx-text, #333);
+  font-family: inherit;
+  font-size: 10px;
+  transition: background 0.12s ease;
+  overflow: hidden;
+}
+.qpx-ribbonbutton:hover:not(.qpx-state-disabled) {
+  background: var(--qpx-hover, #eceff1);
+}
+.qpx-ribbonbutton:focus-visible {
+  outline: 2px solid var(--qpx-accent, #337ab7);
+  outline-offset: -2px;
+}
+.qpx-ribbonbutton.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+.qpx-ribbonbutton.qpx-hidden {
+  display: none;
+}
+.qpx-ribbonbutton .qpx-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.qpx-ribbonbutton .qpx-ribbonbutton-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qpx-ribbonbutton-large {
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  width: 58px;
+  height: 100%;
+  padding: 4px 2px;
+  text-align: center;
+  white-space: normal;
+}
+.qpx-ribbonbutton-large .qpx-icon {
+  font-size: 28px;
+}
+.qpx-ribbonbutton-large .qpx-ribbonbutton-text {
+  font-size: 10px;
+  line-height: 1.15;
+  white-space: normal;
+}
+
+.qpx-ribbonbutton-small {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 4px;
+  height: 17px;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+.qpx-ribbonbutton-small .qpx-icon {
+  font-size: 16px;
+}
+.qpx-ribbonbutton-small .qpx-ribbonbutton-text {
+  font-size: 10px;
+}
+
+/*!
+ * qpx - qpRibbon styles
+ * Stylování vychází z MS Office 365 online verzí (Word/Excel/PowerPoint
+ * Online) - kompaktní pás karet, drobné písmo ($qpx-font-size-sm = 10px),
+ * ploché ikonové položky bez rámečku, které se zvýrazní až při hoveru.
+ *
+ * Sjednoceno se zbytkem frameworku: žádné soukromé barevné proměnné,
+ * jen sdílené CSS proměnné (--qpx-*) z scss/themes/_light.scss a
+ * scss/themes/_dark.scss - qpRibbon proto (stejně jako qpTextBox/
+ * qpToolBar/qpTabView/qpDataGrid) žádné theme sám nevynucuje a normálně
+ * zdědí motiv z okolí (viz qpx.setTheme()).
+ */
+.qpx-ribbon {
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 10px;
+  width: 100%;
+  background: var(--qpx-bg, #fff);
+  color: var(--qpx-text, #333);
+  user-select: none;
+}
+.qpx-ribbon.qpx-hidden {
+  display: none;
+}
+.qpx-ribbon.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+.qpx-ribbon .qpx-ribbon-tabstrip {
+  display: flex;
+  align-items: stretch;
+  flex: 0 0 auto;
+  height: 26px;
+  background: var(--qpx-surface, #f8f9fb);
+  border-bottom: 1px solid var(--qpx-border, #ccc);
+}
+.qpx-ribbon .qpx-ribbon-tabs {
+  display: flex;
+  align-items: stretch;
+  flex: 1 1 auto;
+  overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.qpx-ribbon .qpx-ribbon-tabs::-webkit-scrollbar {
+  display: none;
+}
+.qpx-ribbon .qpx-ribbon-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  color: var(--qpx-text-muted, #767676);
+  border-bottom: 2px solid transparent;
+  outline: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.qpx-ribbon .qpx-ribbon-tab:hover {
+  background: var(--qpx-hover, #eceff1);
+  color: var(--qpx-text, #333);
+}
+.qpx-ribbon .qpx-ribbon-tab:focus-visible {
+  outline: 2px solid var(--qpx-accent, #337ab7);
+  outline-offset: -2px;
+}
+.qpx-ribbon .qpx-ribbon-tab.qpx-state-selected {
+  background: var(--qpx-bg, #fff);
+  color: var(--qpx-accent, #337ab7);
+  font-weight: 600;
+  border-bottom-color: var(--qpx-accent, #337ab7);
+}
+.qpx-ribbon .qpx-ribbon-tab.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+.qpx-ribbon .qpx-ribbon-collapse-btn {
+  flex: 0 0 auto;
+  width: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--qpx-text-muted, #767676);
+  font-size: 9px;
+  line-height: 1;
+  border-left: 1px solid var(--qpx-border, #ccc);
+  outline: none;
+}
+.qpx-ribbon .qpx-ribbon-collapse-btn:hover {
+  background: var(--qpx-hover, #eceff1);
+  color: var(--qpx-text, #333);
+}
+.qpx-ribbon .qpx-ribbon-collapse-btn:focus-visible {
+  outline: 2px solid var(--qpx-accent, #337ab7);
+  outline-offset: -2px;
+}
+.qpx-ribbon .qpx-ribbon-panels {
+  flex: 0 0 auto;
+}
+.qpx-ribbon.qpx-ribbon-collapsed .qpx-ribbon-panels {
+  display: none;
+}
+.qpx-ribbon .qpx-ribbon-panel {
+  display: flex;
+  align-items: stretch;
+  height: 74px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.qpx-ribbon .qpx-ribbon-panel::-webkit-scrollbar {
+  display: none;
+}
+.qpx-ribbon .qpx-ribbon-group {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  padding: 4px 8px 2px;
+  border-right: 1px solid var(--qpx-border, #ccc);
+}
+.qpx-ribbon .qpx-ribbon-group:last-child {
+  border-right: none;
+}
+.qpx-ribbon .qpx-ribbon-group-items {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  gap: 4px;
+  min-height: 0;
+  overflow: hidden;
+}
+.qpx-ribbon .qpx-ribbon-group-title {
+  flex: 0 0 auto;
+  text-align: center;
+  color: var(--qpx-text-muted, #767676);
+  font-size: 10px;
+  padding-top: 3px;
+  white-space: nowrap;
+}
+.qpx-ribbon .qpx-ribbon-item {
+  display: flex;
+  align-items: center;
+}
+.qpx-ribbon .qpx-ribbon-item-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+}
+.qpx-ribbon .qpx-ribbon-item-large {
+  align-self: stretch;
+  height: auto;
+}
+.qpx-ribbon .qpx-ribbon-separator {
+  align-self: stretch;
+  width: 1px;
+  margin: 2px 6px;
+  background: var(--qpx-border, #ccc);
+}
+.qpx-ribbon .qpx-ribbon-item .qpx-dropdownbutton {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  min-height: 22px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  color: var(--qpx-text, #333);
+}
+.qpx-ribbon .qpx-ribbon-item .qpx-dropdownbutton .qpx-icon {
+  width: 16px;
+  height: 16px;
+}
+.qpx-ribbon .qpx-ribbon-item .qpx-dropdownbutton:hover:not(.qpx-state-disabled) {
+  background: var(--qpx-hover, #eceff1);
+}
+.qpx-ribbon .qpx-ribbon-item .qpx-dropdownbutton.qpx-state-selected {
+  background: var(--qpx-selected, #e3f0fb);
+}
+.qpx-ribbon .qpx-ribbon-item .qpx-checkbox {
+  font-size: 10px;
+}
+.qpx-ribbon .qpx-ribbon-item .qpx-textbox,
+.qpx-ribbon .qpx-ribbon-item .qpx-numberbox {
+  min-height: 22px;
+  font-size: 10px;
+}
+
 .qpx-theme-generic-light {
   --qpx-bg: #ffffff;
   --qpx-surface: #f8f9fb;

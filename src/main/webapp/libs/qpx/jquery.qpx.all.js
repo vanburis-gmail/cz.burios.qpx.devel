@@ -7401,6 +7401,283 @@
 })(window.qpx, jQuery);
 
 /*!
+ * qpx - qpGridLayout
+ * Rozkládací kontejner postavený přímo nad CSS Gridem, inspirovaný Webix
+ * GridLayout. Na rozdíl od qpFlexLayout (jednorozměrný řádek/sloupec)
+ * qpGridLayout organizuje buňky do dvourozměrné mřížky s pevně danými
+ * sloupci a řádky, a hlavně umožňuje buňky SLUČOVAT (colSpan/rowSpan) -
+ * typická "tabulková" funkce, kterou flexbox neumí:
+ *  - "items": pole buněk. Každá buňka může být:
+ *      - vnořený qpx widget: { view: "...", ...jeho vlastní config }
+ *      - libovolný volný HTML obsah: { content: "<div>...</div>" }
+ *      - prázdný objekt {} = prázdné místo v mřížce (spacer)
+ *    U každé buňky lze nastavit "col"/"row" (0-based výchozí pozice v
+ *    mřížce - pokud se vynechá, buňka se umístí automaticky podle
+ *    autoFlow) a "colSpan"/"rowSpan" (přes kolik sloupců/řádků se má
+ *    buňka roztáhnout - sloučit), dále justifySelf/alignSelf, css,
+ *    hidden.
+ *  - na kontejneru: columns (šířky sloupců), rows (výšky řádků), gap
+ *    (nebo zvlášť columnGap/rowGap), autoFlow, justifyItems, alignItems
+ *  - vnořené qpx widgety se při překreslení (option("items", ...))
+ *    korektně ničí (child.destroy()), aby nezůstávaly viset jejich
+ *    event listenery/timery
+ *
+ * options:
+ *   items, columns, rows, gap, columnGap, rowGap, autoFlow,
+ *   justifyItems, alignItems, padding, width, height, debug,
+ *   disabled, visible
+ *
+ * events:
+ *   onOptionChanged
+ *
+ * methods:
+ *   option(name[, value]), items([items]), getChild(index), getChildren(),
+ *   enable(), disable()
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var ALIGN_MAP = {
+        start: "start",
+        end: "end",
+        center: "center",
+        stretch: "stretch",
+        baseline: "baseline"
+    };
+
+    var GridLayout = qpx.Widget.extend({
+
+        defaults: {
+            items: [],            // [{ view, ... } | { content } | {} (spacer)]
+                                    // + volitelně col/row/colSpan/rowSpan/justifySelf/alignSelf/css/hidden
+
+            columns: null,          // pole šířek sloupců (číslo=px, nebo "1fr"/"minmax(100px,1fr)"/"auto"...)
+                                     // nebo přímo řetězec grid-template-columns; null = responzivní
+                                     // repeat(auto-fit, minmax(120px, 1fr))
+            rows: null,              // stejná logika pro výšky řádků; null = automatická výška (auto)
+
+            gap: 10,
+            columnGap: undefined,     // přepíše gap jen pro sloupce (mezera mezi sloupci)
+            rowGap: undefined,        // přepíše gap jen pro řádky (mezera mezi řádky)
+
+            autoFlow: "row",          // "row" | "column" | "row dense" | "column dense" -
+                                       // jak se umísťují buňky bez explicitního col/row
+
+            justifyItems: "stretch",   // výchozí zarovnání obsahu buňky vodorovně
+            alignItems: "stretch",     // výchozí zarovnání obsahu buňky svisle
+
+            padding: null,
+            width: null,
+            height: null,
+
+            debug: false,           // vykreslí tenký obrys kolem každé buňky (ladění mřížky)
+            disabled: false,
+            visible: true,
+
+            onOptionChanged: null
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+
+            this.$container
+                .addClass("qpx-gridlayout")
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-gridlayout-debug", !!cfg.debug);
+
+            if (cfg.onOptionChanged) { this.off("optionChanged"); this.on("optionChanged", cfg.onOptionChanged); }
+
+            this._applyContainerStyle();
+            this._rebuildCells();
+        },
+
+        // ---------------------------------------------------------------
+        _cssAlign: function (v) { return ALIGN_MAP[v] || v || "stretch"; },
+
+        // pole čísel/řetězců -> řetězec pro grid-template-columns/rows;
+        // číslo se bere jako px, řetězec ("1fr", "minmax(100px,1fr)", "auto"...)
+        // se použije beze změny; celý config může být i rovnou hotový CSS řetězec
+        _tracksToCss: function (tracks, fallback) {
+            if (tracks == null) { return fallback; }
+            if (qpx.isString(tracks)) { return tracks; }
+            return tracks.map(function (t) {
+                return typeof t === "number" ? qpx.toPx(t) : t;
+            }).join(" ");
+        },
+
+        _applyContainerStyle: function () {
+            var cfg = this.config;
+            this.$container.css({
+                "grid-template-columns": this._tracksToCss(cfg.columns, "repeat(auto-fit, minmax(120px, 1fr))"),
+                "grid-template-rows": this._tracksToCss(cfg.rows, ""),
+                "grid-auto-flow": cfg.autoFlow,
+                "justify-items": this._cssAlign(cfg.justifyItems),
+                "align-items": this._cssAlign(cfg.alignItems),
+                "row-gap": qpx.toPx(cfg.rowGap !== undefined ? cfg.rowGap : cfg.gap),
+                "column-gap": qpx.toPx(cfg.columnGap !== undefined ? cfg.columnGap : cfg.gap),
+                "padding": cfg.padding != null ? qpx.toPx(cfg.padding) : "",
+                "width": cfg.width != null ? qpx.toPx(cfg.width) : "",
+                "height": cfg.height != null ? qpx.toPx(cfg.height) : ""
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // DOM - zničí staré vnořené widgety a znovu sestaví buňky podle
+        // aktuálního "items". Odděleno od _applyContainerStyle(), aby se
+        // změna čistě kontejnerových voleb (gap, columns, rows, ...)
+        // nemusela platit destrukcí a novým vykreslením vnořených widgetů.
+        // ---------------------------------------------------------------
+        _rebuildCells: function () {
+            (this._children || []).forEach(function (child) {
+                if (child && child.destroy) { child.destroy(); }
+            });
+            this._children = [];
+
+            this.$container.empty();
+            this._buildCells();
+        },
+
+        _buildCells: function () {
+            var self = this;
+            var cfg = this.config;
+
+            (cfg.items || []).forEach(function (itemCfg, i) {
+                if (itemCfg === undefined || itemCfg === null) { return; }
+
+                var isSpacer = qpx.isObject(itemCfg) && !itemCfg.view && itemCfg.content === undefined;
+
+                var $cell = $("<div class='qpx-gridlayout-cell'></div>").attr("data-qpx-index", i);
+                self._applyCellStyle($cell, itemCfg);
+
+                if (itemCfg.css) { $cell.addClass(itemCfg.css); }
+                if (itemCfg.hidden) { $cell.addClass("qpx-hidden"); }
+
+                self.$container.append($cell);
+
+                if (isSpacer) {
+                    $cell.addClass("qpx-gridlayout-spacer");
+                    return; // prázdná buňka = jen vyhrazené místo v mřížce
+                }
+
+                if (itemCfg.content !== undefined) {
+                    $cell.html(itemCfg.content);
+                } else if (itemCfg.view) {
+                    var child = qpx.ui(itemCfg, $cell);
+                    self.addChild(child);
+                }
+            });
+        },
+
+        _applyCellStyle: function ($cell, itemCfg) {
+            var style = {};
+            var colSpan = itemCfg.colSpan || 1;
+            var rowSpan = itemCfg.rowSpan || 1;
+
+            // CSS Grid čáry jsou 1-based -> "col: 0" znamená první sloupec (čára 1)
+            if (itemCfg.col !== undefined) {
+                style["grid-column"] = (itemCfg.col + 1) + " / span " + colSpan;
+            } else if (colSpan > 1) {
+                style["grid-column"] = "span " + colSpan;
+            }
+
+            if (itemCfg.row !== undefined) {
+                style["grid-row"] = (itemCfg.row + 1) + " / span " + rowSpan;
+            } else if (rowSpan > 1) {
+                style["grid-row"] = "span " + rowSpan;
+            }
+
+            if (itemCfg.justifySelf) { style["justify-self"] = this._cssAlign(itemCfg.justifySelf); }
+            if (itemCfg.alignSelf) { style["align-self"] = this._cssAlign(itemCfg.alignSelf); }
+
+            $cell.css(style);
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        items: function (newItems) {
+            if (arguments.length === 0) { return this.config.items; }
+            return this.option("items", newItems);
+        },
+
+        getChild: function (index) {
+            var children = this.getChildren();
+            return children[index] !== undefined ? children[index] : null;
+        },
+
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+
+        // option("x") -> čtení; option("x", v) -> zápis; option({x:..}) -> hromadně
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "items":
+                    this._rebuildCells();
+                    break;
+
+                case "columns":
+                case "rows":
+                case "gap":
+                case "columnGap":
+                case "rowGap":
+                case "autoFlow":
+                case "justifyItems":
+                case "alignItems":
+                case "padding":
+                case "width":
+                case "height":
+                    // čistě kontejnerová vlastnost - stačí přepočítat inline styl,
+                    // vnořené widgety zůstávají netknuté (nezničí se ani znovu
+                    // nevykreslí)
+                    this._applyContainerStyle();
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    break;
+
+                case "debug":
+                    this.$container.toggleClass("qpx-gridlayout-debug", !!value);
+                    break;
+
+                default:
+                    this._rebuildCells();
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        }
+
+        // destroy() se dědí z qpx.Widget - ten už sám projde this._children
+        // (naplněné přes addChild() v _buildCells()) a zavolá jejich
+        // destroy(), teprve pak vyprázdní $container
+    });
+
+    qpx.registerWidget("qpGridLayout", GridLayout);
+    qpx.qpGridLayout = GridLayout;
+
+})(window.qpx, jQuery);
+
+/*!
  * qpx - qpToolBar (refactored)
  * Panel nástrojů koncipovaný stejně jako DevExtreme dxToolBar:
  *  - items rozdělené do "before" / "center" / "after"
@@ -8441,6 +8718,579 @@
 
     qpx.registerWidget("qpTabView", TabView);
     qpx.qpTabView = TabView;
+
+})(window.qpx, jQuery);
+
+/*!
+ * qpx - qpRibbon
+ * "Pás karet" ve stylu MS Office (Word/Excel Online) - přepracování
+ * původního jQuery pluginu jquery.ribbon.js (div.officebar) do podoby
+ * qpx widgetu. Struktura zůstala koncepčně stejná jako v originále
+ * (karty -> skupiny -> položky), ale položky ("items") už NEJSOU jen
+ * kus HTML - každá je samostatná instance existujícího qpx widgetu
+ * (qpRibbonButton, qpDropDownButton, qpTextBox, qpNumberBox, qpCheckBox, ...),
+ * se kterou lze dál pracovat úplně stejně, jako by byla vytvořená
+ * samostatně přes qpx.ui() - viz getItemWidget().
+ *
+ * Struktura konfigurace (tabs -> groups -> items):
+ *
+ *   qpx.ui({
+ *       view: "qpRibbon",
+ *       activeTabKey: "home",
+ *       tabs: [{
+ *           key: "home", text: "Domů",
+ *           groups: [{
+ *               key: "clipboard", title: "Schránka",
+ *               items: [
+ *                   { widget: "qpRibbonButton", size: "large", options: { text: "Vložit", icon: "...", onClick: fn } },
+ *                   { widget: "qpRibbonButton", stack: true, options: { text: "Kopírovat", icon: "...", onClick: fn } },
+ *                   { widget: "qpRibbonButton", stack: true, options: { text: "Vyjmout", icon: "...", onClick: fn } },
+ *                   { type: "separator" },
+ *                   { widget: "qpDropDownButton", options: { text: "Vložit jinak", splitButton: true, items: [...] } }
+ *               ]
+ *           }, {
+ *               key: "font", title: "Písmo",
+ *               items: [
+ *                   { widget: "qpTextBox", options: { width: 90, value: "Calibri" } },
+ *                   { widget: "qpNumberBox", options: { width: 50, value: 11, min: 1, max: 400 } }
+ *               ]
+ *           }]
+ *       }]
+ *   }, "#ribbon");
+ *
+ * Konfigurace položky (item):
+ *   {
+ *     widget: "qpRibbonButton" | "qpDropDownButton" | "qpTextBox" | "qpNumberBox" |
+ *             "qpCheckBox" | ... (libovolný zaregistrovaný qpx widget;
+ *             výchozí, pokud "widget" chybí, je "qpRibbonButton"),
+ *     type:   "separator" | "template"  (alternativa k "widget"),
+ *     template: function(itemCfg, $cell)   // jen pro type:"template"
+ *     size:  "large" | "small"           // pro qpRibbonButton - viz qpx.ribbonbutton.js
+ *                                         // ("large" se navíc promítne do rozměru obalové buňky)
+ *     stack: true | false                // true = zařadí položku do svislého "mini-sloupce" spolu se sousedními stack:true položkami
+ *     options: { ...konfigurace vnitřního widgetu, vč. onClick/onValueChanged apod. }
+ *   }
+ *
+ * options (widget qpRibbon):
+ *   tabs, activeTabKey, collapsible, collapsed, disabled, visible, theme
+ *
+ * events:
+ *   onInitialized, onContentReady, onTabChanged ({ key, previousKey, component }),
+ *   onItemClick (agregovaně za všechny typy položek - stejně jako u qpToolBar),
+ *   onOptionChanged, onDisposing
+ *
+ * methods:
+ *   option(name[, value]), getActiveTabKey(), setActiveTab(key),
+ *   collapse(), expand(), toggleCollapse(), isCollapsed(),
+ *   getItemWidget(tabKey, groupKey, itemIndex), addTab(tabCfg[, beforeKey]),
+ *   removeTab(key), enable(), disable(), destroy()
+ *
+ * Pozn. k tématu: qpRibbon se (stejně jako qpToolBar/qpTextBox/qpTabView/
+ * qpDataGrid) vykresluje čistě přes CSS proměnné (--qpx-*), takže žádné
+ * theme sám nevynucuje - normálně zdědí motiv z okolí (typicky <body>,
+ * viz qpx.setTheme()). Volitelná options.theme slouží jen k vynucení
+ * konkrétního motivu na jedné konkrétní instanci.
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var Ribbon = qpx.Widget.extend({
+
+        defaults: {
+            tabs: [],
+            activeTabKey: null,      // null = použije se key první karty
+            collapsible: true,
+            collapsed: false,
+            disabled: false,
+            visible: true,
+            theme: null,             // volitelné vynucení tématu jen pro tuto instanci
+
+            onTabChanged: null,
+            onItemClick: null,
+            onOptionChanged: null,
+            onInitialized: null,
+            onContentReady: null,
+            onDisposing: null
+        },
+
+        // ---------------------------------------------------------------
+        render: function () {
+            var cfg = this.config;
+            var self = this;
+
+            this.$container
+                .addClass("qpx-ribbon")
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-ribbon-collapsed", !!cfg.collapsed)
+                .attr("role", "navigation");
+
+            if (cfg.theme) { this.$container.addClass("qpx-theme-" + cfg.theme); }
+
+            if (cfg.onTabChanged) { this.on("tabChanged", cfg.onTabChanged); }
+            if (cfg.onItemClick) { this.on("itemClick", cfg.onItemClick); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+            if (cfg.onInitialized) { this.on("ready", cfg.onInitialized); }
+            if (cfg.onContentReady) { this.on("contentReady", cfg.onContentReady); }
+            if (cfg.onDisposing) { this.on("destroy", cfg.onDisposing); }
+
+            if (!cfg.activeTabKey && cfg.tabs.length) { cfg.activeTabKey = cfg.tabs[0].key; }
+
+            this._itemRefs = [];   // { tabKey, groupKey, itemIndex, widget, $cell }
+            this._tabRefs = {};    // key -> { $tab, $panel, config }
+
+            this._buildDom();
+
+            var self2 = this;
+            setTimeout(function () { self2.trigger("contentReady", { component: self2 }); }, 0);
+        },
+
+        // ---------------------------------------------------------------
+        // DOM
+        // ---------------------------------------------------------------
+        _buildDom: function () {
+            var self = this;
+            var cfg = this.config;
+
+            this._destroyItemWidgets();
+            this.$container.empty();
+            this._tabRefs = {};
+
+            this.$tabsList = $("<div class='qpx-ribbon-tabs' role='tablist'></div>");
+
+            this.$collapseBtn = $("<div class='qpx-ribbon-collapse-btn' role='button' tabindex='0' title='Sbalit/rozbalit pás karet'></div>")
+                .html("&#9650;")
+                .toggle(!!cfg.collapsible);
+
+            this.$tabStrip = $("<div class='qpx-ribbon-tabstrip'></div>").append(this.$tabsList, this.$collapseBtn);
+
+            this.$panels = $("<div class='qpx-ribbon-panels'></div>");
+
+            this.$container.append(this.$tabStrip, this.$panels);
+
+            cfg.tabs.forEach(function (tabCfg) {
+                self._buildTab(tabCfg);
+            });
+
+            this._updateCollapseIcon();
+            this._bindEvents();
+            this._applyActiveTab();
+        },
+
+        _buildTab: function (tabCfg) {
+            var self = this;
+            var cfg = this.config;
+
+            var $tab = $("<div class='qpx-ribbon-tab' role='tab' tabindex='0'></div>")
+                .text(tabCfg.text || tabCfg.key)
+                .toggleClass("qpx-state-disabled", !!tabCfg.disabled);
+
+            $tab.on("click.qpxRibbon", function () {
+                if (tabCfg.disabled || cfg.disabled) { return; }
+                self._selectTab(tabCfg.key, true);
+            });
+            $tab.on("keydown.qpxRibbon", function (e) {
+                if (tabCfg.disabled || cfg.disabled) { return; }
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    self._selectTab(tabCfg.key, true);
+                }
+            });
+
+            this.$tabsList.append($tab);
+
+            var $panel = $("<div class='qpx-ribbon-panel'></div>").hide();
+            (tabCfg.groups || []).forEach(function (groupCfg) {
+                $panel.append(self._buildGroup(tabCfg.key, groupCfg));
+            });
+            this.$panels.append($panel);
+
+            this._tabRefs[tabCfg.key] = { $tab: $tab, $panel: $panel, config: tabCfg };
+        },
+
+        _buildGroup: function (tabKey, groupCfg) {
+            var self = this;
+
+            var $items = $("<div class='qpx-ribbon-group-items'></div>");
+            var $stackBuffer = null;
+
+            var flushStack = function () { $stackBuffer = null; };
+
+            (groupCfg.items || []).forEach(function (itemCfg, itemIndex) {
+                if (itemCfg.stack) {
+                    if (!$stackBuffer) {
+                        $stackBuffer = $("<div class='qpx-ribbon-item-stack'></div>");
+                        $items.append($stackBuffer);
+                    }
+                    self._buildItem(tabKey, groupCfg.key, itemCfg, itemIndex, $stackBuffer);
+                } else {
+                    flushStack();
+                    self._buildItem(tabKey, groupCfg.key, itemCfg, itemIndex, $items);
+                }
+            });
+
+            var $title = $("<div class='qpx-ribbon-group-title'></div>").text(groupCfg.title || "");
+
+            return $("<div class='qpx-ribbon-group'></div>")
+                .attr("data-qpx-group", groupCfg.key || "")
+                .append($items, $title);
+        },
+
+        _buildItem: function (tabKey, groupKey, itemCfg, itemIndex, $target) {
+            var self = this;
+
+            if (itemCfg.type === "separator") {
+                $target.append($("<div class='qpx-ribbon-separator'></div>"));
+                return;
+            }
+
+            var $cell = $("<div class='qpx-ribbon-item'></div>")
+                .toggleClass("qpx-ribbon-item-large", itemCfg.size === "large");
+
+            if (itemCfg.type === "template" && qpx.isFunction(itemCfg.template)) {
+                itemCfg.template(itemCfg, $cell);
+                $target.append($cell);
+                return;
+            }
+
+            var widgetName = itemCfg.widget || "qpRibbonButton";
+            if (!qpx.getWidgetClass(widgetName)) {
+                console.warn("qpRibbon: neznámý widget '" + widgetName + "'.");
+            }
+
+            var options = $.extend({}, itemCfg.options);
+
+            // "size" zadané na úrovni položky (item.size) se pro qpRibbonButton
+            // automaticky promítne i do jeho vlastní options.size (pokud ho tam
+            // vývojář už explicitně nezadal) - nemusí se tak psát na dvou místech.
+            if (itemCfg.size && widgetName === "qpRibbonButton" && options.size === undefined) {
+                options.size = itemCfg.size;
+            }
+
+            options.view = widgetName;
+
+            var widget = qpx.ui(options, $cell);
+            $target.append($cell);
+
+            var ref = { tabKey: tabKey, groupKey: groupKey, itemIndex: itemIndex, widget: widget, $cell: $cell };
+            this._itemRefs.push(ref);
+
+            // agregace klikacích/hodnotových událostí položek do ribbon.onItemClick
+            // (stejný princip jako u qpToolBar)
+            ["click", "itemClick"].forEach(function (evName) {
+                if (widget.on) {
+                    widget.on(evName, function (e) {
+                        self.trigger("itemClick", $.extend({
+                            tabKey: tabKey,
+                            groupKey: groupKey,
+                            itemIndex: itemIndex,
+                            itemData: itemCfg,
+                            itemElement: $cell[0],
+                            component: self
+                        }, e || {}));
+                    });
+                }
+            });
+        },
+
+        // ---------------------------------------------------------------
+        // Přepínání karet / sbalení
+        // ---------------------------------------------------------------
+        _bindEvents: function () {
+            var self = this;
+
+            this.$collapseBtn.on("click.qpxRibbon", function (e) {
+                e.stopPropagation();
+                self.toggleCollapse();
+            });
+            this.$collapseBtn.on("keydown.qpxRibbon", function (e) {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    self.toggleCollapse();
+                }
+            });
+        },
+
+        _selectTab: function (key, userExpand) {
+            var cfg = this.config;
+            if (cfg.activeTabKey === key && !(userExpand && cfg.collapsed)) { return; }
+            this.option("activeTabKey", key);
+            // kliknutí na kartu myší/klávesnicí pás karet i rozbalí (chování jako v Office)
+            if (userExpand && cfg.collapsed) { this.option("collapsed", false); }
+        },
+
+        _applyActiveTab: function () {
+            var cfg = this.config;
+            $.each(this._tabRefs, function (key, ref) {
+                var active = key === cfg.activeTabKey;
+                ref.$tab.toggleClass("qpx-state-selected", active).attr("aria-selected", active);
+                ref.$panel.toggle(active);
+            });
+        },
+
+        _updateCollapseIcon: function () {
+            this.$collapseBtn
+                .toggle(!!this.config.collapsible)
+                .html(this.config.collapsed ? "&#9660;" : "&#9650;")
+                .attr("title", this.config.collapsed ? "Rozbalit pás karet" : "Sbalit pás karet");
+        },
+
+        // ---------------------------------------------------------------
+        // Veřejné API
+        // ---------------------------------------------------------------
+        getActiveTabKey: function () { return this.config.activeTabKey; },
+        setActiveTab: function (key) { return this.option("activeTabKey", key); },
+
+        collapse: function () { return this.option("collapsed", true); },
+        expand: function () { return this.option("collapsed", false); },
+        toggleCollapse: function () { return this.option("collapsed", !this.config.collapsed); },
+        isCollapsed: function () { return !!this.config.collapsed; },
+
+        getItemWidget: function (tabKey, groupKey, itemIndex) {
+            var found = this._itemRefs.filter(function (ref) {
+                return ref.tabKey === tabKey && ref.groupKey === groupKey && ref.itemIndex === itemIndex;
+            })[0];
+            return found ? found.widget : undefined;
+        },
+
+        addTab: function (tabCfg, beforeKey) {
+            var cfg = this.config;
+            cfg.tabs = cfg.tabs || [];
+            var idx = cfg.tabs.length;
+            if (beforeKey !== undefined && beforeKey !== null) {
+                var i = this._indexOfTab(beforeKey);
+                if (i !== -1) { idx = i; }
+            }
+            cfg.tabs.splice(idx, 0, tabCfg);
+            this._buildDom();
+            return this;
+        },
+
+        removeTab: function (key) {
+            var cfg = this.config;
+            var i = this._indexOfTab(key);
+            if (i === -1) { return this; }
+            cfg.tabs.splice(i, 1);
+            if (cfg.activeTabKey === key) { cfg.activeTabKey = cfg.tabs.length ? cfg.tabs[0].key : null; }
+            this._buildDom();
+            return this;
+        },
+
+        _indexOfTab: function (key) {
+            var arr = this.config.tabs || [];
+            for (var i = 0; i < arr.length; i++) { if (arr[i].key === key) { return i; } }
+            return -1;
+        },
+
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            switch (name) {
+                case "tabs":
+                    if (!this._indexOfTab(this.config.activeTabKey) && this.config.activeTabKey === null && value.length) {
+                        this.config.activeTabKey = value[0].key;
+                    }
+                    this._buildDom();
+                    break;
+
+                case "activeTabKey": {
+                    this._applyActiveTab();
+                    this.trigger("tabChanged", { key: value, previousValue: prev, component: this });
+                    break;
+                }
+
+                case "collapsed":
+                    this.$container.toggleClass("qpx-ribbon-collapsed", !!value);
+                    this._updateCollapseIcon();
+                    break;
+
+                case "collapsible":
+                    this._updateCollapseIcon();
+                    break;
+
+                case "disabled":
+                    this.$container.toggleClass("qpx-state-disabled", !!value);
+                    break;
+
+                case "visible":
+                    this.$container.toggleClass("qpx-hidden", !value);
+                    break;
+
+                case "theme":
+                    if (prev) { this.$container.removeClass("qpx-theme-" + prev); }
+                    if (value) { this.$container.addClass("qpx-theme-" + value); }
+                    break;
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        _destroyItemWidgets: function () {
+            (this._itemRefs || []).forEach(function (ref) {
+                if (ref.widget && ref.widget.destroy) { ref.widget.destroy(); }
+            });
+            this._itemRefs = [];
+        },
+
+        destroy: function () {
+            this.$container.off(".qpxRibbon");
+            if (this.$tabsList) { this.$tabsList.find(".qpx-ribbon-tab").off(".qpxRibbon"); }
+            if (this.$collapseBtn) { this.$collapseBtn.off(".qpxRibbon"); }
+            this._destroyItemWidgets();
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpRibbon", Ribbon);
+    qpx.qpRibbon = Ribbon;
+
+})(window.qpx, jQuery);
+
+/*!
+ * qpx - qpRibbonButton
+ * Samostatné tlačítko určené výhradně pro položky qpRibbon (na rozdíl od
+ * obecného qpButton má vlastní, přesně odměřený vzhled pro obě varianty
+ * použité v pásu karet):
+ *
+ *   size: "large" - velké tlačítko přes celou výšku skupiny, ikona NAHOŘE,
+ *                    text POD ní (např. Office "Vložit").
+ *   size: "small" - kompaktní tlačítko v jedné řádce (ikona + text vedle
+ *                    sebe), výška odpovídá přesně 1/3 dostupné výšky
+ *                    skupiny, takže 3 tlačítka naskládaná pod sebe
+ *                    (item.stack v qpRibbon) se vejdou beze zbytku a
+ *                    nepřetékají mimo skupinu.
+ *
+ * options:
+ *   text, icon (text/emoji glyph, nebo "css:trida-ikony"), size ("large"|"small"),
+ *   disabled, visible, hint, onClick, onOptionChanged
+ *
+ * methods:
+ *   option(name[, value]), enable(), disable(), focus(), destroy()
+ *
+ * events:
+ *   onClick, onOptionChanged
+ */
+(function (qpx, $) {
+    "use strict";
+
+    var RibbonButton = qpx.Widget.extend({
+
+        defaults: {
+            text: "",
+            icon: "",
+            size: "small",        // large | small
+            disabled: false,
+            visible: true,
+            hint: "",
+            onClick: null,
+            onOptionChanged: null
+        },
+
+        render: function () {
+            var cfg = this.config;
+            this.$container
+                .addClass("qpx-ribbonbutton")
+                .addClass("qpx-ribbonbutton-" + cfg.size)
+                .toggleClass("qpx-state-disabled", !!cfg.disabled)
+                .toggleClass("qpx-hidden", !cfg.visible)
+                .attr("tabindex", cfg.disabled ? "-1" : "0")
+                .attr("role", "button");
+
+            if (cfg.onClick) { this.on("click", cfg.onClick); }
+            if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
+
+            this._renderContent();
+            this._bindEvents();
+        },
+
+        _renderContent: function () {
+            var cfg = this.config;
+            this.$container.empty();
+
+            if (cfg.icon) {
+                var $icon = $("<span class='qpx-icon'></span>");
+                if (String(cfg.icon).indexOf("css:") === 0) {
+                    $icon.addClass(String(cfg.icon).slice(4));
+                } else {
+                    $icon.text(cfg.icon);
+                }
+                this.$container.append($icon);
+            }
+            if (cfg.text) {
+                this.$container.append($("<span class='qpx-ribbonbutton-text'></span>").text(cfg.text));
+            }
+            if (cfg.hint) { this.$container.attr("title", cfg.hint); }
+        },
+
+        _bindEvents: function () {
+            var self = this;
+
+            this.$container.on("click.qpxRibbonButton", function (e) {
+                if (self.config.disabled) { return; }
+                self.trigger("click", { event: e, component: self, element: self.getNode() });
+            });
+            this.$container.on("keydown.qpxRibbonButton", function (e) {
+                if (self.config.disabled) { return; }
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    self.$container.trigger("click");
+                }
+            });
+        },
+
+        option: function (name, value) {
+            if (arguments.length === 0) { return this.config; }
+            if (qpx.isObject(name)) {
+                var self = this;
+                $.each(name, function (k, v) { self.option(k, v); });
+                return this;
+            }
+            if (arguments.length === 1) { return this.config[name]; }
+
+            var prev = this.config[name];
+            if (prev === value) { return this; }
+            this.config[name] = value;
+
+            if (name === "size") {
+                this.$container.removeClass("qpx-ribbonbutton-" + prev).addClass("qpx-ribbonbutton-" + value);
+            } else if (name === "disabled") {
+                this.$container.toggleClass("qpx-state-disabled", !!value).attr("tabindex", value ? "-1" : "0");
+            } else if (name === "visible") {
+                this.$container.toggleClass("qpx-hidden", !value);
+            } else {
+                this._renderContent();
+            }
+
+            this.trigger("optionChanged", { name: name, value: value, previousValue: prev, component: this });
+            return this;
+        },
+
+        enable: function () { return this.option("disabled", false); },
+        disable: function () { return this.option("disabled", true); },
+        focus: function () { this.$container.trigger("focus"); return this; },
+
+        destroy: function () {
+            this.$container.off(".qpxRibbonButton");
+            this._super();
+        }
+    });
+
+    qpx.registerWidget("qpRibbonButton", RibbonButton);
+    qpx.qpRibbonButton = RibbonButton;
 
 })(window.qpx, jQuery);
 

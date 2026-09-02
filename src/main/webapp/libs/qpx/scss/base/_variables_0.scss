@@ -11,7 +11,6 @@
 // (netématizované) tokeny byly přesunuty sem pod jednotný prefix
 // "$qpx-", barevné tokeny byly sjednoceny s ostatními widgety přes
 // CSS proměnné --qpx-* (viz themes/_light.scss, themes/_dark.scss).
-// Stejnou cestou se sjednotil i qpRibbon.
 // =====================================================================
 
 $qpx-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -53,26 +52,6 @@ $qpx-tabview-tab-gap: 4px;
 $qpx-tabview-indicator-height: 2px;
 $qpx-tabview-nav-size: 32px;
 $qpx-tabview-icon-size: 18px;
-
-// -----------------------------------------------------------------
-// qpRibbon - rozměrové tokeny (styl MS Office 365 online - kompaktní,
-// malé písmo $qpx-font-size-sm)
-// -----------------------------------------------------------------
-$qpx-ribbon-tab-height: 26px;
-$qpx-ribbon-tab-padding-x: 12px;
-$qpx-ribbon-panel-height: 74px;
-$qpx-ribbon-group-padding-x: 8px;
-$qpx-ribbon-item-height: 22px;      // vstupní widgety v pásu karet (qpTextBox, qpNumberBox, qpDropDownButton)
-$qpx-ribbon-item-large-width: 58px;
-$qpx-ribbon-icon-size: 16px;
-$qpx-ribbon-icon-size-large: 28px;
-
-// qpRibbonButton - výška "small" varianty je odměřená tak, aby se 3
-// tlačítka naskládaná pod sebe (item.stack v qpRibbon) přesně vešla do
-// dostupné výšky skupiny (panel-height mínus title mínus paddingy),
-// beze zbytku a bez přetékání mimo skupinu.
-$qpx-ribbon-btn-small-height: 17px;
-$qpx-ribbon-btn-stack-gap: 1px;
 
 // -----------------------------------------------------------------
 // Sdílené mixiny používané napříč widgety

@@ -137,6 +137,15 @@
 					</span>
 					<span class="card-path">/devel/test/flexlayout</span>
 				</a>
+				<a class="card" href="/devel/test/gridlayout">
+					<span class="card-icon qpxicon qpxicon-gridlayout qpxicon-xl" style="color: #337ab7;"></span>
+					<span class="card-title">qpGridLayout</span>
+					<span class="card-desc">
+						Rozkládací kontejner nad nativním CSS Gridem — dvourozměrná 
+						mřížka s podporou slučování buněk (colSpan/rowSpan).
+					</span>
+					<span class="card-path">/devel/test/gridlayout</span>
+				</a>
 				<a class="card" href="/devel/test/scrollview">
 					<span class="card-icon qpxicon qpxicon-scrollview qpxicon-xl"></span>				
 					<span class="card-title">qpScrollView</span>
@@ -167,6 +176,14 @@
 						sbalení prostředních položek do "..." při nedostatku místa.
 					</span>
 					<span class="card-path">/devel/test/breadcrumb</span>
+				</a>
+				<a class="card" href="/devel/test/ribbon">
+					<span class="card-icon qpxicon qpxicon-ribbon qpxicon-xl"></span>
+					<span class="card-title">qpRibbon</span>
+					<span class="card-desc">
+						"Pás karet" ve stylu MS Office (Word/Excel Online)
+					</span>
+					<span class="card-path">/devel/test/ribbon</span>
 				</a>
 				<a class="card" href="/devel/test/tabview">
 					<span class="card-icon qpxicon qpxicon-tabview qpxicon-xl"></span>

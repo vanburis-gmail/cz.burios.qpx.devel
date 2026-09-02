@@ -27,12 +27,16 @@ gulp.task('build-js', function() {
 		"src/main/webapp/libs/qpx/src/qpx.scrollview.js",
 		"src/main/webapp/libs/qpx/src/qpx.grouplist.js",
 		"src/main/webapp/libs/qpx/src/qpx.flexlayout.js",
+		"src/main/webapp/libs/qpx/src/qpx.gridlayout.js",
 		"src/main/webapp/libs/qpx/src/qpx.toolbar.js",
 		"src/main/webapp/libs/qpx/src/qpx.tabview.js",
+		"src/main/webapp/libs/qpx/src/qpx.ribbon.js",
+		"src/main/webapp/libs/qpx/src/qpx.ribbonbutton.js",
 		"src/main/webapp/libs/qpx/src/qpx.treeview.js",
 		"src/main/webapp/libs/qpx/src/qpx.propertygrid.js",
 		"src/main/webapp/libs/qpx/src/qpx.datagrid.js",
 		"src/main/webapp/libs/qpx/src/qpx.syntaxeditor.js",
+		
 		/*
 		*/
 		"src/main/webapp/libs/qpx/src/qpx.parser.js"

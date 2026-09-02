@@ -29,6 +29,7 @@
 @use "widgets/scrollview";
 @use "widgets/grouplist";
 @use "widgets/flexlayout";
+@use "widgets/gridlayout";
 @use "widgets/numberbox";
 @use "widgets/textbox";
 @use "widgets/toolbar";
@@ -37,6 +38,8 @@
 @use "widgets/propertygrid";
 @use "widgets/datagrid";
 @use "widgets/syntaxeditor";
+@use "widgets/ribbonbutton";
+@use "widgets/ribbon";
 
 :root,
 .qpx-view {
