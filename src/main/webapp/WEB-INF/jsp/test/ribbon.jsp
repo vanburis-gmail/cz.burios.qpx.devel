@@ -50,6 +50,8 @@
 		</div>
 
 		<script>
+		var widgetName = "qpRibbon";
+		
 		$(function () {
 		    // -----------------------------------------------------------------
 		    // 1) hlavní demo - Domů / Vložení / Zobrazení
@@ -57,141 +59,135 @@
 		    var ribbon1 = qpx.ui({
 		        view: "qpRibbon",
 		        activeTabKey: "home",
-		        tabs: [
-		            {
-		                key: "home", text: "Domů",
-		                groups: [
-		                    {
-		                        key: "clipboard", title: "Schránka",
-		                        items: [
-		                            { widget: "qpRibbonButton", size: "large", options: { text: "Vložit", icon: "📋", onClick: function () { logClick("Vložit"); } } },
-		                            { widget: "qpRibbonButton", stack: true, options: { text: "Kopírovat", icon: "📄", onClick: function () { logClick("Kopírovat"); } } },
-		                            { widget: "qpRibbonButton", stack: true, options: { text: "Vyjmout", icon: "✂", onClick: function () { logClick("Vyjmout"); } } },
-		                            { widget: "qpRibbonButton", stack: true, options: { text: "Kopie formátu", icon: "🖌", onClick: function () { logClick("Kopie formátu"); } } },
-		                            { type: "separator" },
-		                            {
-		                                widget: "qpRibbonDropDownButton",
-		                                size: "large",
-		                                options: {
-		                                    text: "Vložit jinak", icon: "📋", splitButton: true,
-		                                    items: [
-		                                        { text: "Vložit jako hodnoty" },
-		                                        { text: "Vložit jako formát" },
-		                                        { text: "Vložit odkaz" }
-		                                    ],
-		                                    onButtonClick: function () { logClick("Vložit jinak"); },
-		                                    onItemClick: function (e) { logClick("Vložit jinak → " + e.itemData.text); }
-		                                }
-		                            }
-		                        ]
-		                    },
-		                    {
-		                        key: "font", title: "Písmo",
-		                        items: [
-		                            { widget: "qpTextBox", options: { width: 92, value: "Calibri", stylingMode: "outlined" } },
-		                            { widget: "qpNumberBox", options: { width: 46, value: 11, min: 1, max: 400, showSpinButtons: false, stylingMode: "outlined" } },
-		                            { type: "separator" },
-		                            { widget: "qpRibbonButton", stack: true, options: { text: "Tučné", icon: "B", onClick: function () { logClick("Tučné"); } } },
-		                            { widget: "qpRibbonButton", stack: true, options: { text: "Kurzíva", icon: "I", onClick: function () { logClick("Kurzíva"); } } }
-		                        ]
-		                    },
-		                    {
-		                        key: "paragraph", title: "Odstavec",
-		                        items: [
-		                            { widget: "qpCheckBox", options: { text: "Tučné", value: false, onValueChanged: function (e) { logClick("Tučné (checkbox): " + e.value); } } },
-		                            { widget: "qpRibbonButton", stack: true, options: { text: "Zarovnat vlevo", icon: "⯇", onClick: function () { logClick("Zarovnat vlevo"); } } },
-		                            {
-		                                widget: "qpRibbonDropDownButton", stack: true,
-		                                options: {
-		                                    text: "Odrážky", icon: "≡",
-		                                    items: [
-		                                        { text: "Odrážky - kolečko" },
-		                                        { text: "Odrážky - čtverec" },
-		                                        { text: "Číslování" }
-		                                    ],
-		                                    useSelectMode: true,
-		                                    onSelectionChanged: function (e) { logClick("Odrážky → " + e.item.text); }
-		                                }
-		                            }
-		                        ]
-		                    }
-		                ]
-		            },
-		            {
-		                key: "insert", text: "Vložení",
-		                groups: [
-		                    {
-		                        key: "tables", title: "Tabulky",
-		                        items: [
-		                            { widget: "qpRibbonButton", size: "large", options: { text: "Tabulka", icon: "▦", onClick: function () { logClick("Tabulka"); } } }
-		                        ]
-		                    },
-		                    {
-		                        key: "media", title: "Média",
-		                        items: [
-		                            { widget: "qpRibbonButton", size: "large", options: { text: "Obrázky", icon: "🖼", onClick: function () { logClick("Obrázky"); } } },
-		                            { widget: "qpRibbonButton", size: "large", options: { text: "Tvary", icon: "◇", onClick: function () { logClick("Tvary"); } } }
-		                        ]
-		                    }
-		                ]
-		            },
-		            {
-		                key: "view", text: "Zobrazení",
-		                groups: [
-		                    {
-		                        key: "zoom", title: "Lupa",
-		                        items: [
-		                            { widget: "qpRibbonButton", stack: true, options: { text: "Přiblížit", icon: "+", onClick: function () { logClick("Přiblížit"); } } },
-		                            { widget: "qpRibbonButton", stack: true, options: { text: "Oddálit", icon: "–", onClick: function () { logClick("Oddálit"); } } }
-		                        ]
-		                    }
-		                ]
-		            }
-		        ],
-		        onTabChanged: function (e) {
-		            $("#out1").text("aktivní karta: " + e.key);
-		        },
-		        onItemClick: function () { /* viz logClick() níže - agregované kliky jsou i tady k dispozici */ }
-		    }, "#ribbon1");
-		    $("#out1").text("aktivní karta: " + ribbon1.getActiveTabKey());
-
-		    function logClick(what) {
-		        $("#out1").text("naposledy kliknuto: " + what);
-		    }
-
-		    // -----------------------------------------------------------------
-		    // 2) přístup k položce jako k widgetu (qpCheckBox "Tučné" ve skupině "paragraph")
-		    // -----------------------------------------------------------------
-		    $("#btnToggleBold").on("click", function () {
-		        var boldCheckbox = ribbon1.getItemWidget("home", "paragraph", 0);
-		        if (!boldCheckbox) { return; }
-		        var next = !boldCheckbox.value();
-		        boldCheckbox.value(next);
-		        $("#out2").text("qpCheckBox \"Tučné\".value() = " + next);
-		    });
-
-		    // -----------------------------------------------------------------
-		    // 3) disabled
-		    // -----------------------------------------------------------------
-		    var ribbon2 = qpx.ui({
-		        view: "qpRibbon",
-		        disabled: true,
 		        tabs: [{
-		            key: "home", text: "Domů",
-		            groups: [{
-		                key: "g1", title: "Needitovatelné",
-		                items: [
-		                    { widget: "qpRibbonButton", size: "large", options: { text: "Vložit", icon: "📋" } }
-		                ]
-		            }]
-		        }]
-		    }, "#ribbon2");
+					key: "home", 
+					text: "Domů",
+					groups: [{
+						key: "clipboard", title: "Schránka",
+						items: [
+							{ widget: "qpRibbonButton", size: "large", options: { text: "Vložit", icon: "📋", onClick: function () { logClick("Vložit"); } } },
+							{ widget: "qpRibbonButton", stack: true, options: { text: "Kopírovat", icon: "📄", onClick: function () { logClick("Kopírovat"); } } },
+							{ widget: "qpRibbonButton", stack: true, options: { text: "Vyjmout", icon: "✂", onClick: function () { logClick("Vyjmout"); } } },
+							{ widget: "qpRibbonButton", stack: true, options: { text: "Kopie formátu", icon: "🖌", onClick: function () { logClick("Kopie formátu"); } } },
+							{ type: "separator" },
+							{
+								widget: "qpRibbonDropDownButton",
+								size: "large",
+								options: {
+									text: "Vložit jinak", icon: "📋", splitButton: true,
+									items: [
+										{ text: "Vložit jako hodnoty" },
+										{ text: "Vložit jako formát" },
+										{ text: "Vložit odkaz" }
+									],
+									onButtonClick: function () { logClick("Vložit jinak"); },
+									onItemClick: function (e) { logClick("Vložit jinak → " + e.itemData.text); }
+								}
+							}
+						]
+					}, {
+						key: "font", 
+						title: "Písmo",
+						items: [
+							{ widget: "qpTextBox", options: { width: 92, value: "Calibri", stylingMode: "outlined" } },
+							{ widget: "qpNumberBox", options: { width: 46, value: 11, min: 1, max: 400, showSpinButtons: false, stylingMode: "outlined" } },
+							{ type: "separator" },
+							{ widget: "qpRibbonButton", stack: true, options: { text: "Tučné", icon: "B", onClick: function () { logClick("Tučné"); } } },
+							{ widget: "qpRibbonButton", stack: true, options: { text: "Kurzíva", icon: "I", onClick: function () { logClick("Kurzíva"); } } }
+						]
+					}, {
+						key: "paragraph", 
+						title: "Odstavec",
+						items: [
+							{ widget: "qpCheckBox", options: { text: "Tučné", value: false, onValueChanged: function (e) { logClick("Tučné (checkbox): " + e.value); } } },
+							{ widget: "qpRibbonButton", stack: true, options: { text: "Zarovnat vlevo", icon: "⯇", onClick: function () { logClick("Zarovnat vlevo"); } } },
+							{
+								widget: "qpRibbonDropDownButton", 
+								stack: true,
+								options: {
+									text: "Odrážky", icon: "≡",
+									items: [
+										{ text: "Odrážky - kolečko" },
+										{ text: "Odrážky - čtverec" },
+										{ text: "Číslování" }
+									],
+									useSelectMode: true,
+									onSelectionChanged: function (e) { logClick("Odrážky → " + e.item.text); }
+								}
+							}
+						]
+					}]
+				}, {
+					key: "insert", 
+					text: "Vložení",
+					groups: [{
+						key: "tables", 
+						title: "Tabulky",
+						items: [
+						    { widget: "qpRibbonButton", size: "large", options: { text: "Tabulka", icon: "▦", onClick: function () { logClick("Tabulka"); } } }
+						]
+					}, {
+						key: "media", title: "Média",
+						items: [
+							{ widget: "qpRibbonButton", size: "large", options: { text: "Obrázky", icon: "🖼", onClick: function () { logClick("Obrázky"); } } },
+							{ widget: "qpRibbonButton", size: "large", options: { text: "Tvary", icon: "◇", onClick: function () { logClick("Tvary"); } } }
+						]
+					}]
+				}, {
+					key: "view", text: "Zobrazení",
+					groups: [{
+						key: "zoom", 
+						title: "Lupa",
+						items: [
+							{ widget: "qpRibbonButton", stack: true, options: { text: "Přiblížit", icon: "+", onClick: function () { logClick("Přiblížit"); } } },
+							{ widget: "qpRibbonButton", stack: true, options: { text: "Oddálit", icon: "–", onClick: function () { logClick("Oddálit"); } } }
+						]
+					}]
+				}],
+				onTabChanged: function (e) {
+					$("#out1").text("aktivní karta: " + e.key);
+				},
+				onItemClick: function () { /* viz logClick() níže - agregované kliky jsou i tady k dispozici */ }
+			}, "#ribbon1");
+			$("#out1").text("aktivní karta: " + ribbon1.getActiveTabKey());
 
-		    // -----------------------------------------------------------------
-		    // Horní panel: přepínač tématu + sbalení/rozbalení pásu karet
-		    // -----------------------------------------------------------------
-		    var allRibbons = [ribbon1, ribbon2];
+			function logClick(what) {
+				$("#out1").text("naposledy kliknuto: " + what);
+			}
 
+			// -----------------------------------------------------------------
+			// 2) přístup k položce jako k widgetu (qpCheckBox "Tučné" ve skupině "paragraph")
+			// -----------------------------------------------------------------
+			$("#btnToggleBold").on("click", function () {
+				var boldCheckbox = ribbon1.getItemWidget("home", "paragraph", 0);
+				if (!boldCheckbox) { return; }
+				var next = !boldCheckbox.value();
+				boldCheckbox.value(next);
+				$("#out2").text("qpCheckBox \"Tučné\".value() = " + next);
+			});
+
+			// -----------------------------------------------------------------
+			// 3) disabled
+			// -----------------------------------------------------------------
+			var ribbon2 = qpx.ui({
+				view: "qpRibbon",
+				disabled: true,
+				tabs: [{
+					key: "home", text: "Domů",
+					groups: [{
+						key: "g1", title: "Needitovatelné",
+						items: [
+							{ widget: "qpRibbonButton", size: "large", options: { text: "Vložit", icon: "📋" } }
+						]
+					}]
+				}]
+			}, "#ribbon2");
+
+			// -----------------------------------------------------------------
+			// Horní panel: přepínač tématu + sbalení/rozbalení pásu karet
+			// -----------------------------------------------------------------
+			var allRibbons = [ribbon1, ribbon2];
+			/*
 		    function applyTheme(themeClass) {
 		        $(".qpx-test-content")
 		            .removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
@@ -200,15 +196,15 @@
 		        // zpětně kompatibilní přepínač pro topbar (viz qpx-test.css)
 		        $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
 		    }
-
+			*/
 		    function applyCollapsed(collapsed) {
 		        allRibbons.forEach(function (r) { r.option("collapsed", collapsed); });
 		    }
-
 		    var toolbar = qpx.ui({
 		        view: "qpToolBar",
-		        theme: "generic-light",
+		        // theme: "generic-light",
 		        items: [{
+					/*
 		            location: "before", widget: "template",
 		            template: "<b style='padding:0 4px;'>Styl:</b>"
 		        }, {
@@ -226,23 +222,24 @@
 		                }
 		            }
 		        }, {
-		            location: "after",
-		            widget: "qpDropDownButton",
-		            options: {
-		                items: [
-		                    { text: "Rozbalený pás karet", key: false },
-		                    { text: "Sbalený pás karet", key: true }
-		                ],
-		                selectedItemKeys: [false],
-		                onSelectionChanged: function (e) {
-		                    var collapsed = !!e.component.getSelectedItemKeys()[0];
-		                    applyCollapsed(collapsed);
-		                }
-		            }
-		        }]
-		    }, "#pageToolbar");
+		        	*/
+					location: "after",
+					widget: "qpDropDownButton",
+					options: {
+						items: [
+							{ text: "Rozbalený pás karet", key: false },
+							{ text: "Sbalený pás karet", key: true }
+						],
+						selectedItemKeys: [false],
+						onSelectionChanged: function (e) {
+							var collapsed = !!e.component.getSelectedItemKeys()[0];
+							applyCollapsed(collapsed);
+						}
+					}
+				}]
+			}, "#pageToolbar");
 
-		    applyTheme("qpx-theme-generic-light");
+			// applyTheme("qpx-theme-generic-light");
 		});
 		</script>
 	</body>
