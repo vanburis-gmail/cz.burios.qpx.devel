@@ -178,26 +178,6 @@
         background: var(--qpx-border, #ccc);
     }
 
-    // --- ploché, kompaktní dropDownButton uvnitř pásu karet (Office look) --
-    // (qpButton byl v položkách nahrazen dedikovaným qpRibbonButton - viz
-    // scss/widgets/_ribbonbutton.scss - dropDownButton se ale nadále
-    // používá beze změny, jen si tu jen "sundá" rámeček/výplň.)
-    .qpx-ribbon-item .qpx-dropdownbutton {
-        background: transparent;
-        border: none;
-        box-shadow: none;
-        min-height: $qpx-ribbon-item-height;
-        padding: 2px 6px;
-        border-radius: $qpx-radius-sm;
-        font-size: $qpx-font-size-sm;
-        color: var(--qpx-text, #333);
-
-        .qpx-icon { width: $qpx-ribbon-icon-size; height: $qpx-ribbon-icon-size; }
-
-        &:hover:not(.qpx-state-disabled) { background: var(--qpx-hover, #eceff1); }
-        &.qpx-state-selected { background: var(--qpx-selected, #e3f0fb); }
-    }
-
     .qpx-ribbon-item .qpx-checkbox {
         font-size: $qpx-font-size-sm;
     }

@@ -8728,7 +8728,7 @@
  * qpx widgetu. Struktura zůstala koncepčně stejná jako v originále
  * (karty -> skupiny -> položky), ale položky ("items") už NEJSOU jen
  * kus HTML - každá je samostatná instance existujícího qpx widgetu
- * (qpRibbonButton, qpDropDownButton, qpTextBox, qpNumberBox, qpCheckBox, ...),
+ * (qpRibbonButton, qpRibbonDropDownButton, qpTextBox, qpNumberBox, qpCheckBox, ...),
  * se kterou lze dál pracovat úplně stejně, jako by byla vytvořená
  * samostatně přes qpx.ui() - viz getItemWidget().
  *
@@ -8760,13 +8760,13 @@
  *
  * Konfigurace položky (item):
  *   {
- *     widget: "qpRibbonButton" | "qpDropDownButton" | "qpTextBox" | "qpNumberBox" |
+ *     widget: "qpRibbonButton" | "qpRibbonDropDownButton" | "qpTextBox" | "qpNumberBox" |
  *             "qpCheckBox" | ... (libovolný zaregistrovaný qpx widget;
  *             výchozí, pokud "widget" chybí, je "qpRibbonButton"),
  *     type:   "separator" | "template"  (alternativa k "widget"),
  *     template: function(itemCfg, $cell)   // jen pro type:"template"
- *     size:  "large" | "small"           // pro qpRibbonButton - viz qpx.ribbonbutton.js
- *                                         // ("large" se navíc promítne do rozměru obalové buňky)
+ *     size:  "large" | "small"           // pro qpRibbonButton/qpRibbonDropDownButton -
+ *                                         // viz qpx.ribbonbutton.js / qpx.ribbondropdownbutton.js
  *     stack: true | false                // true = zařadí položku do svislého "mini-sloupce" spolu se sousedními stack:true položkami
  *     options: { ...konfigurace vnitřního widgetu, vč. onClick/onValueChanged apod. }
  *   }
@@ -8960,10 +8960,12 @@
 
             var options = $.extend({}, itemCfg.options);
 
-            // "size" zadané na úrovni položky (item.size) se pro qpRibbonButton
-            // automaticky promítne i do jeho vlastní options.size (pokud ho tam
-            // vývojář už explicitně nezadal) - nemusí se tak psát na dvou místech.
-            if (itemCfg.size && widgetName === "qpRibbonButton" && options.size === undefined) {
+            // "size" zadané na úrovni položky (item.size) se automaticky
+            // promítne i do options.size dedikovaných ribbon-widgetů
+            // (qpRibbonButton, qpRibbonDropDownButton), pokud ho tam
+            // vývojář už explicitně nezadal - nemusí se tak psát na dvou místech.
+            var SIZE_AWARE_WIDGETS = ["qpRibbonButton", "qpRibbonDropDownButton"];
+            if (itemCfg.size && SIZE_AWARE_WIDGETS.indexOf(widgetName) !== -1 && options.size === undefined) {
                 options.size = itemCfg.size;
             }
 

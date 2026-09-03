@@ -24,7 +24,7 @@
 			<header class="page-head">
 				<i class="qpxicon qpxicon-circle"></i>
 				<h1>qpRibbon – test</h1>
-				<p class="subtitle">Pás karet ve stylu MS Office 365 online — přepracování původního jquery.ribbon.js na qpx widget skládaný z dalších qpx widgetů (qpRibbonButton, qpDropDownButton, qpTextBox, qpNumberBox, qpCheckBox).</p>
+				<p class="subtitle">Pás karet ve stylu MS Office 365 online — přepracování původního jquery.ribbon.js na qpx widget skládaný z dalších qpx widgetů (qpRibbonButton, qpRibbonDropDownButton, qpTextBox, qpNumberBox, qpCheckBox).</p>
 			</header>
 			<div class="toolbar-wrap">
 				<div id="pageToolbar"></div>
@@ -50,7 +50,6 @@
 		</div>
 
 		<script>
-		var widgetName = "qpRibbon";
 		$(function () {
 		    // -----------------------------------------------------------------
 		    // 1) hlavní demo - Domů / Vložení / Zobrazení
@@ -71,9 +70,10 @@
 		                            { widget: "qpRibbonButton", stack: true, options: { text: "Kopie formátu", icon: "🖌", onClick: function () { logClick("Kopie formátu"); } } },
 		                            { type: "separator" },
 		                            {
-		                                widget: "qpDropDownButton",
+		                                widget: "qpRibbonDropDownButton",
+		                                size: "large",
 		                                options: {
-		                                    text: "Vložit jinak", splitButton: true,
+		                                    text: "Vložit jinak", icon: "📋", splitButton: true,
 		                                    items: [
 		                                        { text: "Vložit jako hodnoty" },
 		                                        { text: "Vložit jako formát" },
@@ -100,7 +100,19 @@
 		                        items: [
 		                            { widget: "qpCheckBox", options: { text: "Tučné", value: false, onValueChanged: function (e) { logClick("Tučné (checkbox): " + e.value); } } },
 		                            { widget: "qpRibbonButton", stack: true, options: { text: "Zarovnat vlevo", icon: "⯇", onClick: function () { logClick("Zarovnat vlevo"); } } },
-		                            { widget: "qpRibbonButton", stack: true, options: { text: "Na střed", icon: "≡", onClick: function () { logClick("Na střed"); } } }
+		                            {
+		                                widget: "qpRibbonDropDownButton", stack: true,
+		                                options: {
+		                                    text: "Odrážky", icon: "≡",
+		                                    items: [
+		                                        { text: "Odrážky - kolečko" },
+		                                        { text: "Odrážky - čtverec" },
+		                                        { text: "Číslování" }
+		                                    ],
+		                                    useSelectMode: true,
+		                                    onSelectionChanged: function (e) { logClick("Odrážky → " + e.item.text); }
+		                                }
+		                            }
 		                        ]
 		                    }
 		                ]
