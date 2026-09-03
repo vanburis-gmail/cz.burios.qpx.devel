@@ -6,10 +6,9 @@
      stroke-linecap="round"
      stroke-linejoin="round">
 
-  <!-- rám -->
-  <rect x="3" y="3" width="18" height="18" rx="2"/>
+  <!-- kruh -->
+  <path d="m 18,12 a 6,6 0 1 1 -7,-6"/>
 
-  <!-- horizontální dělení (2 řádky) -->
-  <line x1="3" y1="9" x2="21" y2="9"/>
-  <line x1="3" y1="15" x2="21" y2="15"/>
+  <!-- šipka -->
+  <polyline points="9 5 12 6 11 9" transform="translate(-0.09795918,-0.45714286)" />
 </svg>

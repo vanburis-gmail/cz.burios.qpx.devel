@@ -163,7 +163,16 @@
             });
             this._children = [];
             if (this.$container) {
-                this.$container.removeData("qpx-widget").empty();
+                // POZOR: musí se smazat OBĚ jQuery .data() klíče, které si
+                // instance na containeru uložila (viz init()) - jinak by
+                // po destroy() ještě $(el).data("qpTagBox") vracelo starou,
+                // už zničenou instanci, zatímco $(el).data("qpx-widget")
+                // by už správně bylo undefined (nekonzistentní, nebezpečné).
+                this.$container.removeData("qpx-widget");
+                if (this.constructor.viewName) {
+                    this.$container.removeData(this.constructor.viewName);
+                }
+                this.$container.empty();
             }
         },
 
@@ -215,6 +224,12 @@
     //
     //   $(sel).qpXxx()                 -> getter: vrátí instanci NA PRVNÍM
     //                                     prvku výběru (undefined, pokud tam žádná není)
+    //   $(sel).qpXxx("instance")        -> totéž jako getter, ale ve stylu
+    //                                     DevExtreme ($(...).dxTagBox("instance"));
+    //                                     "instance" je vyhrazené klíčové slovo,
+    //                                     NIKDY se nepředává jako název metody
+    //                                     dál instanci (i kdyby nějaký widget
+    //                                     metodu "instance" náhodou definoval)
     //   $(sel).qpXxx("metoda", ...)     -> zavolá metodu "metoda" na existující
     //                                     instanci (např. .qpSwitch("value", true))
     //   $(sel).qpXxx({ ...options })    -> na KAŽDÉM prvku výběru: pokud
@@ -232,8 +247,15 @@
             return $elements.data(viewName);
         }
 
-        // b) první argument je řetězec a instance už existuje -> volání metody
         var existingFirst = $elements.data(viewName);
+
+        // b) DevExtreme styl: $(...).qpTagBox("instance") -> vždy jen vrátí
+        // instanci, "instance" se NIKDY nepokouší volat jako metodu
+        if (firstArg === "instance") {
+            return existingFirst;
+        }
+
+        // c) první argument je řetězec a instance už existuje -> volání metody
         if (qpx.isString(firstArg) && existingFirst) {
             var method = firstArg;
             var methodArgs = args.slice(1);
@@ -243,7 +265,7 @@
             return existingFirst;
         }
 
-        // c) inicializace / hromadné přenastavení na všech prvcích výběru
+        // d) inicializace / hromadné přenastavení na všech prvcích výběru
         $elements.each(function () {
             var $el = $(this);
             var existing = $el.data(viewName);
@@ -254,6 +276,19 @@
             }
         });
         return $elements;
+    };
+
+    // -----------------------------------------------------------------
+    // Univerzální získání instance BEZ znalosti konkrétního typu widgetu
+    // (obdoba .data("qpx-widget"), jen jako pohodlnější/čitelnější volání) -
+    // hodí se typicky v obecném/sdíleném kódu, který pracuje s libovolným
+    // qpx widgetem (např. testovací nástroje, delegované event handlery):
+    //
+    //   var w = qpx.getInstance("#mySwitch");
+    //   var w = qpx.getInstance(document.getElementById("mySwitch"));
+    // -----------------------------------------------------------------
+    qpx.getInstance = function (el) {
+        return $(el).data("qpx-widget");
     };
 
     // hlavní tovární metoda — sestavování z JSON konfigurace:

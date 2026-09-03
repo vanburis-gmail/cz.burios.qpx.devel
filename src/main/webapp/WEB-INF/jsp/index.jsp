@@ -128,7 +128,7 @@
 					<span class="card-path">/devel/test/layout</span>
 				</a>
 				<a class="card" href="/devel/test/flexlayout">
-					<span class="card-icon qpxicon qpxicon-layout qpxicon-xl"></span>				
+					<span class="card-icon qpxicon qpxicon-flexlayout qpxicon-xl"></span>
 					<span class="card-title">qpFlexLayout</span>
 						Rozkládací kontejner postavený přímo nad CSS flexboxem. Na rozdíl od základního "layout" (rows/cols,
 						každá buňka se defaultně rovnoměrně roztahuje)
@@ -141,13 +141,13 @@
 					<span class="card-icon qpxicon qpxicon-gridlayout qpxicon-xl" style="color: #337ab7;"></span>
 					<span class="card-title">qpGridLayout</span>
 					<span class="card-desc">
-						Rozkládací kontejner nad nativním CSS Gridem — dvourozměrná 
+						Rozkládací kontejner nad nativním CSS Gridem — dvourozměrná
 						mřížka s podporou slučování buněk (colSpan/rowSpan).
 					</span>
 					<span class="card-path">/devel/test/gridlayout</span>
 				</a>
 				<a class="card" href="/devel/test/scrollview">
-					<span class="card-icon qpxicon qpxicon-scrollview qpxicon-xl"></span>				
+					<span class="card-icon qpxicon qpxicon-scrollview qpxicon-xl"></span>
 					<span class="card-title">qpScrollView</span>
 						Kontejner pro scrollovatelný obsah inspirovaný Webix ScrollView —
 						karty vedle sebe/pod sebou nebo libovolně velké volné plátno,
@@ -220,7 +220,7 @@
 					<span class="card-path">/devel/test/dropdownbutton</span>
 				</a>
 			</div>
-			
+
 			<h2 class="group-title">Editační prvky</h2>
 			<div class="grid" data-group="editors">
 				<a class="card" href="/devel/test/autocomplete">
@@ -249,8 +249,8 @@
 					popup pro datum i čas.
 					</span>
 					<span class="card-path">/devel/test/datepicker</span>
-				</a>				
-								
+				</a>
+
 				<a class="card" href="/devel/test/dropdownbox">
 					<span class="card-icon qpxicon qpxicon-dropdownbox qpxicon-xl"></span>
 					<span class="card-title">qpDropDownBox</span>
@@ -268,7 +268,7 @@
 					<span class="card-title">qpNumberBox</span>
 					<span class="card-desc">...</span>
 					<span class="card-path">/devel/test/numberbox</span>
-				</a>				
+				</a>
 				<a class="card" href="/devel/test/selectbox">
 					<span class="card-icon qpxicon qpxicon-selectbox qpxicon-xl"></span>
 					<span class="card-title">qpSelectBox</span>
@@ -293,7 +293,7 @@
 					<span class="card-desc">Vícenásobný výběr zobrazený jako tagy, hledání, vlastní hodnoty, maxDisplayedTags.</span>
 					<span class="card-path">/devel/test/textbox</span>
 				</a>
-				
+
 			</div>
 
 			<h2 class="group-title">Data</h2>
@@ -350,7 +350,7 @@
 				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
 				toolbar.option("theme", themeKey);
 			}
-			
+
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
 				theme: "generic-light",
@@ -378,7 +378,7 @@
 						}
 					}
 				}, {
-					location: "after", 
+					location: "after",
 					widget: "dropDownButton",
 					options: {
 							items: [

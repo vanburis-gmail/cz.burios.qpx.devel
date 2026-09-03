@@ -3916,6 +3916,138 @@
 }
 
 /*!
+ * qpx - qpRibbonDropDownButton styles
+ * Ploché rozbalovací/split tlačítko pro položky qpRibbon (styl Office
+ * 365 online), sladěné rozměrově s qpRibbonButton (viz
+ * scss/widgets/_ribbonbutton.scss - stejná $qpx-ribbon-item-large-width
+ * a $qpx-ribbon-btn-small-height, aby šly oba widgety v ribbonu
+ * libovolně kombinovat/řadit vedle sebe i do stack sloupců).
+ *
+ * Non-split: celý widget je jedna klikací zóna (otevře menu).
+ * Split: ikonová zóna (výchozí akce) a zóna text+šipka (otevře menu)
+ * se zvýrazňují při hoveru samostatně - přesně jak to dělá Office
+ * u tlačítek typu "Vložit ▾".
+ */
+.qpx-ribbon-ddbutton {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  cursor: pointer;
+  outline: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--qpx-text, #333);
+  font-family: inherit;
+  font-size: 10px;
+  transition: background 0.12s ease;
+  overflow: hidden;
+}
+.qpx-ribbon-ddbutton:hover:not(.qpx-state-disabled) {
+  background: var(--qpx-hover, #eceff1);
+}
+.qpx-ribbon-ddbutton:focus-visible {
+  outline: 2px solid var(--qpx-accent, #337ab7);
+  outline-offset: -2px;
+}
+.qpx-ribbon-ddbutton.qpx-state-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+.qpx-ribbon-ddbutton.qpx-hidden {
+  display: none;
+}
+.qpx-ribbon-ddbutton .qpx-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.qpx-ribbon-ddbutton .qpx-ribbonbutton-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qpx-ribbon-ddbutton .qpx-ribbon-ddbutton-arrow {
+  flex: 0 0 auto;
+  font-size: 8px;
+  line-height: 1;
+  opacity: 0.75;
+  margin-left: 2px;
+}
+.qpx-ribbon-ddbutton .qpx-ribbon-ddbutton-iconzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.qpx-ribbon-ddbutton .qpx-ribbon-ddbutton-labelzone {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.qpx-ribbon-ddbutton.qpx-ribbon-ddbutton-split:hover:not(.qpx-state-disabled) {
+  background: transparent;
+}
+.qpx-ribbon-ddbutton.qpx-ribbon-ddbutton-split .qpx-ribbon-ddbutton-iconzone:hover, .qpx-ribbon-ddbutton.qpx-ribbon-ddbutton-split .qpx-ribbon-ddbutton-labelzone:hover {
+  background: var(--qpx-hover, #eceff1);
+}
+
+.qpx-ribbon-ddbutton-large {
+  flex-direction: column;
+  justify-content: center;
+  width: 58px;
+  height: 100%;
+  padding: 4px 2px 2px;
+  text-align: center;
+}
+.qpx-ribbon-ddbutton-large .qpx-ribbon-ddbutton-iconzone {
+  flex: 1 1 auto;
+  width: 100%;
+}
+.qpx-ribbon-ddbutton-large .qpx-ribbon-ddbutton-iconzone .qpx-icon {
+  font-size: 28px;
+}
+.qpx-ribbon-ddbutton-large .qpx-ribbon-ddbutton-labelzone {
+  flex: 0 0 auto;
+  justify-content: center;
+  width: 100%;
+}
+.qpx-ribbon-ddbutton-large .qpx-ribbonbutton-text {
+  font-size: 10px;
+  line-height: 1.15;
+  white-space: normal;
+}
+.qpx-ribbon-ddbutton-large.qpx-ribbon-ddbutton-split .qpx-ribbon-ddbutton-labelzone {
+  border-top: 1px solid var(--qpx-border, #ccc);
+}
+
+.qpx-ribbon-ddbutton-small {
+  flex-direction: row;
+  height: 17px;
+  white-space: nowrap;
+}
+.qpx-ribbon-ddbutton-small:not(.qpx-ribbon-ddbutton-split) {
+  padding: 0 6px;
+  gap: 4px;
+}
+.qpx-ribbon-ddbutton-small .qpx-icon {
+  font-size: 16px;
+}
+.qpx-ribbon-ddbutton-small.qpx-ribbon-ddbutton-split .qpx-ribbon-ddbutton-iconzone {
+  height: 100%;
+  padding: 0 4px 0 6px;
+  gap: 4px;
+}
+.qpx-ribbon-ddbutton-small.qpx-ribbon-ddbutton-split .qpx-ribbon-ddbutton-labelzone {
+  height: 100%;
+  padding: 0 6px 0 3px;
+  gap: 2px;
+  border-left: 1px solid var(--qpx-border, #ccc);
+}
+
+/*!
  * qpx - qpRibbon styles
  * Stylování vychází z MS Office 365 online verzí (Word/Excel/PowerPoint
  * Online) - kompaktní pás karet, drobné písmo ($qpx-font-size-sm = 10px),
@@ -4079,26 +4211,6 @@
   width: 1px;
   margin: 2px 6px;
   background: var(--qpx-border, #ccc);
-}
-.qpx-ribbon .qpx-ribbon-item .qpx-dropdownbutton {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  min-height: 22px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 10px;
-  color: var(--qpx-text, #333);
-}
-.qpx-ribbon .qpx-ribbon-item .qpx-dropdownbutton .qpx-icon {
-  width: 16px;
-  height: 16px;
-}
-.qpx-ribbon .qpx-ribbon-item .qpx-dropdownbutton:hover:not(.qpx-state-disabled) {
-  background: var(--qpx-hover, #eceff1);
-}
-.qpx-ribbon .qpx-ribbon-item .qpx-dropdownbutton.qpx-state-selected {
-  background: var(--qpx-selected, #e3f0fb);
 }
 .qpx-ribbon .qpx-ribbon-item .qpx-checkbox {
   font-size: 10px;
