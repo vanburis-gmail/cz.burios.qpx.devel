@@ -2,123 +2,118 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>${appTitle}</title>
+		<title>${appTitle}</title>
 
-    <link rel="icon" href="/devel/favicon.png">
-    <link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
-    <link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" type="text/css">
-    <link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
+		<link rel="icon" href="/devel/favicon.png">
+		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 
-    <script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-    <script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
+		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>	
 
-    <style>
-        /* Pomocné styly jen pro tuto testovací stránku, ne součást qpGroupList. */
-        .demo-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 16px;
-            padding: 1px 6px;
-            margin-left: auto;
-            border-radius: 999px;
-            font-size: 10px;
-            font-weight: 700;
-            color: #fff;
-        }
-        .demo-badge-new { background: #337ab7; }
-        .demo-badge-progress { background: #f0ad4e; }
-        .demo-badge-done { background: #5cb85c; }
+		<style>
+		/* Pomocné styly jen pro tuto testovací stránku, ne součást qpGroupList. */
+		.demo-badge {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 16px;
+			padding: 1px 6px;
+			margin-left: auto;
+			border-radius: 999px;
+			font-size: 10px;
+			font-weight: 700;
+			color: #fff;
+		}
+		.demo-badge-new { background: #337ab7; }
+		.demo-badge-progress { background: #f0ad4e; }
+		.demo-badge-done { background: #5cb85c; }
+		
+		.demo-cols {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 20px;
+		}
+		.demo-cols > div { flex: 1 1 260px; min-width: 220px; }
+		</style>
+	</head>
+	<body class="qpx-view">
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar" style="width: 100%"></div>
+		</div>
 
-        .demo-cols {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .demo-cols > div { flex: 1 1 260px; min-width: 220px; }
-    </style>
-</head>
-
-<body class="qpx-view">
-	<div class="qpx-test-topbar">
-		<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-			<span class="fa fa-home"></span>
-		</a>
-	</div>
-	<div class="qpx-test-content">
-		<header class="page-head">
-			<h1>qpGroupList – test</h1>
-			<p class="subtitle">
-				Seznam s položkami rozdělenými do skupin, inspirovaný Webix GroupList —
-				"lepivá" záhlaví skupin při scrollování, boční rychlý index,
-				single/multi výběr položek a vestavěné hierarchické procházení
-				dat (drill-down).
-			</p>
-		</header>
-        <div class="toolbar-wrap">
-            <div id="styleToolbar"></div>
-        </div>
-		<main>
-			<div class="demo-block">
-				<h2>1) Základní seznam (kontakty A–Z)</h2>
-				<p class="desc">
-					data + groupBy: "group", sortGroups: true — záhlaví skupiny zůstává
-					při scrollování "přilepené" nahoře (position: sticky, čisté CSS).
+		<div class="qpx-test-content">
+			<header class="page-head">
+				<h1>qpGroupList – test</h1>
+				<p class="subtitle">
+					Seznam s položkami rozdělenými do skupin, inspirovaný Webix GroupList —
+					"lepivá" záhlaví skupin při scrollování, boční rychlý index,
+					single/multi výběr položek a vestavěné hierarchické procházení
+					dat (drill-down).
 				</p>
-				<div id="grouplist1" style="height: 260px;"></div>
-				<div class="value-out" id="out1"></div>
-			</div>
-
-			<div class="demo-block">
-				<h2>2) S bočním rychlým indexem</h2>
-				<p class="desc">showIndex: true — kliknutím na písmeno se seznam odscrolluje na danou skupinu.</p>
-				<div id="grouplist2" style="height: 260px;"></div>
-			</div>
-
-			<div class="demo-block">
-				<h2>3) Vícenásobný výběr (multiselect)</h2>
-				<p class="desc">multiselect: true — klikání jednotlivé položky přidává/odebírá z výběru.</p>
-				<div class="demo-cols">
-					<div id="grouplist3" style="height: 220px;"></div>
-					<div>
-						<p class="desc" style="margin-top:0;">Vybráno:</p>
-						<div class="value-out" id="out3">—</div>
+			</header>
+			<main>
+				<div class="toolbar-wrap">
+					<div id="styleToolbar"></div>
+				</div>
+				<div class="demo-block">
+					<h2>1) Základní seznam (kontakty A–Z)</h2>
+					<p class="desc">
+						data + groupBy: "group", sortGroups: true — záhlaví skupiny zůstává
+						při scrollování "přilepené" nahoře (position: sticky, čisté CSS).
+					</p>
+					<div id="grouplist1" style="height: 260px;"></div>
+					<div class="value-out" id="out1"></div>
+				</div>
+				<div class="demo-block">
+					<h2>2) S bočním rychlým indexem</h2>
+					<p class="desc">showIndex: true — kliknutím na písmeno se seznam odscrolluje na danou skupinu.</p>
+					<div id="grouplist2" style="height: 260px;"></div>
+				</div>
+				<div class="demo-block">
+					<h2>3) Vícenásobný výběr (multiselect)</h2>
+					<p class="desc">multiselect: true — klikání jednotlivé položky přidává/odebírá z výběru.</p>
+					<div class="demo-cols">
+						<div id="grouplist3" style="height: 220px;"></div>
+						<div>
+							<p class="desc" style="margin-top:0;">Vybráno:</p>
+							<div class="value-out" id="out3">—</div>
+						</div>
 					</div>
 				</div>
-			</div>
-
-			<div class="demo-block">
-				<h2>4) Vlastní šablona položky (itemTemplate)</h2>
-				<p class="desc">Úkoly seskupené podle stavu, každá položka s vlastní barevnou značkou.</p>
-				<div id="grouplist4" style="height: 240px;"></div>
-			</div>
-
-			<div class="demo-block">
-				<h2>5) Hierarchická data (drill-down)</h2>
-				<p class="desc">
-					drillDown: true — data mají až 4 úrovně, ne ve všech větvích stejně
-					hluboko (viz strom níže). Vždy se zobrazuje jen jedna úroveň jedné
-					větve — kliknutím na složku (položku s "children") se posunete o
-					úroveň níž, nahoře se automaticky objeví klikatelný řádek "Zpět"
-					pro návrat o úroveň výš (funguje i klávesa Esc). U koncových položek
-					(bez potomků) se zpráva vypíše jen do konzole.
-				</p>
-				<div id="grouplist6" style="height: 260px;"></div>
-				<div class="value-out" id="out6">Konzole: zatím nic nevybráno</div>
-			</div>
-
-			<div class="demo-block">
-				<h2>6) disabled: true</h2>
-				<div id="grouplist5" style="height: 160px;"></div>
-			</div>
-		</main>
-	</div>
-
-	<script>
-        $(function () {
+				<div class="demo-block">
+					<h2>4) Vlastní šablona položky (itemTemplate)</h2>
+					<p class="desc">Úkoly seskupené podle stavu, každá položka s vlastní barevnou značkou.</p>
+					<div id="grouplist4" style="height: 240px;"></div>
+				</div>
+				<div class="demo-block">
+					<h2>5) Hierarchická data (drill-down)</h2>
+					<p class="desc">
+						drillDown: true — data mají až 4 úrovně, ne ve všech větvích stejně
+						hluboko (viz strom níže). Vždy se zobrazuje jen jedna úroveň jedné
+						větve — kliknutím na složku (položku s "children") se posunete o
+						úroveň níž, nahoře se automaticky objeví klikatelný řádek "Zpět"
+						pro návrat o úroveň výš (funguje i klávesa Esc). U koncových položek
+						(bez potomků) se zpráva vypíše jen do konzole.
+					</p>
+					<div id="grouplist6" style="height: 260px;"></div>
+					<div class="value-out" id="out6">Konzole: zatím nic nevybráno</div>
+				</div>
+				<div class="demo-block">
+					<h2>6) disabled: true</h2>
+					<div id="grouplist5" style="height: 160px;"></div>
+				</div>
+			</main>
+		</div>
+		
+		<script>
+		var widgetName = "qpGroupList"
+		$(function () {
 
             // -----------------------------------------------------------------
             // společná demo data - kontakty seskupené podle prvního písmene
@@ -285,47 +280,7 @@
                 groupBy: "group",
                 sortGroups: true
             }, "#grouplist5");
-
-            // -----------------------------------------------------------------
-            // Horní panel: přepínač tématu
-            //
-            // Třída .qpx-theme-generic-light / .qpx-theme-generic-dark se
-            // nastavuje JEDNOU na společného předka (.qpx-test-content),
-            // ne na jednotlivé widgety zvlášť - viz qpx-test.css.
-            // -----------------------------------------------------------------
-            function applyTheme(themeClass) {
-                $(".qpx-test-content")
-                    .removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
-                    .addClass(themeClass);
-                toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
-                // zpětně kompatibilní přepínač pro topbar (viz qpx-test.css)
-                $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
-            }
-
-			var toolbar = qpx.ui({
-				view: "qpToolBar",
-				theme: "generic-light",
-				items: [{
-					location: "before", widget: "template",
-						template: "<b style='padding:0 4px;'>Téma:</b>"
-					}, {
-						location: "before", widget: "buttonGroup",
-						options: {
-							items: [
-								{ text: "Světlé", key: "generic-light" },
-								{ text: "Tmavé", key: "generic-dark" }
-							],
-							selectedItemKeys: ["generic-light"],
-							onSelectionChanged: function (e) {
-								var key = e.component.getSelectedItemKeys()[0] || "generic-light";
-								applyTheme("qpx-theme-" + key);
-							}
-						}
-					}
-				]
-			}, "#styleToolbar");
-			applyTheme("qpx-theme-generic-light");
 		});
-	</script>
-</body>
+		</script>
+	</body>
 </html>

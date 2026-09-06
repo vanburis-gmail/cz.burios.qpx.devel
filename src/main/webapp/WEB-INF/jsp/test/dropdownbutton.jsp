@@ -59,6 +59,7 @@ System.out.println("/devel/dropdownbutton.jsp");
 		</section>
 
 		<script>
+		var widgetName = "qpDropDownButton";
 		$(function () {
 			qpx.ui({
 				view: "dropDownButton",

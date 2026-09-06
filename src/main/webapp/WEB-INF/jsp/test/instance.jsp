@@ -1,123 +1,123 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>${appTitle}</title>
+		<title>${appTitle}</title>
 
-    <link rel="icon" href="/devel/favicon.png">
-    <link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
-    <link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" type="text/css">
-    <link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
+		<link rel="icon" href="/devel/favicon.png">
+		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 
-    <script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-    <script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
-</head>
-
-<body class="qpx-view qpx-theme-generic-light">
-	<div class="qpx-test-topbar1">
-		<div id="pageTopbar"></div>
-	</div>
-	<div class="qpx-test-content">
-		<header class="page-head">
-			<h1>Získání instance widgetu přes jQuery – test</h1>
-			<p class="subtitle">
-				Čtyři rovnocenné způsoby, jak z <code>$(selector)</code> získat živou instanci qpx widgetu —
-				obdoba <code>$(...).data("kendoTagBox")</code> u KendoUI a <code>$(...).dxTagBox("instance")</code>
-				u DevExtreme. Na konci i důkaz, že po <code>destroy()</code> už žádný z nich instanci nevrátí.
-			</p>
-		</header>
-		<main>
-
-			<div class="demo-block">
-				<h2>1) qpSwitch — všechny 4 způsoby vedle sebe</h2>
-				<p class="desc">
-					Widget má v HTML pevné <code>id="switchDemo"</code>. Každé tlačítko získá instanci JINÝM
-					způsobem a zavolá na ní <code>value()</code> — výsledek je pokaždé stejný, protože jde
-					o STEJNOU instanci.
+		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>
+	</head>
+	<body class="qpx-view">
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar"></div>
+		</div>
+		<div class="qpx-test-content">
+			<header class="page-head">
+				<h1>Získání instance widgetu přes jQuery – test</h1>
+				<p class="subtitle">
+					Čtyři rovnocenné způsoby, jak z <code>$(selector)</code> získat živou instanci qpx widgetu —
+					obdoba <code>$(...).data("kendoTagBox")</code> u KendoUI a <code>$(...).dxTagBox("instance")</code>
+					u DevExtreme. Na konci i důkaz, že po <code>destroy()</code> už žádný z nich instanci nevrátí.
 				</p>
-				<div id="switchDemo"></div>
-				<div class="demo-actions">
-					<button type="button" data-method="data">$(el).data("qpSwitch")</button>
-					<button type="button" data-method="instance">$(el).qpSwitch("instance")</button>
-					<button type="button" data-method="plugin">$(el).qpSwitch()</button>
-					<button type="button" data-method="getInstance">qpx.getInstance(el)</button>
+			</header>
+			<main>
+				<div class="demo-block">
+					<h2>1) qpSwitch — všechny 4 způsoby vedle sebe</h2>
+					<p class="desc">
+						Widget má v HTML pevné <code>id="switchDemo"</code>. Každé tlačítko získá instanci JINÝM
+						způsobem a zavolá na ní <code>value()</code> — výsledek je pokaždé stejný, protože jde
+						o STEJNOU instanci.
+					</p>
+					<div id="switchDemo"></div>
+					<div class="demo-actions">
+						<button type="button" data-method="data">$(el).data("qpSwitch")</button>
+						<button type="button" data-method="instance">$(el).qpSwitch("instance")</button>
+						<button type="button" data-method="plugin">$(el).qpSwitch()</button>
+						<button type="button" data-method="getInstance">qpx.getInstance(el)</button>
+					</div>
+					<div class="value-out" id="switchOut">Klikni na některé z tlačítek výše...</div>
+	
+					<p class="desc" style="margin-top:14px;">
+						Stejná instance jde použít i k VOLÁNÍ METOD nebo hromadnému nastavení options
+						přímo přes jQuery plugin, bez nutnosti si instanci nikam ukládat do proměnné:
+					</p>
+					<div class="demo-actions">
+						<button type="button" id="switchToggle">$(el).qpSwitch("toggle") — volání metody</button>
+						<button type="button" id="switchBulk">$(el).qpSwitch({ onText:"ANO", offText:"NE" }) — hromadné option</button>
+					</div>
 				</div>
-				<div class="value-out" id="switchOut">Klikni na některé z tlačítek výše...</div>
-
-				<p class="desc" style="margin-top:14px;">
-					Stejná instance jde použít i k VOLÁNÍ METOD nebo hromadnému nastavení options
-					přímo přes jQuery plugin, bez nutnosti si instanci nikam ukládat do proměnné:
-				</p>
-				<div class="demo-actions">
-					<button type="button" id="switchToggle">$(el).qpSwitch("toggle") — volání metody</button>
-					<button type="button" id="switchBulk">$(el).qpSwitch({ onText:"ANO", offText:"NE" }) — hromadné option</button>
+	
+				<div class="demo-block">
+					<h2>2) qpTextBox</h2>
+					<p class="desc">Stejné 4 způsoby čtení + ukázka zápisu hodnoty metodou přes plugin.</p>
+					<div id="textboxDemo"></div>
+					<div class="demo-actions">
+						<button type="button" data-widget="textbox" data-method="data">data("qpTextBox")</button>
+						<button type="button" data-widget="textbox" data-method="instance">qpTextBox("instance")</button>
+						<button type="button" data-widget="textbox" data-method="plugin">qpTextBox()</button>
+						<button type="button" data-widget="textbox" data-method="getInstance">qpx.getInstance()</button>
+					</div>
+					<div class="value-out" id="textboxOut">...</div>
+					<div class="demo-actions" style="margin-top:8px;">
+						<button type="button" id="textboxSetValue">$(el).qpTextBox("value", "Nastaveno přes plugin")</button>
+					</div>
 				</div>
-			</div>
-
-			<div class="demo-block">
-				<h2>2) qpTextBox</h2>
-				<p class="desc">Stejné 4 způsoby čtení + ukázka zápisu hodnoty metodou přes plugin.</p>
-				<div id="textboxDemo"></div>
-				<div class="demo-actions">
-					<button type="button" data-widget="textbox" data-method="data">data("qpTextBox")</button>
-					<button type="button" data-widget="textbox" data-method="instance">qpTextBox("instance")</button>
-					<button type="button" data-widget="textbox" data-method="plugin">qpTextBox()</button>
-					<button type="button" data-widget="textbox" data-method="getInstance">qpx.getInstance()</button>
+	
+				<div class="demo-block">
+					<h2>3) qpTagBox</h2>
+					<p class="desc">Funguje stejně i u widgetů s polem hodnot (multi-select).</p>
+					<div id="tagboxDemo"></div>
+					<div class="demo-actions">
+						<button type="button" data-widget="tagbox" data-method="data">data("qpTagBox")</button>
+						<button type="button" data-widget="tagbox" data-method="instance">qpTagBox("instance")</button>
+						<button type="button" data-widget="tagbox" data-method="plugin">qpTagBox()</button>
+						<button type="button" data-widget="tagbox" data-method="getInstance">qpx.getInstance()</button>
+					</div>
+					<div class="value-out" id="tagboxOut">...</div>
 				</div>
-				<div class="value-out" id="textboxOut">...</div>
-				<div class="demo-actions" style="margin-top:8px;">
-					<button type="button" id="textboxSetValue">$(el).qpTextBox("value", "Nastaveno přes plugin")</button>
+	
+				<div class="demo-block">
+					<h2>4) qpSelectBox</h2>
+					<div id="selectboxDemo"></div>
+					<div class="demo-actions">
+						<button type="button" data-widget="selectbox" data-method="data">data("qpSelectBox")</button>
+						<button type="button" data-widget="selectbox" data-method="instance">qpSelectBox("instance")</button>
+						<button type="button" data-widget="selectbox" data-method="plugin">qpSelectBox()</button>
+						<button type="button" data-widget="selectbox" data-method="getInstance">qpx.getInstance()</button>
+					</div>
+					<div class="value-out" id="selectboxOut">...</div>
 				</div>
-			</div>
-
-			<div class="demo-block">
-				<h2>3) qpTagBox</h2>
-				<p class="desc">Funguje stejně i u widgetů s polem hodnot (multi-select).</p>
-				<div id="tagboxDemo"></div>
-				<div class="demo-actions">
-					<button type="button" data-widget="tagbox" data-method="data">data("qpTagBox")</button>
-					<button type="button" data-widget="tagbox" data-method="instance">qpTagBox("instance")</button>
-					<button type="button" data-widget="tagbox" data-method="plugin">qpTagBox()</button>
-					<button type="button" data-widget="tagbox" data-method="getInstance">qpx.getInstance()</button>
+	
+				<div class="demo-block">
+					<h2>5) Po destroy() — všechny 4 způsoby musí vrátit undefined</h2>
+					<p class="desc">
+						Ověření opravy: dřív <code>destroy()</code> mazal jen <code>data("qpx-widget")</code>,
+						takže <code>data("qpSwitch")</code> po zničení widgetu ještě chvíli vracelo starou,
+						už neplatnou instanci. Teď se mažou oba klíče najednou.
+					</p>
+					<div id="destroyDemo"></div>
+					<div class="demo-actions">
+						<button type="button" id="destroyCheckBefore">Zjistit instanci (před destroy)</button>
+						<button type="button" id="destroyNow">$(el).data("qpSwitch").destroy()</button>
+						<button type="button" id="destroyCheckAfter">Zjistit instanci (po destroy)</button>
+					</div>
+					<div class="value-out" id="destroyOut">...</div>
 				</div>
-				<div class="value-out" id="tagboxOut">...</div>
-			</div>
-
-			<div class="demo-block">
-				<h2>4) qpSelectBox</h2>
-				<div id="selectboxDemo"></div>
-				<div class="demo-actions">
-					<button type="button" data-widget="selectbox" data-method="data">data("qpSelectBox")</button>
-					<button type="button" data-widget="selectbox" data-method="instance">qpSelectBox("instance")</button>
-					<button type="button" data-widget="selectbox" data-method="plugin">qpSelectBox()</button>
-					<button type="button" data-widget="selectbox" data-method="getInstance">qpx.getInstance()</button>
-				</div>
-				<div class="value-out" id="selectboxOut">...</div>
-			</div>
-
-			<div class="demo-block">
-				<h2>5) Po destroy() — všechny 4 způsoby musí vrátit undefined</h2>
-				<p class="desc">
-					Ověření opravy: dřív <code>destroy()</code> mazal jen <code>data("qpx-widget")</code>,
-					takže <code>data("qpSwitch")</code> po zničení widgetu ještě chvíli vracelo starou,
-					už neplatnou instanci. Teď se mažou oba klíče najednou.
-				</p>
-				<div id="destroyDemo"></div>
-				<div class="demo-actions">
-					<button type="button" id="destroyCheckBefore">Zjistit instanci (před destroy)</button>
-					<button type="button" id="destroyNow">$(el).data("qpSwitch").destroy()</button>
-					<button type="button" id="destroyCheckAfter">Zjistit instanci (po destroy)</button>
-				</div>
-				<div class="value-out" id="destroyOut">...</div>
-			</div>
-
-		</main>
-	</div>
-
-	<script>
+	
+			</main>
+		</div>
+	
+		<script>
+		var widgetName = "Instance widgetu";
 		$(function () {
 
 			// ---------------------------------------------------------------
@@ -264,52 +264,7 @@
 			$("#destroyCheckAfter").on("click", function () {
 				$("#destroyOut").text(describeDestroyState());
 			});
-
-			// ---------------------------------------------------------------
-			// Topbar: qpToolBar s breadcrumb (Home / název stránky) vlevo
-			// a přepínačem tématu (dropDownButton "Styl": Light/Dark) vpravo.
-			//
-			// Téma se přepíná na .qpx-test-content (CSS proměnné frameworku
-			// se pak zdědí do widgetů i běžného obsahu stránky automaticky).
-			// ---------------------------------------------------------------
-			var topbar = qpx.ui({
-				view: "qpToolBar",
-				theme: "generic-light",
-				items: [{
-					location: "before",
-					widget: "qpBreadcrumb",
-					options: {
-						items: [
-							{ id: "home", text: "", icon: "qpxicon qpxicon-home qpxicon-md", url: "/devel" },
-							{ id: "current", text: "Instance widgetu" }
-						]
-					}
-				}, {
-					location: "after",
-					widget: "qpDropDownButton",
-					options: {
-						text: "Styl",
-						stylingMode: "text",
-						items: [
-							{ key: "light", text: "Light" },
-							{ key: "dark", text: "Dark" }
-						],
-						useSelectMode: false,
-						onItemClick: function (e) {
-							var key = e.itemData.key;
-							var themeClass = "qpx-theme-generic-" + key;
-
-							$(".qpx-test-content")
-								.removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
-								.addClass(themeClass);
-
-							topbar.option("theme", key === "dark" ? "generic-dark" : "generic-light");
-							$("body").toggleClass("qpx-page-dark", key === "dark");
-						}
-					}
-				}]
-			}, "#pageTopbar");
 		});
-	</script>
-</body>
+		</script>
+	</body>
 </html>

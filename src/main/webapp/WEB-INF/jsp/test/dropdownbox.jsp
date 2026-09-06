@@ -9,62 +9,25 @@
 
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
-
-		<style>
-			body.qpx-page-dark { background: #1b1b1b; color: #eee; }
-			header.page-head { padding: 18px 24px 6px; }
-			h1 { font-size: 18px; margin: 0 0 4px; }
-			.subtitle { color: #767676; font-size: 12px; margin: 0; }
-		
-			.toolbar-wrap { margin: 12px 24px 4px; }
-		
-			main { padding: 8px 24px 60px; max-width: 760px; }
-		
-			.demo-block { margin: 26px 0; }
-			.demo-block h2 { font-size: 14px; margin: 0 0 4px; }
-			.demo-block .desc { font-size: 12px; color: #767676; margin: 0 0 10px; }
-			body.qpx-page-dark .demo-block .desc { color: #a3a3a3; }
-		
-			.value-out {
-				margin-top: 8px;
-				font-family: monospace;
-				font-size: 11px;
-				padding: 6px 8px;
-				border-radius: 4px;
-				background: #eef4fb;
-				color: #333;
-			}
-			body.qpx-page-dark .value-out { background: #333; color: #e6e6e6; }
-		
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
+		<style type="text/css">
 			/* Ukázkový obsah popupu — vlastní "checklist" místo standardní nabídky */
 			.demo-checklist { padding: 6px; min-width: 220px; }
 			.demo-checklist label { display: flex; align-items: center; gap: 6px; padding: 5px 6px; cursor: pointer; border-radius: 4px; }
 			.demo-checklist label:hover { background: var(--qpx-hover, #eceff1); }
 			.demo-checklist-footer { padding: 8px 6px 4px; text-align: right; }
-
-			.qpx-back-home {
-				font-size: 20px;
-				text-decoration: none;
-				padding: 6px 10px;
-			}
-			.qpx-back-home:hover {
-				background: #fff;
-				color: #000;
-			}		
 		</style>
-	
+		
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>
 	</head>
 	<body class="qpx-view">
-		<!-- návratová ikona vlevo nahoře -->
-		<div style="height: 36px; position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid &dedede;">
-			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-				<span class="fa fa-home"></span>
-			</a>
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar" style="width: 100%"></div>
 		</div>
-		<div style="min-height: 320px; position: absolute; top: 36px; left: 0; right: 0; border: 0; border: 0px solid red;">
+		<div class="qpx-test-content">
 			<header class="page-head">
 				<h1>qpDropDownBox – test</h1>
 				<p class="subtitle">Pole otvírající POPUP s libovolným vlastním obsahem (contentTemplate) — analogie DevExtreme dxDropDownBox. Nespravuje si vlastní seznam, jen rám pole + popup.</p>
@@ -97,6 +60,7 @@
 		</div>
 
 		<script>
+			var widgetName = "qpDropDownBox";
 			$(function () {
 				var fruits = [
 					{ id: 1, name: "Jablko" },
@@ -126,7 +90,7 @@
 						$wrap.append($label);
 					});
 					var $footer = $("<div class='demo-checklist-footer'></div>");
-					var $done = qpx.ui({ view: "button", text: "Hotovo", stylingMode: "outlined" });
+					var $done = qpx.ui({ view: "qpButton", text: "Hotovo", stylingMode: "outlined" });
 					$done.on("click", function () {
 						var picked = [];
 						$wrap.find("input:checked").each(function () { picked.push(this.value); });
@@ -208,7 +172,7 @@
 			// Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny 4 instance)
 			// -----------------------------------------------------------------
 			var allDropDownBoxes = [dropdownbox1, dropdownbox2, dropdownbox3, dropdownbox4];
-			
+			/*
 			function applyTheme(themeClass) {
 				allDropDownBoxes.forEach(function (db) {
 					db.getContainer().removeClass("qpx-theme-generic-light qpx-theme-generic-dark").addClass(themeClass);
@@ -216,32 +180,32 @@
 				toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
 				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
 			}
-			
+			*/
 			function applyStylingMode(mode) {
 				allDropDownBoxes.forEach(function (db) { db.option("stylingMode", mode); });
 			}
 			
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
-				theme: "generic-light",
+				// theme: "light",
 				items: [{
 					location: "before", widget: "template",
 					template: "<b style='padding:0 4px;'>Styl:</b>"
 				}, {
-					location: "before", widget: "buttonGroup",
+					location: "before", widget: "qpButtonGroup",
 					options: {
 						items: [
-							{ text: "Světlé", key: "generic-light" },
-							{ text: "Tmavé", key: "generic-dark" }
+							{ text: "Světlé", key: "light" },
+							{ text: "Tmavé", key: "dark" }
 						],
-						selectedItemKeys: ["generic-light"],
+						selectedItemKeys: ["light"],
 						onSelectionChanged: function (e) {
-							var key = e.component.getSelectedItemKeys()[0] || "generic-light";
-							applyTheme("qpx-theme-" + key);
+							var key = e.component.getSelectedItemKeys()[0] || "light";
+							// applyTheme("qpx-theme-" + key);
 						}
 					}
 				}, {
-					location: "after", widget: "buttonGroup",
+					location: "after", widget: "qpButtonGroup",
 					options: {
 						items: [
 							{ text: "outlined", key: "outlined" },
@@ -251,13 +215,13 @@
 						selectedItemKeys: ["outlined"],
 						onSelectionChanged: function (e) {
 							var mode = e.component.getSelectedItemKeys()[0] || "outlined";
-							applyStylingMode(mode);
+							// applyStylingMode(mode);
 						}
 					}
 				}]
 			}, "#pageToolbar");
 			
-			applyTheme("qpx-theme-generic-light");
+			// applyTheme("qpx-theme-light");
 		});
 		</script>
 	</body>

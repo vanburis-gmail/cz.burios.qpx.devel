@@ -90,6 +90,7 @@ System.out.println("/devel/template.jsp");
 		</div>
 
 		<script>
+		var widgetName = "qpTemplate";
 		$(function () {
 			var basic = qpx.ui({
 				view: "template",

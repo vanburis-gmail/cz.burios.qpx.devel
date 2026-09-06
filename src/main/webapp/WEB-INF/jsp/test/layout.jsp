@@ -81,6 +81,7 @@ System.out.println("/devel/layout.jsp");
 		</div>
 
 		<script>
+		var widgetName = "qpLayout";
 		$(function () {
 			// 1) základní rows/cols s toolbarem, sidebarem a rostoucí kartou
 			qpx.ui({

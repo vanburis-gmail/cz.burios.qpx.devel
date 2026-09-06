@@ -76,6 +76,7 @@
 		</div>
 
 		<script>
+		var widgetName = "qpGridLayout";
 		$(function () {
 			function cardContent(i) {
 				return "<div style='padding:10px;background:var(--qpx-surface,#f8f9fb);border:1px solid var(--qpx-border,#d3d9df);border-radius:4px;height:100%;box-sizing:border-box;'>Buňka " + i + "</div>";
@@ -186,18 +187,19 @@
 			// -----------------------------------------------------------------
 			// Horní panel: přepínač tématu (aplikuje se na celý .qpx-test-content)
 			// -----------------------------------------------------------------
+			/*
 			function applyTheme(themeClass) {
 				$(".qpx-test-content")
-					.removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+					.removeClass("qpx-theme-light qpx-theme-dark")
 					.addClass(themeClass);
 				toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
 				// zpětně kompatibilní přepínač pro topbar (viz qpx-test.css)
-				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
+				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
 			}
-
+			*/
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
-				theme: "generic-light",
+				// theme: "light",
 				items: [{
 					location: "before", widget: "template",
 					template: "<b style='padding:0 4px;'>Styl:</b>"
@@ -206,10 +208,10 @@
 					widget: "qpDropDownButton",
 					options: {
 						items: [
-							{ text: "Světlé", key: "generic-light" },
-							{ text: "Tmavé", key: "generic-dark" }
+							{ text: "Světlé", key: "light" },
+							{ text: "Tmavé", key: "dark" }
 						],
-						selectedItemKeys: ["generic-light"],
+						selectedItemKeys: ["light"],
 						onSelectionChanged: function (e) {
 							var key = e.component.getSelectedItemKeys()[0] || "generic-light";
 							applyTheme("qpx-theme-" + key);
@@ -218,7 +220,7 @@
 				}]
 			}, "#pageToolbar");
 
-			applyTheme("qpx-theme-generic-light");
+			// applyTheme("qpx-theme-light");
 		});
 		</script>
 	</body>

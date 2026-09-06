@@ -101,6 +101,7 @@
 		</div>
 
 		<script>
+		var widgetName = "qpFlexLayout";
 		$(function () {
 			// -----------------------------------------------------------------
 			// 1) řádek s pevnou šířkou + grow, vnořené qpx widgety
@@ -240,15 +241,16 @@
 			// -----------------------------------------------------------------
 			// Horní panel: přepínač tématu (aplikuje se na celý .qpx-test-content)
 			// -----------------------------------------------------------------
+			/*
 			function applyTheme(themeClass) {
 				$(".qpx-test-content")
-					.removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+					.removeClass("qpx-theme-light qpx-theme-dark")
 					.addClass(themeClass);
 				toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
 				// zpětně kompatibilní přepínač pro topbar (viz qpx-test.css)
-				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
+				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
 			}
-
+			*/
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
 				theme: "generic-light",
@@ -266,13 +268,13 @@
 						selectedItemKeys: ["generic-light"],
 						onSelectionChanged: function (e) {
 							var key = e.component.getSelectedItemKeys()[0] || "generic-light";
-							applyTheme("qpx-theme-" + key);
+							// applyTheme("qpx-theme-" + key);
 						}
 					}
 				}]
 			}, "#pageToolbar");
 
-			applyTheme("qpx-theme-generic-light");
+			applyTheme("qpx-theme-light");
 		});
 		</script>
 	</body>

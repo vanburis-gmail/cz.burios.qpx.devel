@@ -10,16 +10,15 @@
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
-		<link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>
 	</head>
-	<body class="qpx-view qpx-theme-generic-light">
-		<div class="qpx-test-topbar">
-			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-				<span class="fa fa-home"></span>
-			</a>
+	<body class="qpx-view">
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar" style="width: 100%"></div>
 		</div>
 
 		<div class="qpx-test-content">
@@ -59,6 +58,8 @@
 		</div>
 
 		<script>
+		var widgetName = "qpSyntaxEditor";
+
 		// Cesta ke knihovně Ace - analogie k /devel/libs/qpx, /devel/libs/jquery.
 		// Musí být nastaveno před vytvořením první instance qpSyntaxEditor.
 		qpx.qpSyntaxEditor.configure({ basePath: "/devel/libs/ace/1.33.0/" });
@@ -145,7 +146,7 @@
 		    // -----------------------------------------------------------------
 		    // Horní panel: přepínač tématu (light/dark) + zalamování řádků
 		    //
-		    // Téma se přepíná JEDINÝM místem — třídou qpx-theme-generic-light/
+		    // Téma se přepíná JEDINÝM místem — třídou qpx-theme-light/
 		    // -dark na <body>. Díky dědičnosti CSS proměnných (--qpx-bg,
 		    // --qpx-text, --qpx-border, ...) se automaticky obarví jak
 		    // widgety, tak okolní obsah stránky (nadpisy, .value-out, topbar).
@@ -155,22 +156,22 @@
 		    // stránce, který takové zvláštní zacházení potřebuje.
 		    // -----------------------------------------------------------------
 		    var allEditors = [editor1, editor2, editor3, editor4, editor4b];
-
+			/*
 			function applyTheme(themeKey) {
 				$("body")
-					.removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+					.removeClass("qpx-theme-light qpx-theme-dark")
 					.addClass("qpx-theme-" + themeKey);
-				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
+				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
 				toolbar.option("theme", themeKey);
 			}
-
+			*/
 			function applyWrap(wrapOn) {
 				allEditors.forEach(function (ed) { ed.option("wrap", wrapOn); });
 			}
 			
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
-				theme: "generic-light",
+				theme: "light",
 				items: [{
 					location: "before", widget: "template",
 					template: "<b style='padding:0 4px;'>Téma:</b>"
@@ -179,12 +180,12 @@
 					widget: "buttonGroup",
 					options: {
 						items: [
-							{ text: "Světlé", key: "generic-light" },
-							{ text: "Tmavé", key: "generic-dark" }
+							{ text: "Světlé", key: "light" },
+							{ text: "Tmavé", key: "dark" }
 						],
-						selectedItemKeys: ["generic-light"],
+						selectedItemKeys: ["light"],
 						onSelectionChanged: function (e) {
-							var key = e.component.getSelectedItemKeys()[0] || "generic-light";
+							var key = e.component.getSelectedItemKeys()[0] || "light";
 							applyTheme(key);
 						}
 					}
@@ -198,12 +199,12 @@
 						selectedItemKeys: [false],
 						onSelectionChanged: function (e) {
 							var wrapOn = !!e.component.getSelectedItemKeys()[0];
-							applyWrap(wrapOn);
+							// applyWrap(wrapOn);
 						}
 					}
 				}]
 			}, "#pageToolbar");
-			applyTheme("generic-light");
+			// applyTheme("light");
 		});
 		</script>
 	</body>

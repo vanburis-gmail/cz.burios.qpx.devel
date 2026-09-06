@@ -7743,7 +7743,7 @@
             items: [],
             visible: true,
             disabled: false,
-            theme: "generic-light",  // generic-light | generic-dark
+            theme: "light",  // light | dark
             overflowMenuIcon: "⋮",
             onItemClick: null,
             onOptionChanged: null
@@ -12006,10 +12006,10 @@
  * options:
  *   value (string), mode ("javascript"|"sql"|"json"|"html"|"css"|"xml"|
  *     "python"|"php"|"csharp"|"java"|"yaml"|"markdown"|"text" nebo přímo
- *     "ace/mode/xxx"), theme ("generic-light"|"generic-dark" - namapováno
+ *     "ace/mode/xxx"), theme ("light"|"dark" - namapováno
  *     na Ace témata "chrome"/"tomorrow_night" - nebo přímo název/"ace/theme/xxx"),
  *   autoTheme (při theme:null odvodí světlé/tmavé téma z nejbližšího
- *     předka se třídou "qpx-theme-generic-light/dark"),
+ *     předka se třídou "qpx-theme-light/dark"),
  *   placeholder, fontSize, tabSize, useSoftTabs, wrap, showGutter,
  *   showPrintMargin, printMarginColumn, highlightActiveLine, showInvisibles,
  *   minLines, maxLines, autocomplete (lazy-load ext-language_tools),
@@ -12049,8 +12049,8 @@
     };
 
     var THEME_ALIASES = {
-        "generic-light": "chrome",
-        "generic-dark": "tomorrow_night"
+        "light": "chrome",
+        "dark": "tomorrow_night"
     };
 
     // sdílený loader - stačí jedno stažení ace.js na basePath, i pro víc instancí
@@ -12089,7 +12089,7 @@
         defaults: {
             value: "",
             mode: "text",
-            theme: null,        // null = odvodí se dle autoTheme, jinak "generic-light"/"generic-dark" nebo název Ace tématu
+            theme: null,        // null = odvodí se dle autoTheme, jinak "light"/"dark" nebo název Ace tématu
             autoTheme: true,
 
             placeholder: "",
@@ -12285,11 +12285,11 @@
             var raw = cfg.theme;
 
             if (!raw && cfg.autoTheme) {
-                var isDark = this.$container.closest(".qpx-theme-generic-dark").length > 0 ||
-                    this.$container.hasClass("qpx-theme-generic-dark");
-                raw = isDark ? "generic-dark" : "generic-light";
+                var isDark = this.$container.closest(".qpx-theme-dark").length > 0 ||
+                    this.$container.hasClass("qpx-theme-dark");
+                raw = isDark ? "dark" : "light";
             }
-            raw = raw || "generic-light";
+            raw = raw || "light";
 
             if (raw.indexOf("ace/theme/") === 0) { return raw; }
             return "ace/theme/" + (THEME_ALIASES[raw] || raw);

@@ -7,11 +7,11 @@
    Místo toho se všude používají PŘÍMO proměnné frameworku (--qpx-bg,
    --qpx-text, --qpx-text-muted, --qpx-border, --qpx-accent,
    --qpx-selected, --qpx-surface, ...), které nastavuje globální
-   (nescopnuté) pravidlo .qpx-theme-generic-light / .qpx-theme-generic-dark
+   (nescopnuté) pravidlo .qpx-theme-light / .qpx-theme-dark
    z jquery.qpx.all.css.
 
    DŮLEŽITÉ: díky dědičnosti CSS proměnných stačí třídu
-   .qpx-theme-generic-light/-dark přepínat na jediném místě — na
+   .qpx-theme-light/-dark přepínat na jediném místě — na
    <body> (viz applyTheme() v testovacích JSP) — a automaticky se
    použije jak ve widgetech uvnitř stránky, tak v běžném obsahu
    stránky (nadpisy, .value-out, topbar, ...). NENÍ potřeba přepínat

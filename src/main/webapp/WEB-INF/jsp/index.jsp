@@ -15,18 +15,8 @@
 
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
-		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 
 		<style type="text/css">
-			/*
-			html, body {
-				font-family: "Segoe UI", Arial, sans-serif;
-				font-size: 13px;
-				margin: 0;
-				background: #f4f6f8;
-				color: #222;
-			}
-			*/
 			header.page-head {
 				padding: 20px 24px 8px;
 			}
@@ -101,12 +91,12 @@
 				font-size: 11px;
 			}
 		</style>
-		<link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
 	</head>
-	<body class="qpx-view qpx-theme-generic-light">
+	<body class="qpx-view qpx-theme-light">
 		<header class="page-head">
 			<div style="display: flex; align-items: center;">
 				<img alt="" src="/devel/favicon.svg" style="height: 40px; width: 40px;">
@@ -120,10 +110,20 @@
 
 		<main>
 			<h2 class="group-title">Struktura a rozložení</h2>
-			<div class="grid" data-group="layout">
+			<div class="grid" data-group="instance">
+				<a class="card" href="/devel/test/instance">
+					<span class="card-icon qpxicon qpxicon-layout qpxicon-xl" style="color: #337ab7;"></span>
+					<span class="card-title">Instace widgetu</span>
+					<span class="card-desc">
+						Čtyři rovnocenné způsoby, jak z <code>$(selector)</code> získat živou instanci qpx widgetu —
+						obdoba <code>$(...).data("kendoTagBox")</code> a <code>$(...).dxTagBox("instance")</code>. 
+						Na konci i důkaz, že po <code>destroy()</code> už žádný z nich instanci nevrátí.
+					</span>
+					<span class="card-path">/devel/test/instance</span>
+				</a>
 				<a class="card" href="/devel/test/layout">
 					<span class="card-icon qpxicon qpxicon-layout qpxicon-xl" style="color: #337ab7;"></span>
-					<span class="card-title">Layout</span>
+					<span class="card-title">qpLayout</span>
 					<span class="card-desc">Skládání komponent přes rows/cols, responzivní chování, gap, spacer buňky.</span>
 					<span class="card-path">/devel/test/layout</span>
 				</a>
@@ -158,7 +158,7 @@
 				</a>
 				<a class="card" href="/devel/test/template">
 					<span class="card-icon qpxicon qpxicon-template qpxicon-xl"></span>
-					<span class="card-title">Template</span>
+					<span class="card-title">qpTemplate</span>
 					<span class="card-desc">Vykreslení HTML podle šablony a dat, proměnné #var# / {var}, setValues().</span>
 					<span class="card-path">/devel/test/template</span>
 				</a>
@@ -203,19 +203,19 @@
 			<div class="grid" data-group="controls">
 				<a class="card" href="/devel/test/button">
 					<span class="card-icon qpxicon qpxicon-button qpxicon-xl"></span>
-					<span class="card-title">Button</span>
+					<span class="card-title">qpButton</span>
 					<span class="card-desc">Typy, stylingMode, ikony, disabled/enabled, vlastní template.</span>
 					<span class="card-path">/devel/test/button</span>
 				</a>
 				<a class="card" href="/devel/test/buttongroup">
 					<span class="card-icon qpxicon qpxicon-buttongroup qpxicon-xl"></span>
-					<span class="card-title">ButtonGroup</span>
+					<span class="card-title">qpButtonGroup</span>
 					<span class="card-desc">selectionMode: single / multiple / none, výběr klíčů položek.</span>
 					<span class="card-path">/devel/test/buttongroup</span>
 				</a>
 				<a class="card" href="/devel/test/dropdownbutton">
 					<span class="card-icon qpxicon qpxicon-dropdownbutton qpxicon-xl"></span>
-					<span class="card-title">DropDownButton</span>
+					<span class="card-title">qpDropDownButton</span>
 					<span class="card-desc">Split tlačítko, useSelectMode, rozbalovací menu položek.</span>
 					<span class="card-path">/devel/test/dropdownbutton</span>
 				</a>
@@ -345,7 +345,7 @@
 			// ------------------------------------------------------------
 			function applyTheme(themeKey) {
 				$("body")
-					.removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+					.removeClass("qpx-theme-light qpx-theme-dark")
 					.addClass("qpx-theme-" + themeKey);
 				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
 				toolbar.option("theme", themeKey);

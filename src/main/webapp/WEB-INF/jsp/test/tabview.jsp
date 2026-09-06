@@ -9,83 +9,18 @@
 
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 
-		<style>
-			body.qpx-page-dark { background: #1b1b1b; color: #eee; }
-			
-			.qpx-testbar {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 18px;
-				align-items: center;
-				padding: 12px 20px;
-				background: #ffffff;
-				border-bottom: 1px solid #e0e0e0;
-				position: sticky;
-				top: 0;
-				z-index: 10;
-			}
-			body.qpx-page-dark .qpx-testbar {
-				background: #262626;
-				border-bottom-color: #3f3f3f;
-			}
-			.qpx-testbar label {
-				display: flex;
-				align-items: center;
-				gap: 6px;
-				font-size: 13px;
-				font-weight: 600;
-			}
-			.qpx-testbar select, .qpx-testbar button {
-				font-size: 13px;
-				padding: 5px 8px;
-			}
-			.qpx-testbar button {
-				cursor: pointer;
-				border: 1px solid #c8c8c8;
-				border-radius: 4px;
-				background: #fafafa;
-			}
-			.qpx-testbar button.active { background: #1976d2; color: #fff; border-color: #1976d2; }
-			
-			.qpx-demo-wrap {
-				max-width: 900px;
-				margin: 28px auto;
-				padding: 0 20px 60px;
-			}
-			.qpx-demo-wrap h2 { font-size: 16px; margin: 28px 0 10px; }
-			.qpx-demo-panel-content h3 { margin-top: 0; }
-			.qpx-demo-panel-content p { line-height: 1.5; color: inherit; opacity: 0.85; }
-			
-			#tabviewLeftRight { height: 320px; }
-		
-			/* jednoduché ikony bez externí knihovny – jen kolečka/tvary přes mask */
-			.qpx-icon-home { -webkit-mask: radial-gradient(circle, #000 60%, transparent 61%); mask: radial-gradient(circle, #000 60%, transparent 61%); }
-			.qpx-icon-user { border-radius: 50%; }
-			.qpx-icon-settings { border-radius: 3px; transform: rotate(20deg); }
-			.qpx-back-home {
-				font-size: 20px;
-				text-decoration: none;
-				padding: 6px 10px;
-			}
-			.qpx-back-home:hover {
-				background: #fff;
-				color: #000;
-			}		
-		</style>
-	
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>
 	</head>
 	<body class="qpx-view">
-		<!-- návratová ikona vlevo nahoře -->
-		<div style="height: 36px; position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid &dedede;">
-			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-				<span class="fa fa-home"></span>
-			</a>
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar" style="width: 100%"></div>
 		</div>
-		<div style="min-height: 320px; position: absolute; top: 36px; left: 0; right: 0; border: 0; border: 0px solid red;">
+		<div class="qpx-test-content">
 			<strong>QPX qpTabView – test</strong>
 			<div class="qpx-testbar">
 				<label>Téma:
@@ -140,6 +75,7 @@
 		</div>
 
 		<script>
+		var widgetName = "qpTabView";
 		$(function () {
 			// -----------------------------------------------------------------
 			// 1) Hlavní demo — items s různým obsahem (template, html, text)
@@ -274,7 +210,7 @@
 		                        height: 44,
 		                        items: [
 		                            { location: "before", widget: "template", template: "<b style='padding:0 12px;'>Panel s toolbarem uvnitř qpTabView</b>" },
-		                            { location: "after", widget: "button", options: { text: "Akce" } }
+		                            { location: "after", widget: "qpButton", options: { text: "Akce" } }
 		                        ]
 		                    }
 		                ]

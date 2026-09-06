@@ -81,6 +81,7 @@ System.out.println("/devel/buttongroup.jsp");
 		</div>
 
 		<script>
+		var widgetName = "qpButtonGroup";
 		$(function () {
 			var single = qpx.ui({
 				view: "buttonGroup",

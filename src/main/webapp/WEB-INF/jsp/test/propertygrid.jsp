@@ -11,16 +11,15 @@
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
-		<link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 	
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>
 	</head>
-	<body class="qpx-view qpx-theme-generic-light">
-		<div class="qpx-test-topbar">
-			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-				<span class="fa fa-home"></span>
-			</a>
+	<body class="qpx-view">
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar" style="width: 100%"></div>
 		</div>
 
 		<div class="qpx-test-content">
@@ -74,6 +73,7 @@
 		</div>
 
 		<script>
+		var widgetName = "qpPropertyGrid";
 		$(function () {
 
 		    var roles = [
@@ -202,24 +202,25 @@
 		    // -----------------------------------------------------------------
 		    // Horní panel: přepínač tématu (light/dark)
 		    //
-		    // Téma se přepíná JEDINÝM místem — třídou qpx-theme-generic-light/
+		    // Téma se přepíná JEDINÝM místem — třídou qpx-theme-light/
 		    // -dark na <body>. Díky dědičnosti CSS proměnných (--qpx-bg,
 		    // --qpx-text, --qpx-border, ...) se automaticky obarví jak
 		    // všechny instance qpPropertyGrid, tak okolní obsah stránky
 		    // (nadpisy, .value-out, topbar) — bez nutnosti přepínat třídu
 		    // na kontejneru každého widgetu zvlášť.
 		    // -----------------------------------------------------------------
+		    /*
 		    function applyTheme(themeKey) {
 		        $("body")
-		            .removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+		            .removeClass("qpx-theme-light qpx-theme-dark")
 		            .addClass("qpx-theme-" + themeKey);
 
 		        toolbar.option("theme", themeKey);
 		    }
-
+			*/
 		    var toolbar = qpx.ui({
 		        view: "qpToolBar",
-		        theme: "generic-light",
+		        theme: "light",
 		        items: [
 		            {
 		                location: "before", widget: "template",
@@ -229,20 +230,20 @@
 		                location: "before", widget: "buttonGroup",
 		                options: {
 		                    items: [
-		                        { text: "Světlé (Silver)", key: "generic-light" },
-		                        { text: "Tmavé", key: "generic-dark" }
+		                        { text: "Světlé (Silver)", key: "light" },
+		                        { text: "Tmavé", key: "dark" }
 		                    ],
-		                    selectedItemKeys: ["generic-light"],
+		                    selectedItemKeys: ["light"],
 		                    onSelectionChanged: function (e) {
-		                        var key = e.component.getSelectedItemKeys()[0] || "generic-light";
-		                        applyTheme(key);
+		                        var key = e.component.getSelectedItemKeys()[0] || "light";
+		                        // applyTheme(key);
 		                    }
 		                }
 		            }
 		        ]
 		    }, "#styleToolbar");
 
-		    applyTheme("generic-light");
+		    // applyTheme("light");
 		});
 		</script>
 	</body>

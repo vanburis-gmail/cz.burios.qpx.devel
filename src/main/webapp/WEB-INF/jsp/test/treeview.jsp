@@ -39,6 +39,7 @@
 		<div id="tree"></div>
 
 		<script>
+		var widgetName = "qpTreeView";
 		$(function () {
 			/*
 			$("#tree").qpx("qpTreeView", {

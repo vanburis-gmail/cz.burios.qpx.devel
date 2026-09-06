@@ -44,23 +44,12 @@
 
 @use "widgets/icons";
 
-/*
-// proměnné tématu se aplikují rovnou na :root i na .qpx-view,
-// takže je není nutné (ale je stále možné) obalovat třídou
-// .qpx-theme-generic-light
-:root,
-.qpx-view {
-    @include light.qpx-theme-vars;
-}
-*/
 // proměnné tématu se aplikují rovnou na :root i na .qpx-view,
 // takže je není nutné (ale je stále možné) obalovat třídou
 // .qpx-theme-generic-light
 :root,
 .qpx-view,
-.qpx-theme-light,
-.qpx-theme-generic-light {
-    @include light.qpx-theme-vars;
-    color-scheme: light;
+.qpx-theme-light {
+	@include light.qpx-theme-vars;
+	color-scheme: light;
 }
-

@@ -78,6 +78,7 @@ System.out.println("/devel/toolbar.jsp");
 		</div>
 
 		<script>
+		var widgetName = "qpToolBar";
 		$(function () {
 			function log(msg) { $("#toolbarLog").text(msg); }
 			var toolbar = qpx.ui({

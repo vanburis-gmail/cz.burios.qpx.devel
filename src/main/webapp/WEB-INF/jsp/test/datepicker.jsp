@@ -10,17 +10,16 @@
 
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
-		<link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>	
 	</head>
 	<body class="qpx-view">
-		<div class="qpx-test-topbar">
-			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-				<span class="fa fa-home"></span>
-			</a>
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar" style="width: 100%"></div>
 		</div>
 		<div class="qpx-test-content">
 			<header class="page-head">
@@ -74,6 +73,8 @@
 		</div>
 
 		<script>
+		var widgetName = "qpDatePicker"; 
+		
 		$(function () {
 		    var today = new Date();
 
@@ -164,7 +165,7 @@
 		    // Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny instance)
 		    // -----------------------------------------------------------------
 		    var allDatePickers = [datepicker1, datepicker2, datepicker3, datepicker4, datepicker5, datepicker6];
-
+			/*
 		    function applyTheme(themeClass) {
 		        allDatePickers.forEach(function (dp) {
 		            dp.getContainer().removeClass("qpx-theme-generic-light qpx-theme-generic-dark").addClass(themeClass);
@@ -172,7 +173,7 @@
 		        toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
 		        $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
 		    }
-
+			*/
 		    function applyStylingMode(mode) {
 		        allDatePickers.forEach(function (dp) { dp.option("stylingMode", mode); });
 		    }
@@ -186,7 +187,7 @@
 		                template: "<b style='padding:0 4px;'>Styl:</b>"
 		            },
 		            {
-		                location: "before", widget: "buttonGroup",
+		                location: "before", widget: "qpButtonGroup",
 		                options: {
 		                    items: [
 		                        { text: "Světlé", key: "generic-light" },
@@ -194,13 +195,15 @@
 		                    ],
 		                    selectedItemKeys: ["generic-light"],
 		                    onSelectionChanged: function (e) {
+		                    	/*
 		                        var key = e.component.getSelectedItemKeys()[0] || "generic-light";
 		                        applyTheme("qpx-theme-" + key);
+		                        */
 		                    }
 		                }
 		            },
 		            {
-		                location: "after", widget: "buttonGroup",
+		                location: "after", widget: "qpButtonGroup",
 		                options: {
 		                    items: [
 		                        { text: "outlined", key: "outlined" },
@@ -217,7 +220,7 @@
 		        ]
 		    }, "#pageToolbar");
 
-		    applyTheme("qpx-theme-generic-light");
+		    applyTheme("qpx-theme-light");
 		});
 		</script>
 	</body>

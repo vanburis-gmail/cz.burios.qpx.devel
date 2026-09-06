@@ -56,6 +56,7 @@
 		</div>
 
 		<script>
+		var widgetName = "qpTextBox";
 		$(function () {
 			// -----------------------------------------------------------------
 			// 1) základní demo
@@ -124,23 +125,23 @@
 			// Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny instance)
 			// -----------------------------------------------------------------
 			var allTextBoxes = [textbox1, textbox2, textbox3, textbox4, textbox4b];
-		
+			/*
 			function applyTheme(themeClass) {
 				$(".qpx-test-content")
-					.removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+					.removeClass("qpx-theme-light qpx-theme-dark")
 					.addClass(themeClass);
 				toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
 				// zpětně kompatibilní přepínač pro topbar (viz qpx-test.css)
-				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
+				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
 			}
-
+			*/
 		    function applyStylingMode(mode) {
 		        allTextBoxes.forEach(function (tb) { tb.option("stylingMode", mode); });
 		    }
 
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
-				theme: "generic-light",
+				theme: "light",
 				items: [{
 					location: "before", widget: "template",
 					template: "<b style='padding:0 4px;'>Styl:</b>"
@@ -149,12 +150,12 @@
 					widget: "qpDropDownButton",
 					options: {
 						items: [
-							{ text: "Světlé", key: "generic-light" },
-							{ text: "Tmavé", key: "generic-dark" }
+							{ text: "Světlé", key: "light" },
+							{ text: "Tmavé", key: "dark" }
 						],
-						selectedItemKeys: ["generic-light"],
+						selectedItemKeys: ["light"],
 						onSelectionChanged: function (e) {
-							var key = e.component.getSelectedItemKeys()[0] || "generic-light";
+							var key = e.component.getSelectedItemKeys()[0] || "light";
 							applyTheme("qpx-theme-" + key);
 						}
 					}
@@ -170,13 +171,13 @@
 						selectedItemKeys: ["outlined"],
 						onSelectionChanged: function (e) {
 							var mode = e.component.getSelectedItemKeys()[0] || "outlined";
-							applyStylingMode(mode);
+							// applyStylingMode(mode);
 						}
 					}
 				}]
 			}, "#pageToolbar");
 	
-			applyTheme("qpx-theme-generic-light");
+			// applyTheme("qpx-theme-light");
 		});
 		</script>
 	</body>

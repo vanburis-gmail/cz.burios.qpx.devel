@@ -4297,10 +4297,6 @@
   mask-image: url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSJjdXJyZW50Q29sb3IiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1IiBjeT0iMTIiIHI9IjIiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIyIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxMiIgcj0iMiIvPjwvc3ZnPg==");
 }
 
-/*
-.qpx-theme-generic-light { @include light.qpx-theme-vars; }
-.qpx-theme-generic-dark  { @include dark.qpx-theme-vars; }
-*/
 :root {
   --qpx-bg: #ffffff;
   --qpx-surface: #f8f9fb;
@@ -4326,8 +4322,7 @@
 }
 
 .qpx-theme-light,
-[data-qpx-theme=light],
-.qpx-theme-generic-light {
+[data-qpx-theme=light] {
   --qpx-bg: #ffffff;
   --qpx-surface: #f8f9fb;
   --qpx-border: #d3d9df;
@@ -4352,8 +4347,7 @@
 }
 
 .qpx-theme-dark,
-[data-qpx-theme=dark],
-.qpx-theme-generic-dark {
+[data-qpx-theme=dark] {
   --qpx-bg: #2a2a2a;
   --qpx-surface: #333333;
   --qpx-border: #474747;

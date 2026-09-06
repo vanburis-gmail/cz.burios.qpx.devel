@@ -92,6 +92,7 @@
 		</div>
 
 		<script>
+		var widgetName = "qpTagBox";
 		$(function () {
 		    var countries = [
 		        { id: 1, name: "Česko" },

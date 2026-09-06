@@ -4297,19 +4297,9 @@
   mask-image: url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSJjdXJyZW50Q29sb3IiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1IiBjeT0iMTIiIHI9IjIiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIyIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxMiIgcj0iMiIvPjwvc3ZnPg==");
 }
 
-/*
-// proměnné tématu se aplikují rovnou na :root i na .qpx-view,
-// takže je není nutné (ale je stále možné) obalovat třídou
-// .qpx-theme-generic-light
-:root,
-.qpx-view {
-    @include light.qpx-theme-vars;
-}
-*/
 :root,
 .qpx-view,
-.qpx-theme-light,
-.qpx-theme-generic-light {
+.qpx-theme-light {
   --qpx-bg: #ffffff;
   --qpx-surface: #f8f9fb;
   --qpx-border: #d3d9df;

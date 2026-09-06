@@ -44,17 +44,9 @@
 
 @use "widgets/icons";
 
-/*
-:root,
-.qpx-view {
-    @include dark.qpx-theme-vars;
-}
-*/
 :root,
 .qpx-view,
-.qpx-theme-dark,
-.qpx-theme-generic-dark {
-    @include dark.qpx-theme-vars;
-    color-scheme: dark;
+.qpx-theme-dark {
+	@include dark.qpx-theme-vars;
+	color-scheme: dark;
 }
-

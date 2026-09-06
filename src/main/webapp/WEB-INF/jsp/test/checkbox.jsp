@@ -1,82 +1,79 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>${appTitle}</title>
+		<title>${appTitle}</title>
 
-    <link rel="icon" href="/devel/favicon.png">
-    <link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
-    <link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" type="text/css">
-    <link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
+		<link rel="icon" href="/devel/favicon.png">
+		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 
-    <script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-    <script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
-</head>
+		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>
+	</head>
+	<body class="qpx-view">
 
-<body class="qpx-view">
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar" style="width: 100%"></div>
+		</div>
 
-    <!-- Horní fixní bar -->
-    <div class="qpx-test-topbar">
-        <a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-            <span class="fa fa-home"></span>
-        </a>
-    </div>
+	    <!-- Scrollovací obsah -->
+	    <div class="qpx-test-content">
+	        <header class="page-head">
+	            <h1>qpCheckBox – test</h1>
+	            <p class="subtitle">
+	                Zaškrtávací pole s podporou neurčitého ("indeterminate") stavu — analogie DevExtreme dxCheckBox.
+	            </p>
+	        </header>
+	
+	        <div class="toolbar-wrap">
+	            <div id="pageToolbar"></div>
+	        </div>
+	
+	        <main>
+	
+	            <div class="demo-block">
+	                <h2>1) Základní použití</h2>
+	                <p class="desc">value, text, onValueChanged.</p>
+	                <div id="checkbox1"></div>
+	                <div class="value-out" id="out1"></div>
+	            </div>
+	
+	            <div class="demo-block">
+	                <h2>2) Skupina "vybrat vše" — indeterminate stav</h2>
+	                <p class="desc">
+	                    Nadřazený checkbox se přepne do neurčitého stavu, pokud jsou zaškrtnuté jen některé podřízené položky.
+	                </p>
+	
+	                <div class="demo-col">
+	                    <div id="checkboxAll"></div>
+	
+	                    <div class="demo-col" style="padding-left: 26px;">
+	                        <div id="checkboxChild1"></div>
+	                        <div id="checkboxChild2"></div>
+	                        <div id="checkboxChild3"></div>
+	                    </div>
+	                </div>
+	            </div>
+	
+	            <div class="demo-block">
+	                <h2>3) disabled / readOnly</h2>
+	                <div class="demo-row">
+	                    <div id="checkbox3a"></div>
+	                    <div id="checkbox3b"></div>
+	                </div>
+	            </div>
+	
+	        </main>
+	    </div>
 
-    <!-- Scrollovací obsah -->
-    <div class="qpx-test-content">
-
-        <header class="page-head">
-            <h1>qpCheckBox – test</h1>
-            <p class="subtitle">
-                Zaškrtávací pole s podporou neurčitého ("indeterminate") stavu — analogie DevExtreme dxCheckBox.
-            </p>
-        </header>
-
-        <div class="toolbar-wrap">
-            <div id="pageToolbar"></div>
-        </div>
-
-        <main>
-
-            <div class="demo-block">
-                <h2>1) Základní použití</h2>
-                <p class="desc">value, text, onValueChanged.</p>
-                <div id="checkbox1"></div>
-                <div class="value-out" id="out1"></div>
-            </div>
-
-            <div class="demo-block">
-                <h2>2) Skupina "vybrat vše" — indeterminate stav</h2>
-                <p class="desc">
-                    Nadřazený checkbox se přepne do neurčitého stavu, pokud jsou zaškrtnuté jen některé podřízené položky.
-                </p>
-
-                <div class="demo-col">
-                    <div id="checkboxAll"></div>
-
-                    <div class="demo-col" style="padding-left: 26px;">
-                        <div id="checkboxChild1"></div>
-                        <div id="checkboxChild2"></div>
-                        <div id="checkboxChild3"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="demo-block">
-                <h2>3) disabled / readOnly</h2>
-                <div class="demo-row">
-                    <div id="checkbox3a"></div>
-                    <div id="checkbox3b"></div>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <script>
+	    <script>
+	    var widgetName = "qpCheckBox";
         $(function () {
 
             // -----------------------------------------------------------------
@@ -166,17 +163,17 @@
                 checkboxChild1, checkboxChild2, checkboxChild3,
                 checkbox3a, checkbox3b
             ];
-
+			/*
             function applyTheme(themeClass) {
                 allCheckBoxes.forEach(function (cb) {
                     cb.getContainer()
-                        .removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+                        .removeClass("qpx-theme-light qpx-theme-dark")
                         .addClass(themeClass);
                 });
                 toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
-                $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
+                $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
             }
-
+			*/
             function applyIconSize(size) {
                 allCheckBoxes.forEach(function (cb) { cb.option("iconSize", size); });
             }
@@ -190,21 +187,21 @@
                         template: "<b style='padding:0 4px;'>Styl:</b>"
                     },
                     {
-                        location: "before", widget: "buttonGroup",
+                        location: "before", widget: "qpButtonGroup",
                         options: {
                             items: [
-                                { text: "Světlé", key: "generic-light" },
-                                { text: "Tmavé", key: "generic-dark" }
+                                { text: "Světlé", key: "light" },
+                                { text: "Tmavé", key: "dark" }
                             ],
-                            selectedItemKeys: ["generic-light"],
+                            selectedItemKeys: ["light"],
                             onSelectionChanged: function (e) {
                                 var key = e.component.getSelectedItemKeys()[0] || "generic-light";
-                                applyTheme("qpx-theme-" + key);
+                                // applyTheme("qpx-theme-" + key);
                             }
                         }
                     },
                     {
-                        location: "after", widget: "buttonGroup",
+                        location: "after", widget: "qpButtonGroup",
                         options: {
                             items: [
                                 { text: "18px", key: 18 },
@@ -221,9 +218,8 @@
                 ]
             }, "#pageToolbar");
 
-            applyTheme("qpx-theme-generic-light");
-        });
-    </script>
-
-</body>
+			// applyTheme("qpx-theme-light");
+		});
+		</script>
+	</body>
 </html>

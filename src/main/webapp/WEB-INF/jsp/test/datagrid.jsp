@@ -1,23 +1,22 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>${appTitle}</title>
-
-    <link rel="icon" href="/devel/favicon.png">
-    <link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
-    <link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" type="text/css">
-
-    <!-- 🔥 jednotný layout -->
-    <link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
-
-    <script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-    <script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
-
-    <style>
+	<head>
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	    <title>${appTitle}</title>
+	
+	    <link rel="icon" href="/devel/favicon.png">
+	    <link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
+	    <link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" type="text/css">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
+	
+	    <script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
+	    <script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>
+	
+	    <style>
         /* Specifické styly jen pro DataGrid */
         .dg-toolbar {
             margin: 12px 24px 4px;
@@ -42,88 +41,79 @@
             opacity: 0.7;
             margin: 4px 0 12px;
         }
-    </style>
-</head>
-
-<body class="qpx-view">
-
-    <!-- Horní fixní bar -->
-    <div class="qpx-test-topbar">
-        <a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-            <span class="fa fa-home"></span>
-        </a>
-    </div>
-
-    <!-- Scrollovací obsah -->
-    <div class="qpx-test-content">
-
-        <header class="page-head">
-            <h1>qpDataGrid – test</h1>
-            <p class="subtitle">
-                Adaptivní tabulka s řazením, filtrováním, stránkováním, výběrem řádků a dalšími funkcemi.
-            </p>
-        </header>
-
-        <!-- Toolbar -->
-        <div class="dg-toolbar">
-            <label>Téma:
-                <select id="ctlTheme">
-                    <option value="qpx-theme-generic-light">generic-light</option>
-                    <option value="qpx-theme-generic-dark">generic-dark</option>
-                </select>
-            </label>
-
-            <label><input type="checkbox" id="ctlBorders" checked> borders</label>
-            <label><input type="checkbox" id="ctlRowLines" checked> row lines</label>
-            <label><input type="checkbox" id="ctlColumnLines" checked> column lines</label>
-            <label><input type="checkbox" id="ctlAlternation"> alternation</label>
-            <label><input type="checkbox" id="ctlWordWrap"> word wrap</label>
-
-            <label>Selection:
-                <select id="ctlSelection">
-                    <option value="none">none</option>
-                    <option value="single">single</option>
-                    <option value="multiple" selected>multiple</option>
-                </select>
-            </label>
-
-            <label>Sorting:
-                <select id="ctlSorting">
-                    <option value="none">none</option>
-                    <option value="single" selected>single</option>
-                    <option value="multiple">multiple (shift-klik)</option>
-                </select>
-            </label>
-
-            <label><input type="checkbox" id="ctlPaging" checked> paging</label>
-            <label><input type="checkbox" id="ctlSearch" checked> search panel</label>
-            <label><input type="checkbox" id="ctlFilterRow"> filter row</label>
-            <label><input type="checkbox" id="ctlResizing"> column resizing</label>
-            <label><input type="checkbox" id="ctlResponsive" checked> responsive</label>
-
-            <label>
-                Editing:
-                <select id="ctlEditing">
-                    <option value="off" selected>vypnuto</option>
-                    <option value="on">add/update/delete</option>
-                </select>
-            </label>
-        </div>
-
-        <main>
-            <div class="demo-block">
-                <h2>qpDataGrid – hlavní demo</h2>
-                <p class="dg-note">
-                    Zúžením okna prohlížeče vyzkoušíte adaptivní chování (skryté sloupce se přesunou do akordeonu).
-                    Klikem na hlavičku sloupce řadíte, se zapnutým „multiple“ řazením + Shift přidáváte další úroveň.
-                </p>
-                <div id="grid1"></div>
-            </div>
-        </main>
-
-    </div>
-
-    <script>
+	    </style>
+	</head>
+	
+	<body class="qpx-view">
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar" style="width: 100%"></div>
+		</div>
+		<div class="qpx-test-content">
+			<header class="page-head">
+				<h1>qpDataGrid – test</h1>
+				<p class="subtitle">
+					Adaptivní tabulka s řazením, filtrováním, stránkováním, výběrem řádků a dalšími funkcemi.
+				</p>
+			</header>
+			<!-- Toolbar -->
+			<div class="dg-toolbar">
+				<label>Téma:
+					<select id="ctlTheme">
+						<option value="qpx-theme-light">generic-light</option>
+						<option value="qpx-theme-dark">generic-dark</option>
+					</select>
+				</label>
+				<label><input type="checkbox" id="ctlBorders" checked> borders</label>
+				<label><input type="checkbox" id="ctlRowLines" checked> row lines</label>
+				<label><input type="checkbox" id="ctlColumnLines" checked> column lines</label>
+				<label><input type="checkbox" id="ctlAlternation"> alternation</label>
+				<label><input type="checkbox" id="ctlWordWrap"> word wrap</label>
+		
+				<label>Selection:
+					<select id="ctlSelection">
+						<option value="none">none</option>
+						<option value="single">single</option>
+						<option value="multiple" selected>multiple</option>
+					</select>
+				</label>
+		
+				<label>Sorting:
+					<select id="ctlSorting">
+						<option value="none">none</option>
+						<option value="single" selected>single</option>
+						<option value="multiple">multiple (shift-klik)</option>
+					</select>
+				</label>
+		
+				<label><input type="checkbox" id="ctlPaging" checked> paging</label>
+				<label><input type="checkbox" id="ctlSearch" checked> search panel</label>
+				<label><input type="checkbox" id="ctlFilterRow"> filter row</label>
+				<label><input type="checkbox" id="ctlResizing"> column resizing</label>
+				<label><input type="checkbox" id="ctlResponsive" checked> responsive</label>
+		
+				<label>
+					Editing:
+					<select id="ctlEditing">
+						<option value="off" selected>vypnuto</option>
+						<option value="on">add/update/delete</option>
+					</select>
+				</label>
+			</div>
+		
+			<main>
+				<div class="demo-block">
+					<h2>qpDataGrid – hlavní demo</h2>
+					<p class="dg-note">
+						Zúžením okna prohlížeče vyzkoušíte adaptivní chování (skryté sloupce se přesunou do akordeonu).
+						Klikem na hlavičku sloupce řadíte, se zapnutým „multiple“ řazením + Shift přidáváte další úroveň.
+					</p>
+					<div id="grid1"></div>
+				</div>
+			</main>
+		</div>
+		
+		<script>
+    	var widgetName = "qpDataGrid";
         $(function () {
 
             var employees = [
@@ -162,9 +152,9 @@
 
             function applyTheme(themeClass) {
                 grid.getContainer()
-                    .removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+                    .removeClass("qpx-theme-light qpx-theme-dark")
                     .addClass(themeClass);
-                $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
+                $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
             }
 
             applyTheme($("#ctlTheme").val());
@@ -196,6 +186,6 @@
                 });
             });
         });
-    </script>
-</body>
+		</script>
+	</body>
 </html>

@@ -29,7 +29,7 @@
             items: [],
             visible: true,
             disabled: false,
-            theme: "generic-light",  // generic-light | generic-dark
+            theme: "light",  // light | dark
             overflowMenuIcon: "⋮",
             onItemClick: null,
             onOptionChanged: null
