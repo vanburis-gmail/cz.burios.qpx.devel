@@ -29,7 +29,7 @@ $(function () {
 						? "qpx-theme-dark"
 						: "qpx-theme-light";
 
-					$(".qpx-test-content")
+					$(document.body)
 						.removeClass("qpx-theme-light qpx-theme-dark")
 						.addClass(themeClass);
 

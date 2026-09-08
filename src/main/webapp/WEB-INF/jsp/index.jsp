@@ -15,6 +15,7 @@
 
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${ timeNo }" rel="stylesheet" type="text/css">
 
 		<style type="text/css">
 			header.page-head {
@@ -96,7 +97,7 @@
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
 	</head>
-	<body class="qpx-view qpx-theme-light">
+	<body class="qpx-view">
 		<header class="page-head">
 			<div style="display: flex; align-items: center;">
 				<img alt="" src="/devel/favicon.svg" style="height: 40px; width: 40px;">
@@ -340,15 +341,22 @@
 		$(function () {
 			// ------------------------------------------------------------
 			// Horní panel: přepínač tématu (theme) + filtr skupin widgetů
-			// (jen ukázka použití qpToolBar/buttonGroup na téhle stránce,
+			// (jen ukázka použití qpToolBar/qpButtonGroup na téhle stránce,
 			// funkčně jde čistě o rozcestník s odkazy na /devel/test/*)
 			// ------------------------------------------------------------
 			function applyTheme(themeKey) {
+				/*
 				$("body")
 					.removeClass("qpx-theme-light qpx-theme-dark")
 					.addClass("qpx-theme-" + themeKey);
 				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
 				toolbar.option("theme", themeKey);
+				*/
+				let themeClass = "qpx-theme-" + themeKey;
+				$(document.body)
+					.removeClass("qpx-theme-light qpx-theme-dark")
+					.addClass(themeClass);
+
 			}
 
 			var toolbar = qpx.ui({
@@ -357,7 +365,7 @@
 						location: "before", widget: "template",
 						template: "<b style='padding:0 4px;'>QPX Demo</b>"
 				}, {
-					location: "before", widget: "buttonGroup",
+					location: "before", widget: "qpButtonGroup",
 					options: {
 						items: [
 							{ text: "Vše", key: "all" },
@@ -378,7 +386,7 @@
 					}
 				}, {
 					location: "after",
-					widget: "dropDownButton",
+					widget: "qpDropDownButton",
 					options: {
 							items: [
 								{ text: "Světlé", key: "light" },
