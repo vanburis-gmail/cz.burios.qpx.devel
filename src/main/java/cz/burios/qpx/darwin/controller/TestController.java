@@ -13,12 +13,12 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class TestController {
-	
+
 	@GetMapping("/download")
 	public ModelAndView showDownloadForm() {
 		ModelAndView view = new ModelAndView("download");
 		try {
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -29,13 +29,13 @@ public class TestController {
 	public ModelAndView showUploadForm() {
 		ModelAndView view = new ModelAndView("upload");
 		try {
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return view;
 	}
-	
+
 	@GetMapping("/test/{name}")
 	public ModelAndView page(@PathVariable("name") String name) {
 		/*
@@ -54,9 +54,11 @@ public class TestController {
 			java.util.Date now = new java.util.Date();
 			LocalDateTime ldtNow = LocalDateTime.now();
 			String timeNo = ldtNow.format(DateTimeFormatter.ofPattern("yyyyMMdd.HHmmssSSS"));
+			String appPath = "devel";
 			// System.out.println("timeNo: " + timeNo);
 			view.addObject("timeNo", DateFormatUtils.format(now, "yyyyMMdd.HHmmssSSS"));
 			view.addObject("appTitle", "Buriosca.cz - QPX Devel");
+			view.addObject("appPath", appPath);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
