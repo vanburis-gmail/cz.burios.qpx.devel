@@ -1,6 +1,6 @@
 // =====================================================================
 // qpx - light.scss
-// Samostatný build jednoho tématu ("generic-light"), obdoba toho, jak
+// Samostatný build jednoho tématu ("light"), obdoba toho, jak
 // DevExtreme distribuuje dx.light.css - do stránky se vloží tento
 // jediný soubor a už není potřeba žádná přepínací třída na <body>.
 //
@@ -46,7 +46,7 @@
 
 // proměnné tématu se aplikují rovnou na :root i na .qpx-view,
 // takže je není nutné (ale je stále možné) obalovat třídou
-// .qpx-theme-generic-light
+// .qpx-theme-light
 :root,
 .qpx-view,
 .qpx-theme-light {

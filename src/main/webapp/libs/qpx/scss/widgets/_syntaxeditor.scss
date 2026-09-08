@@ -2,7 +2,7 @@
 // qpx - widgets/_syntaxeditor.scss
 // qpSyntaxEditor je obálka nad Ace Editorem - samotnou plochu kódu
 // (písmo, gutter, zvýraznění syntaxe) barví přímo zvolené Ace téma
-// ("chrome" pro generic-light / "tomorrow_night" pro generic-dark -
+// ("chrome" pro light / "tomorrow_night" pro dark -
 // viz mapování THEME_ALIASES v qpx.syntaxeditor.js). Zde se řeší jen
 // vnější rámeček/stavy/overlaye tak, aby widget vizuálně zapadl mezi
 // ostatní qpx formulářové prvky (stejný radius/border/focus ring jako

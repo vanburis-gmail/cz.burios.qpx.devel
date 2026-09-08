@@ -347,13 +347,12 @@
 				$("body")
 					.removeClass("qpx-theme-light qpx-theme-dark")
 					.addClass("qpx-theme-" + themeKey);
-				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
+				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
 				toolbar.option("theme", themeKey);
 			}
 
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
-				theme: "generic-light",
 				items: [{
 						location: "before", widget: "template",
 						template: "<b style='padding:0 4px;'>QPX Demo</b>"
@@ -382,17 +381,17 @@
 					widget: "dropDownButton",
 					options: {
 							items: [
-								{ text: "Světlé", key: "generic-light" },
-								{ text: "Tmavé", key: "generic-dark" }
+								{ text: "Světlé", key: "light" },
+								{ text: "Tmavé", key: "dark" }
 							],
-							selectedItemKeys: ["generic-light"],
+							selectedItemKeys: ["light"],
 							onSelectionChanged: function (e) {
 								/*
-								var theme = e.component.getSelectedItemKeys()[0] || "generic-light";
+								var theme = e.component.getSelectedItemKeys()[0] || "light";
 								toolbar.option("theme", theme);
-								$("body").attr("data-theme", theme === "generic-dark" ? "dark" : "light");
+								$("body").attr("data-theme", theme === "dark" ? "dark" : "light");
 								*/
-								var key = e.component.getSelectedItemKeys()[0] || "generic-light";
+								var key = e.component.getSelectedItemKeys()[0] || "light";
 								applyTheme(key);
 							}
 						}

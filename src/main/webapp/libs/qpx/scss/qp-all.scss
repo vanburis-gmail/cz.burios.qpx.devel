@@ -7,10 +7,10 @@
 //   npm run test-css    ->  jen ověří, že se vše zkompiluje bez chyby
 //
 // Výsledek obsahuje strukturální styly VŠECH widgetů + OBĚ barevná
-// témata (generic-light i generic-dark) zapsaná jako CSS custom
-// properties na třídách .qpx-theme-generic-light / .qpx-theme-generic-dark.
-// Díky tomu lze téma přepínat za běhu (viz qpToolBar: theme: "generic-dark",
-// resp. toolbar.option("theme", "generic-dark")), aniž by bylo nutné
+// témata (light i dark) zapsaná jako CSS custom
+// properties na třídách .qpx-theme-light / .qpx-theme-dark.
+// Díky tomu lze téma přepínat za běhu (viz qpToolBar: theme: "dark",
+// resp. toolbar.option("theme", "dark")), aniž by bylo nutné
 // přehazovat <link> na jiný CSS soubor.
 //
 // Pokud aplikace vždy používá jen JEDNO téma a přepínání za běhu

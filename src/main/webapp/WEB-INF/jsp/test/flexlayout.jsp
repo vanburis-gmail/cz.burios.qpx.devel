@@ -253,7 +253,6 @@
 			*/
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
-				theme: "generic-light",
 				items: [{
 					location: "before", widget: "template",
 					template: "<b style='padding:0 4px;'>Styl:</b>"
@@ -262,12 +261,12 @@
 					widget: "qpDropDownButton",
 					options: {
 						items: [
-							{ text: "Světlé", key: "generic-light" },
-							{ text: "Tmavé", key: "generic-dark" }
+							{ text: "Světlé", key: "light" },
+							{ text: "Tmavé", key: "dark" }
 						],
-						selectedItemKeys: ["generic-light"],
+						selectedItemKeys: ["light"],
 						onSelectionChanged: function (e) {
-							var key = e.component.getSelectedItemKeys()[0] || "generic-light";
+							var key = e.component.getSelectedItemKeys()[0] || "light";
 							// applyTheme("qpx-theme-" + key);
 						}
 					}

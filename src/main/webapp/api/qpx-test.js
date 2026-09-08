@@ -4,7 +4,6 @@ $(function () {
 	// -------------------------------------------------------------
 	qpx.ui({
 		view: "qpToolBar",
-		theme: "light",
 		items: [{
 			location: "before",
 			widget: "qpBreadcrumb",
@@ -45,7 +44,7 @@ function applyTheme(themeClass) {
 	$(".qpx-test-content")
 		.removeClass("qpx-theme-light qpx-theme-dark")
 		.addClass(themeClass);
-	toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
+	//toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
 	// zpětně kompatibilní přepínač pro topbar (viz qpx-test.css)
 	$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
 }

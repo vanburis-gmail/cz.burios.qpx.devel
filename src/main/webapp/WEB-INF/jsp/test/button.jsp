@@ -2,20 +2,19 @@
 <!DOCTYPE html>
 <html lang="cs">
 	<head>
-	    <meta charset="UTF-8">
-	    <meta name="viewport" content="width=device-width, initial-scale=1">
-	
-	    <title>${appTitle}</title>
-	
-	    <link rel="icon" href="/devel/favicon.png">
-	    <link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
-	    <link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" type="text/css">
-	    <link rel="stylesheet" href="/devel/css/qpx-test.css?build=${timeNo}">
-	
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>${appTitle}</title>
+
+		<link rel="icon" href="/devel/favicon.png">
+		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
+
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
 		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
 		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>
-	
 	</head>
 
 	<body class="qpx-view">
@@ -114,7 +113,6 @@
 	                },
 	                onClick: function () { console.log("klik na tlačítko s vlastním template"); }
 	            }, $("<div></div>").appendTo("#templateRow"));
-	
 			});
 		</script>
 	</body>

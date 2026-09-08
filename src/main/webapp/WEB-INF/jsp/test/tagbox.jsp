@@ -193,41 +193,15 @@
 		    // Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny 4 instance)
 		    // -----------------------------------------------------------------
 		    var allTagBoxes = [tagbox1, tagbox2, tagbox3, tagbox4];
-		
-		    function applyTheme(themeClass) {
-		        allTagBoxes.forEach(function (tb) {
-		            tb.getContainer().removeClass("qpx-theme-generic-light qpx-theme-generic-dark").addClass(themeClass);
-		        });
-		        toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
-		        $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
-		    }
-		
+			/*
+			*/
 		    function applyStylingMode(mode) {
 		        allTagBoxes.forEach(function (tb) { tb.option("stylingMode", mode); });
 		    }
 		
 		    var toolbar = qpx.ui({
 		        view: "qpToolBar",
-		        theme: "generic-light",
 		        items: [
-		            {
-		                location: "before", widget: "template",
-		                template: "<b style='padding:0 4px;'>Styl:</b>"
-		            },
-		            {
-		                location: "before", widget: "buttonGroup",
-		                options: {
-		                    items: [
-		                        { text: "Světlé", key: "generic-light" },
-		                        { text: "Tmavé", key: "generic-dark" }
-		                    ],
-		                    selectedItemKeys: ["generic-light"],
-		                    onSelectionChanged: function (e) {
-		                        var key = e.component.getSelectedItemKeys()[0] || "generic-light";
-		                        applyTheme("qpx-theme-" + key);
-		                    }
-		                }
-		            },
 		            {
 		                location: "after", widget: "buttonGroup",
 		                options: {
@@ -245,8 +219,6 @@
 		            }
 		        ]
 		    }, "#pageToolbar");
-		
-		    applyTheme("qpx-theme-generic-light");
 		});
 		</script>
 	</body>

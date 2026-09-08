@@ -25,8 +25,8 @@
 			<div class="qpx-testbar">
 				<label>Téma:
 					<select id="ctlTheme">
-						<option value="qpx-theme-generic-light">generic-light</option>
-						<option value="qpx-theme-generic-dark">generic-dark</option>
+						<option value="qpx-theme-light">light</option>
+						<option value="qpx-theme-dark">dark</option>
 					</select>
 				</label>
 			
@@ -144,9 +144,9 @@
 		    // -----------------------------------------------------------------
 		    function applyTheme(themeClass) {
 		        mainTabs.getContainer()
-		            .removeClass("qpx-theme-generic-light qpx-theme-generic-dark")
+		            .removeClass("qpx-theme-light qpx-theme-dark")
 		            .addClass(themeClass);
-		        $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
+		        $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
 		    }
 		
 		    applyTheme($("#ctlTheme").val());

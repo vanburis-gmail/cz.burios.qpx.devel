@@ -4,7 +4,7 @@
 //
 // Stejně jako ostatní widgety (viz widgets/_button.scss,
 // widgets/_popup-list.scss) NEobsahuje samostatné bloky pro
-// .qpx-theme-generic-light / .qpx-theme-generic-dark - barvy jdou
+// .qpx-theme-light / .qpx-theme-dark - barvy jdou
 // přes CSS custom properties (--qpx-*) definované v
 // scss/themes/_light.scss a scss/themes/_dark.scss. Díky tomu se do
 // každého tématového buildu (light.scss / dark.scss) propíšou jen

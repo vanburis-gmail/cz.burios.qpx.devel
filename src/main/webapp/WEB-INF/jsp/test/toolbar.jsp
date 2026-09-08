@@ -55,7 +55,7 @@ System.out.println("/devel/toolbar.jsp");
 				<h2>qpToolBar s položkami všech typů, responzivní přetečení do menu</h2>
 				<section style="padding:0;">
 					<div style="padding:10px 16px 0;">
-						<label><input type="checkbox" id="themeToggle"> tmavé téma (generic-dark)</label>
+						<label><input type="checkbox" id="themeToggle"> tmavé téma (dark)</label>
 						&nbsp;·&nbsp;
 						<label><input type="checkbox" id="disabledToggle"> disabled</label>
 						&nbsp;·&nbsp;
@@ -83,7 +83,6 @@ System.out.println("/devel/toolbar.jsp");
 			function log(msg) { $("#toolbarLog").text(msg); }
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
-				theme: "generic-light",
 				items: [
 					{ location: "before", widget: "button",
 					  options: { icon: "☰", stylingMode: "text", hint: "Menu",
@@ -127,7 +126,6 @@ System.out.println("/devel/toolbar.jsp");
 			/*
 			$("#app0").qpx("qpToolBar",{
 				view: "qpToolBar",
-				theme: "generic-light",
 				items: [
 					{ location: "before", widget: "button",
 					  options: { icon: "☰", stylingMode: "text", hint: "Menu",
@@ -174,7 +172,7 @@ System.out.println("/devel/toolbar.jsp");
 			});
 
 			$("#themeToggle").on("change", function () {
-				toolbar.option("theme", this.checked ? "generic-dark" : "generic-light");
+				toolbar.option("theme", this.checked ? "dark" : "light");
 			});
 			$("#disabledToggle").on("change", function () {
 				toolbar.option("disabled", this.checked);

@@ -2868,7 +2868,7 @@
  *   - volitelné "spin" šipky vedle pole (showSpinButtons, jqx: spinButtons),
  *   - min/max, showCalendarButton, firstDayOfWeek — vše po vzoru jqx.
  * Vzhledem (pole i rozbalovací kalendář) se co nejvíc přibližuje
- * DevExtreme dxDateBox v tématech generic-light / generic-dark (stejné
+ * DevExtreme dxDateBox v tématech light / dark (stejné
  * CSS proměnné --qpx-* a mixiny jako ostatní qpx widgety).
  *
  * options:

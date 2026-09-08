@@ -172,22 +172,13 @@
 			// Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny 4 instance)
 			// -----------------------------------------------------------------
 			var allDropDownBoxes = [dropdownbox1, dropdownbox2, dropdownbox3, dropdownbox4];
-			/*
-			function applyTheme(themeClass) {
-				allDropDownBoxes.forEach(function (db) {
-					db.getContainer().removeClass("qpx-theme-generic-light qpx-theme-generic-dark").addClass(themeClass);
-				});
-				toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
-				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
-			}
-			*/
+
 			function applyStylingMode(mode) {
 				allDropDownBoxes.forEach(function (db) { db.option("stylingMode", mode); });
 			}
 			
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
-				// theme: "light",
 				items: [{
 					location: "before", widget: "template",
 					template: "<b style='padding:0 4px;'>Styl:</b>"

@@ -171,7 +171,6 @@
 
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
-				theme: "light",
 				items: [{
 					location: "before", widget: "template",
 					template: "<b style='padding:0 4px;'>Téma:</b>"

@@ -168,10 +168,10 @@
 			/*
 		    function applyTheme(themeClass) {
 		        allDatePickers.forEach(function (dp) {
-		            dp.getContainer().removeClass("qpx-theme-generic-light qpx-theme-generic-dark").addClass(themeClass);
+		            dp.getContainer().removeClass("qpx-theme-light qpx-theme-dark").addClass(themeClass);
 		        });
 		        toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
-		        $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-generic-dark");
+		        $("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
 		    }
 			*/
 		    function applyStylingMode(mode) {
@@ -180,7 +180,6 @@
 
 		    var toolbar = qpx.ui({
 		        view: "qpToolBar",
-		        theme: "generic-light",
 		        items: [
 		            {
 		                location: "before", widget: "template",
@@ -190,13 +189,13 @@
 		                location: "before", widget: "qpButtonGroup",
 		                options: {
 		                    items: [
-		                        { text: "Světlé", key: "generic-light" },
-		                        { text: "Tmavé", key: "generic-dark" }
+		                        { text: "Světlé", key: "light" },
+		                        { text: "Tmavé", key: "dark" }
 		                    ],
-		                    selectedItemKeys: ["generic-light"],
+		                    selectedItemKeys: ["light"],
 		                    onSelectionChanged: function (e) {
 		                    	/*
-		                        var key = e.component.getSelectedItemKeys()[0] || "generic-light";
+		                        var key = e.component.getSelectedItemKeys()[0] || "light";
 		                        applyTheme("qpx-theme-" + key);
 		                        */
 		                    }

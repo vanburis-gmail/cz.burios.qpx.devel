@@ -199,7 +199,6 @@
 			*/
 			var toolbar = qpx.ui({
 				view: "qpToolBar",
-				// theme: "light",
 				items: [{
 					location: "before", widget: "template",
 					template: "<b style='padding:0 4px;'>Styl:</b>"
@@ -213,7 +212,7 @@
 						],
 						selectedItemKeys: ["light"],
 						onSelectionChanged: function (e) {
-							var key = e.component.getSelectedItemKeys()[0] || "generic-light";
+							var key = e.component.getSelectedItemKeys()[0] || "light";
 							applyTheme("qpx-theme-" + key);
 						}
 					}

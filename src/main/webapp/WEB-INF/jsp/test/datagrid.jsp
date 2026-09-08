@@ -59,8 +59,8 @@
 			<div class="dg-toolbar">
 				<label>Téma:
 					<select id="ctlTheme">
-						<option value="qpx-theme-light">generic-light</option>
-						<option value="qpx-theme-dark">generic-dark</option>
+						<option value="qpx-theme-light">light</option>
+						<option value="qpx-theme-dark">dark</option>
 					</select>
 				</label>
 				<label><input type="checkbox" id="ctlBorders" checked> borders</label>
