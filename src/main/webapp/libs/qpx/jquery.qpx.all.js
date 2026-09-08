@@ -7743,7 +7743,13 @@
             items: [],
             visible: true,
             disabled: false,
-            theme: "light",  // light | dark
+            // null (výchozí) = žádná vlastní theme třída na containeru -
+            // qpToolBar pak normálně DĚDÍ --qpx-* proměnné z nejbližšího
+            // předka se třídou qpx-theme-light/qpx-theme-dark (typicky
+            // <body>), stejně jako qpTextBox/qpDataGrid/qpTabView/qpRibbon.
+            // "light" / "dark" zadejte jen pokud chcete vynutit konkrétní
+            // téma NA TÉTO KONKRÉTNÍ instanci bez ohledu na okolí.
+            theme: null,     // null | "light" | "dark"
             overflowMenuIcon: "⋮",
             onItemClick: null,
             onOptionChanged: null
@@ -7755,10 +7761,13 @@
 
             this.$container
                 .addClass("qpx-toolbar")
-                .addClass("qpx-theme-" + cfg.theme)
                 .toggleClass("qpx-hidden", !cfg.visible)
                 .toggleClass("qpx-state-disabled", !!cfg.disabled)
                 .attr("role", "toolbar");
+
+            // vlastní theme třída se přidává JEN pokud je explicitně
+            // zadaná - jinak se nechá zdědit z předka (viz komentář u defaults.theme)
+            if (cfg.theme) { this.$container.addClass("qpx-theme-" + cfg.theme); }
 
             if (cfg.onItemClick) { this.on("itemClick", cfg.onItemClick); }
             if (cfg.onOptionChanged) { this.on("optionChanged", cfg.onOptionChanged); }
@@ -8020,7 +8029,11 @@
             } else if (name === "visible") {
                 this.$container.toggleClass("qpx-hidden", !value);
             } else if (name === "theme") {
-                this.$container.removeClass("qpx-theme-" + prev).addClass("qpx-theme-" + value);
+                // prev/value mohou být null (= "žádná vlastní třída, dědí se
+                // z předka") - removeClass/addClass s prázdným argumentem
+                // je no-op, takže se to dá zapsat bez podmínek
+                if (prev) { this.$container.removeClass("qpx-theme-" + prev); }
+                if (value) { this.$container.addClass("qpx-theme-" + value); }
             }
 
             this.trigger("optionChanged", { name: name, value: value, previousValue: prev });
