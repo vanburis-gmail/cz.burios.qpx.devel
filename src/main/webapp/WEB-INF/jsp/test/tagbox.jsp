@@ -9,56 +9,18 @@
 
 		<link rel="icon" href="/devel/favicon.png">
 		<link rel="stylesheet" href="/devel/libs/fonts/fontawesome/4.7/css/font-awesome.min.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.light.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/libs/qpx/themes/jquery.qpx.default.css?build=${ timeNo }" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/devel/api/qpx-test.css?build=${timeNo}">
 
-		<style>
-			body.qpx-page-dark { background: #1b1b1b; color: #eee; }
-			
-			header.page-head { padding: 18px 24px 6px; }
-			h1 { font-size: 18px; margin: 0 0 4px; }
-			.subtitle { color: #767676; font-size: 12px; margin: 0; }
-			
-			.toolbar-wrap { margin: 12px 24px 4px; }
-			
-			main { padding: 8px 24px 60px; max-width: 760px; }
-			
-			.demo-block { margin: 26px 0; }
-			.demo-block h2 { font-size: 14px; margin: 0 0 4px; }
-			.demo-block .desc { font-size: 12px; color: #767676; margin: 0 0 10px; }
-			body.qpx-page-dark .demo-block .desc { color: #a3a3a3; }
-			
-			.value-out {
-				margin-top: 8px;
-				font-family: monospace;
-				font-size: 11px;
-				padding: 6px 8px;
-				border-radius: 4px;
-				background: #eef4fb;
-				color: #333;
-			}
-			body.qpx-page-dark .value-out { background: #333; color: #e6e6e6; }
-			.qpx-back-home {
-				font-size: 20px;
-				text-decoration: none;
-				padding: 6px 10px;
-			}
-			.qpx-back-home:hover {
-				background: #fff;
-				color: #000;
-			}		
-		</style>
-	
 		<script type="text/javascript" src="/devel/libs/jquery/jquery-3.7.1.js"></script>
-		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js"></script>
+		<script type="text/javascript" src="/devel/libs/qpx/jquery.qpx.all.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/devel/api/qpx-test.js?build=${timeNo}"></script>
 	</head>
 	<body class="qpx-view">
-		<!-- návratová ikona vlevo nahoře -->
-		<div style="height: 36px; position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid &dedede;">
-			<a href="/devel/" class="qpx-back-home" title="Zpět na hlavní stránku">
-				<span class="fa fa-home"></span>
-			</a>
+		<div class="qpx-test-topbar1">
+			<div id="pageTopbar" style="width: 100%"></div>
 		</div>
-		<div style="min-height: 320px; position: absolute; top: 36px; left: 0; right: 0; border: 0; border: 0px solid red;">
+		<div class="qpx-test-content">
 			<header class="page-head">
 				<h1>qpTagBox – test</h1>
 				<p class="subtitle">Vícenásobný výběr s tagy — analogie DevExtreme dxTagBox. Přepínač stylu níže mění téma i stylingMode přímo na živých instancích.</p>
@@ -66,7 +28,7 @@
 			<div class="toolbar-wrap">
 				<div id="pageToolbar"></div>
 			</div>
-			
+
 			<main>
 				<div class="demo-block">
 					<h2>1) Základní použití — dataSource z objektů</h2>
@@ -108,7 +70,7 @@
 		        { id: 11, name: "Nizozemsko" },
 		        { id: 12, name: "Belgie" }
 		    ];
-		
+
 		    // -----------------------------------------------------------------
 		    // 1) základní demo
 		    // -----------------------------------------------------------------
@@ -132,7 +94,7 @@
 		        }
 		    }, "#tagbox1");
 		    $("#out1").text("value: [" + tagbox1.value().join(", ") + "]");
-		
+
 		    // -----------------------------------------------------------------
 		    // 2) maxDisplayedTags / showMultiTagOnly
 		    // -----------------------------------------------------------------
@@ -146,9 +108,9 @@
 		        maxDisplayedTags: 3,
 		        stylingMode: "filled"
 		    }, "#tagbox2");
-		
+
 		    var multiTagToggle = qpx.ui({
-		        view: "button",
+		        view: "qpButton",
 		        text: "Přepnout showMultiTagOnly",
 		        stylingMode: "outlined",
 		        css: "demo-inline-btn",
@@ -157,7 +119,7 @@
 		        }
 		    });
 		    $("#tagbox2").after(multiTagToggle.getContainer().css("margin-top", "8px"));
-		
+
 		    // -----------------------------------------------------------------
 		    // 3) acceptCustomValue
 		    // -----------------------------------------------------------------
@@ -174,7 +136,7 @@
 		            args.customItem = args.text.trim();
 		        }
 		    }, "#tagbox3");
-		
+
 		    // -----------------------------------------------------------------
 		    // 4) disabled / readOnly
 		    // -----------------------------------------------------------------
@@ -188,7 +150,7 @@
 		        readOnly: true,
 		        stylingMode: "outlined"
 		    }, "#tagbox4");
-		
+
 		    // -----------------------------------------------------------------
 		    // Horní panel: přepínač tématu + stylingMode (aplikuje se na všechny 4 instance)
 		    // -----------------------------------------------------------------
@@ -198,12 +160,12 @@
 		    function applyStylingMode(mode) {
 		        allTagBoxes.forEach(function (tb) { tb.option("stylingMode", mode); });
 		    }
-		
+
 		    var toolbar = qpx.ui({
 		        view: "qpToolBar",
 		        items: [
 		            {
-		                location: "after", widget: "buttonGroup",
+		                location: "before", widget: "qpButtonGroup",
 		                options: {
 		                    items: [
 		                        { text: "outlined", key: "outlined" },

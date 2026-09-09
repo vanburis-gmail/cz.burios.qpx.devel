@@ -44,7 +44,7 @@
 
 			a.card {
 				display: block;
-				background: #fff;
+				background: var(--qpx-bg, #fff);
 				border: 1px solid #e2e6ea;
 				border-radius: 8px;
 				padding: 16px 18px;
@@ -52,6 +52,8 @@
 				color: inherit;
 				transition: border-color .12s ease, box-shadow .12s ease, transform .12s ease;
 			}
+
+
 			a.card:hover {
 				border-color: var(--qpx-accent, #337ab7);
 				box-shadow: 0 4px 14px rgba(0,0,0,.08);
@@ -61,7 +63,7 @@
 				font-size: 24px;
 				margin-bottom: 8px;
 				display: block;
-				color: #337ab7;
+				color: var(--qpx-accent, #337ab7);
 			}
 			a.card .card-title {
 				font-size: 14px;
@@ -70,7 +72,7 @@
 			}
 			a.card .card-desc {
 				font-size: 12px;
-				color: #767676;
+				color: var(--qpx-text-muted, #767676);
 				line-height: 1.45;
 			}
 			a.card .card-path {
@@ -79,11 +81,10 @@
 				font-family: monospace;
 				font-size: 11px;
 				color: var(--qpx-accent, #337ab7);
-				background: #eef4fb;
+				background: var(--qpx-selected, #eef4fb);
 				padding: 2px 6px;
 				border-radius: 4px;
 			}
-
 			.qpx-hidden-card { display: none !important; }
 
 			footer {
@@ -117,7 +118,7 @@
 					<span class="card-title">Instace widgetu</span>
 					<span class="card-desc">
 						Čtyři rovnocenné způsoby, jak z <code>$(selector)</code> získat živou instanci qpx widgetu —
-						obdoba <code>$(...).data("kendoTagBox")</code> a <code>$(...).dxTagBox("instance")</code>. 
+						obdoba <code>$(...).data("kendoTagBox")</code> a <code>$(...).dxTagBox("instance")</code>.
 						Na konci i důkaz, že po <code>destroy()</code> už žádný z nich instanci nevrátí.
 					</span>
 					<span class="card-path">/devel/test/instance</span>
@@ -341,22 +342,21 @@
 		$(function () {
 			// ------------------------------------------------------------
 			// Horní panel: přepínač tématu (theme) + filtr skupin widgetů
-			// (jen ukázka použití qpToolBar/qpButtonGroup na téhle stránce,
-			// funkčně jde čistě o rozcestník s odkazy na /devel/test/*)
+			//
+			// applyTheme() je JEDINÉ místo, které řídí motiv stránky -
+			// přepíná třídu qpx-theme-light/-dark přímo na <body>. Díky
+			// dědičnosti CSS proměnných (--qpx-bg, --qpx-text, --qpx-border,
+			// ...) se tak automaticky obarví VŠECHNY qpx widgety na stránce
+			// (toolbar, karty, ...), aniž by bylo nutné volat
+			// .option("theme", ...) na každém widgetu zvlášť - qpToolBar
+			// (a ostatní widgety) žádnou vlastní theme třídu nevynucují,
+			// pokud jim ji explicitně nezadáte, takže normálně dědí.
 			// ------------------------------------------------------------
 			function applyTheme(themeKey) {
-				/*
-				$("body")
-					.removeClass("qpx-theme-light qpx-theme-dark")
-					.addClass("qpx-theme-" + themeKey);
-				$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
-				toolbar.option("theme", themeKey);
-				*/
-				let themeClass = "qpx-theme-" + themeKey;
+				var themeClass = "qpx-theme-" + themeKey;
 				$(document.body)
 					.removeClass("qpx-theme-light qpx-theme-dark")
 					.addClass(themeClass);
-
 			}
 
 			var toolbar = qpx.ui({
@@ -388,24 +388,26 @@
 					location: "after",
 					widget: "qpDropDownButton",
 					options: {
-							items: [
-								{ text: "Světlé", key: "light" },
-								{ text: "Tmavé", key: "dark" }
-							],
-							selectedItemKeys: ["light"],
-							onSelectionChanged: function (e) {
-								/*
-								var theme = e.component.getSelectedItemKeys()[0] || "light";
-								toolbar.option("theme", theme);
-								$("body").attr("data-theme", theme === "dark" ? "dark" : "light");
-								*/
-								var key = e.component.getSelectedItemKeys()[0] || "light";
-								applyTheme(key);
-							}
+						// useSelectMode: true -> text tlačítka se nahradí
+						// popiskem právě vybrané položky (viz
+						// qpx.dropdownbutton.js: _currentText()), takže je
+						// vždy vidět, jaký styl je momentálně zvolený.
+						text: "Styl",
+						icon: "css:qpxicon qpxicon-colorpalette",
+						items: [
+							{ text: "Světlé", key: "light" },
+							{ text: "Tmavé", key: "dark" }
+						],
+						useSelectMode: true,
+						selectedItemKey: "light",
+						onSelectionChanged: function (e) {
+							applyTheme(e.key || "light");
 						}
 					}
-				]
+				}]
 			}, "#pageToolbar");
+
+			applyTheme("light");
 		});
 		</script>
 	</body>

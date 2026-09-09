@@ -18,11 +18,13 @@ $(function () {
 			options: {
 				text: "Styl",
 				stylingMode: "text",
+				icon: "css:qpxicon qpxicon-colorpalette",
 				items: [
 					{ key: "light", text: "Light" },
 					{ key: "dark", text: "Dark" }
 				],
-				useSelectMode: false,
+				useSelectMode: true,
+				selectedItemKey: "light",
 				onItemClick: function (e) {
 					var key = e.itemData.key;
 					var themeClass = key === "dark"
@@ -44,7 +46,5 @@ function applyTheme(themeClass) {
 	$(".qpx-test-content")
 		.removeClass("qpx-theme-light qpx-theme-dark")
 		.addClass(themeClass);
-	//toolbar.option("theme", themeClass.replace("qpx-theme-", ""));
-	// zpětně kompatibilní přepínač pro topbar (viz qpx-test.css)
 	$("body").toggleClass("qpx-page-dark", themeClass === "qpx-theme-dark");
 }
